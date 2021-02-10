@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Weather Project</string>
+    <string name="current_conditions">CURRENT CONDITIONS</string>
+    <string name="weather_icon">Weather Icon</string>
+    <string name="temperature_scale_fahrenheit">F</string>
+    <string name="temperature_scale_celsius">C</string>
+    <string name="degree">&#xb0;</string>
+    <string name="precipitation_short_text">PRECIP</string>
+    <string name="humidity_short_text">HUMD</string>
+    <string name="wind_text">WIND</string>
+</resources>
