@@ -14,7 +14,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-//import com.bumptech.glide.Glide;
+import com.bumptech.glide.Glide;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -145,10 +145,15 @@ public class MainActivity extends AppCompatActivity {
         txtWind.setText(wind);
 
         // TODO Create proper utility function for determining weather icon
-//        Glide.with(this)
-//                .asBitmap()
-//                .load("http://openweathermap.org/img/wn/01d@2x.png")
-//                .into(imgCurrentConditionsImage);
+        Glide.with(this)
+                .asBitmap()
+                .load("https://openweathermap.org/img/wn/02d@2x.png")
+//                .placeholder(R.drawable.ic_launcher_background)
+//                .error(R.drawable.ic_launcher_background)
+//                .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                .fitCenter()
+//                .dontAnimate()
+                .into(imgCurrentConditionsImage);
 
     }
 }
