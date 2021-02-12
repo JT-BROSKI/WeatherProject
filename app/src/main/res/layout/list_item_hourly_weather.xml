@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/txtDateDay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="TDY"/>
+
+        <TextView
+            android:id="@+id/txtDateNum"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/txtDateDay"
+            android:text="1/11"
+            android:layout_marginBottom="10dp"/>
+
+        <TextView
+            android:id="@+id/txtHour"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/txtDateNum"
+            android:layout_centerHorizontal="true"
+            android:text="10 PM"
+            android:layout_marginBottom="10dp"/>
+
+        <ImageView
+            android:id="@+id/imgIcon"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_below="@+id/txtHour"
+            android:layout_centerHorizontal="true"
+            android:src="@mipmap/ic_launcher"
+            android:layout_marginBottom="10dp"/>
+
+        <TextView
+            android:id="@+id/txtHourlyTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/imgIcon"
+            android:text="40&#xb0;"
+            android:layout_marginBottom="10dp"/>
+
+        <TextView
+            android:id="@+id/wind_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/txtHourlyTemp"
+            android:text="10"/>
+
+        <TextView
+            android:id="@+id/wind_scale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/wind_value"
+            android:text="mph"/>
+
+        <TextView
+            android:id="@+id/wind_direction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/wind_scale"
+            android:text="(N)"/>
+
+    </RelativeLayout>
+
+</com.google.android.material.card.MaterialCardView>

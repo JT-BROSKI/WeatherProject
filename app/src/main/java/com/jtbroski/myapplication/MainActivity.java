@@ -28,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView txtCurrentTemperature;
     private TextView txtCurrentTemperatureHighLow;
+    private TextView txtCurrentConditionsDescription;
+    private TextView txtFeelsLike;
     private TextView txtPrecipitation;
     private TextView txtHumidity;
     private TextView txtWind;
@@ -44,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
         imgCurrentConditionsImage = findViewById(R.id.current_conditions_image);
         txtCurrentTemperature = findViewById(R.id.current_temperature);
         txtCurrentTemperatureHighLow = findViewById(R.id.current_temperature_high_low);
+        txtCurrentConditionsDescription = findViewById(R.id.current_conditions_description);
+        txtFeelsLike = findViewById(R.id.feels_like);
         txtPrecipitation = findViewById(R.id.precipitation_value);
         txtHumidity = findViewById(R.id.humidity_value);
         txtWind = findViewById(R.id.wind_value);
@@ -57,8 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private StringRequest callWeatherApi(String location)
-    {
+    private StringRequest callWeatherApi(String location) {
         final String API_KEY = "&appid=4ae663188d74e9a952417c9234e8f511";
         final String END_POINT = " https://api.openweathermap.org/data";
         final String VERSION = "2.5";
@@ -79,10 +82,11 @@ public class MainActivity extends AppCompatActivity {
                             JSONObject result = new JSONObject(response);
                             JSONObject currentConditions = result.getJSONObject("current");
                             JSONArray minutelyConditions = result.getJSONArray("minutely");
-                            updateCurrentConditions(currentConditions, minutelyConditions);
+                            JSONArray dailyConditions = result.getJSONArray("daily");
+                            updateCurrentConditions(currentConditions, minutelyConditions, dailyConditions);
 
                         } catch (JSONException e) {
-                            Toast.makeText(MainActivity.this, "JSON Parsing Failed", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "Failed to parse weather data.", Toast.LENGTH_SHORT).show();
                         }
                     }
                 },
@@ -94,14 +98,24 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void updateCurrentConditions(JSONObject currentConditions, JSONArray minutelyConditions)
-    {
+    private void updateCurrentConditions(JSONObject currentConditions, JSONArray minutelyConditions, JSONArray dailyConditions) {
+        String icon;
         String temp;
         String tempHighLow;
+        String description;
+        String feelsLike;
         String precip;
         String humidity;
         String wind;
 
+        // Parse icon data
+        try {
+            icon = currentConditions.getJSONArray("weather").getJSONObject(0).getString("icon");
+        } catch (Exception e) {
+            icon = "";
+        }
+
+        // Parse current temperature
         try {
             temp = currentConditions.getString("temp");
             temp = Utils.roundStringNumberValue(temp);
@@ -109,51 +123,70 @@ public class MainActivity extends AppCompatActivity {
             temp = "N/A";
         }
 
-        // TODO Compile all temperatures within the day and determine high and low
-//        try {
-//            tempHighLow = currentConditions.getString("temp");
-//        } catch (Exception e) {
-//            tempHighLow = "N/A";
-//        }
-        tempHighLow = "75 | 25";
+        // Parse high and low temperature for today
+        try {
+            JSONObject today = dailyConditions.getJSONObject(0).getJSONObject("temp");
+            String high = Utils.roundStringNumberValue(today.getString("max")) + "\u00B0";
+            String low = Utils.roundStringNumberValue(today.getString("min")) + "\u00B0";
 
+            tempHighLow = high + " | " + low;
+        } catch (Exception e) {
+            tempHighLow = "N/A";
+        }
+
+        // Parse current weather description
+        try {
+            description = currentConditions.getJSONArray("weather").getJSONObject(0).getString("description").toUpperCase();
+        } catch (Exception e) {
+            description = "N/A";
+        }
+
+        // Parse current feels like temperature
+        try {
+            feelsLike = currentConditions.getString("feels_like");
+            feelsLike = "Feels like " + Utils.roundStringNumberValue(feelsLike) + "\u00B0";
+        } catch (Exception e) {
+            feelsLike = "N/A";
+        }
+
+        // Parse current precipitation chance
         try {
             precip = minutelyConditions.getJSONObject(0).getString("precipitation") + "%";
         } catch (Exception e) {
             precip = "N/A";
         }
 
+        // Parse current humidity
         try {
             humidity = currentConditions.getString("humidity") + "%";
         } catch (Exception e) {
             humidity = "N/A";
         }
 
-        // TODO Determine whether wind_gust is a necessary piece of information
-        // TODO Create wind direction conversion utility function
+        // Parse wind data
         try {
-            wind = currentConditions.getString("wind_speed");
-            wind = Utils.roundStringNumberValue(wind) + "(N)";
+            String windSpeed = Utils.roundStringNumberValue(currentConditions.getString("wind_speed"));
+            String windDirection = Utils.convertWindDirection(currentConditions.getString("wind_deg"));
+
+            wind = windSpeed + " mph " + windDirection;
         } catch (Exception e) {
             wind = "N/A";
         }
 
+        // Load weather icon image
+        if (!icon.isEmpty())
+            Glide.with(this)
+                    .asBitmap()
+                    .load(Utils.createWeatherIconUrl(icon))
+                    .into(imgCurrentConditionsImage);
+
+        // Load current conditions
         txtCurrentTemperature.setText(temp);
         txtCurrentTemperatureHighLow.setText(tempHighLow);
+        txtCurrentConditionsDescription.setText(description);
+        txtFeelsLike.setText(feelsLike);
         txtPrecipitation.setText(precip);
         txtHumidity.setText(humidity);
         txtWind.setText(wind);
-
-        // TODO Create proper utility function for determining weather icon
-        Glide.with(this)
-                .asBitmap()
-                .load("https://openweathermap.org/img/wn/02d@2x.png")
-//                .placeholder(R.drawable.ic_launcher_background)
-//                .error(R.drawable.ic_launcher_background)
-//                .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                .fitCenter()
-//                .dontAnimate()
-                .into(imgCurrentConditionsImage);
-
     }
 }

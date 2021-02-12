@@ -13,7 +13,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardView"
+            android:id="@+id/current_conditions_card_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp">
@@ -99,6 +99,7 @@
                                 android:id="@+id/temperature_scale"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginBottom="10dp"
                                 android:text="@string/temperature_scale_fahrenheit"
                                 app:layout_constraintBottom_toBottomOf="@+id/current_temperature"
                                 app:layout_constraintEnd_toEndOf="@+id/degree"
@@ -115,7 +116,7 @@
                             android:textSize="16sp"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="@+id/current_temperature_value_layout"
-                            app:layout_constraintStart_toStartOf="@+id/current_temperature_value_layout"
+                            app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/current_temperature_value_layout" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -130,11 +131,51 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/current_description_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/current_temperature_layout"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp">
+
+                    <TextView
+                        android:id="@+id/current_conditions_description"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:text="Current Weather Description"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/feels_like"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/current_conditions_description"
+                        android:layout_centerHorizontal="true"
+                        android:text="Feels like"
+                        app:layout_constraintEnd_toEndOf="@+id/current_conditions_description"
+                        app:layout_constraintStart_toStartOf="@+id/current_conditions_description"
+                        app:layout_constraintTop_toBottomOf="@+id/current_conditions_description" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <View
+                    android:id="@+id/second_divider"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_below="@+id/current_description_layout"
+                    android:background="@color/light_gray" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/current_weather_basic_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/current_temperature_layout"
-                    android:layout_marginTop="20dp"
+                    android:layout_below="@id/second_divider"
+                    android:layout_marginTop="15dp"
                     android:layout_marginBottom="15dp">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -217,6 +258,50 @@
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </RelativeLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/hourly_conditions_card_view"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_below="@+id/current_conditions_card_view"
+            android:layout_margin="10dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/hourly_conditions_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="20dp"
+                    android:text="@string/hourly_conditions" />
+
+                <View
+                    android:id="@+id/third_divider"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_below="@+id/hourly_conditions_title"
+                    android:background="@color/light_gray" />
+
+                <ScrollView
+                    android:id="@+id/hourly_conditions_scroll_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/third_divider">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/hourly_conditions_recycler_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                </ScrollView>
 
             </RelativeLayout>
 
