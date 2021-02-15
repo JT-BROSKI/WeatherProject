@@ -73,7 +73,11 @@ public class Utils {
         return dateFormat.format(date);
     }
 
-    public static String formatDay(Date day) {
+    public static String formatDayDailyCondition(Date date) {
+        return weekDayDateFormat.format(date);
+    }
+
+    public static String formatDayHourlyCondition(Date day) {
         return weekDayFormat.format(day);
     }
 
@@ -82,10 +86,12 @@ public class Utils {
         hourFormat.setTimeZone(calendar.getTimeZone());
         dateFormat.setTimeZone(calendar.getTimeZone());
         weekDayFormat.setTimeZone(calendar.getTimeZone());
+        weekDayDateFormat.setTimeZone(calendar.getTimeZone());
     }
 
     private static Calendar calendar = Calendar.getInstance();
     private static DateFormat hourFormat = new SimpleDateFormat("h a");
-    private static DateFormat dateFormat = new SimpleDateFormat("MM/dd");
+    private static DateFormat dateFormat = new SimpleDateFormat("M/dd");
     private static DateFormat weekDayFormat = new SimpleDateFormat("EEE");
+    private static DateFormat weekDayDateFormat = new SimpleDateFormat("EEE dd");
 }

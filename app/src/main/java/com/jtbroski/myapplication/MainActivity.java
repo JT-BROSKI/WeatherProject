@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.ReceiverCallNotAllowedException;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.ScrollView;
@@ -44,6 +45,9 @@ public class MainActivity extends AppCompatActivity {
     private HourlyConditionsRecViewAdapter hourlyConditionsRecViewAdapter;
     private RecyclerView hourlyConditionsRecView;
 
+    private DailyConditionsRecViewAdapter dailyConditionsRecViewAdapter;
+    private RecyclerView dailyConditionsRecView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +68,11 @@ public class MainActivity extends AppCompatActivity {
         hourlyConditionsRecView = findViewById(R.id.hourly_conditions_recycler_view);
         hourlyConditionsRecView.setAdapter(hourlyConditionsRecViewAdapter);
         hourlyConditionsRecView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+
+        dailyConditionsRecViewAdapter = new DailyConditionsRecViewAdapter(this);
+        dailyConditionsRecView = findViewById(R.id.daily_conditions_recycler_view);
+        dailyConditionsRecView.setAdapter(dailyConditionsRecViewAdapter);
+        dailyConditionsRecView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
         queue = Volley.newRequestQueue(this);
         StringRequest stringRequest = callWeatherApi("fake location");
@@ -97,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
                             updateCurrentConditions(currentConditions, minutelyConditions, dailyConditions);
                             updateHourlyConditions(hourlyConditions);
+                            updateDailyConditions(dailyConditions);
 
                         } catch (JSONException e) {
                             Toast.makeText(MainActivity.this, "Failed to parse weather data.", Toast.LENGTH_SHORT).show();
@@ -222,8 +232,6 @@ public class MainActivity extends AppCompatActivity {
 
                 JSONObject hourlyCondition = hourlyConditions.getJSONObject(i);
 
-                int id;
-
                 // Parse current date
                 Date date = new Date(hourlyCondition.getInt("dt") * 1000L);
 
@@ -251,6 +259,46 @@ public class MainActivity extends AppCompatActivity {
             hourlyConditionsRecViewAdapter.setHourlyWeather(hourlyWeather);
         } catch (Exception e) {
             Toast.makeText(this, "Failed to parse hourly conditions.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void updateDailyConditions(JSONArray dailyConditions) {
+        ArrayList<Weather> dailyWeather = new ArrayList<>();
+
+        try {
+            for (int i = 0; i < dailyConditions.length(); i++) {
+
+                JSONObject dailyCondition = dailyConditions.getJSONObject(i);
+
+                // Parse current date
+                Date date = new Date(dailyCondition.getInt("dt") * 1000L);
+
+                // Parse high and low temperature
+                JSONObject temperature = dailyCondition.getJSONObject("temp");
+                String temperatureMax = Utils.roundStringNumberValue(temperature.getString("max"));
+                String temperatureMin = Utils.roundStringNumberValue(temperature.getString("min"));
+
+                // Parse precipitation chance
+                String precipChance = Utils.roundStringNumberValue(dailyCondition.getString("pop"));
+
+                // TODO add options for metric vs imperial
+                // Parse wind data
+                String windSpeed = Utils.roundStringNumberValue(dailyCondition.getString("wind_speed"));
+                String windDirection = Utils.convertWindDirection(dailyCondition.getString("wind_deg"));
+                String windScale = "mph";
+
+                // Parse icon data
+                String icon = Utils.createWeatherIconUrl(dailyCondition.getJSONArray("weather").getJSONObject(0).getString("icon"));
+
+                // Create new weather object and add to the array list
+                Weather weather = new Weather(i, date, "", temperatureMax, temperatureMin, "",
+                        precipChance, "", windSpeed, windDirection, windScale, "", icon);
+                dailyWeather.add(weather);
+            }
+
+            dailyConditionsRecViewAdapter.setDailyWeather(dailyWeather);
+        } catch (Exception e) {
+            Toast.makeText(this, "Failed to parse daily conditions.", Toast.LENGTH_SHORT).show();
         }
     }
 }

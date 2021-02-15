@@ -30,7 +30,7 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_hourly_weather, parent, false);
-        return  new ViewHolder(view);
+        return new ViewHolder(view);
     }
 
     @Override
@@ -43,7 +43,7 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
         if (Utils.isCurrentDay(date)) {
             holder.txtDateDay.setText("TDY");
         } else {
-            String formattedDay = Utils.formatDay(date);
+            String formattedDay = Utils.formatDayHourlyCondition(date);
             holder.txtDateDay.setText(formattedDay);
         }
 
@@ -61,8 +61,11 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
                 .load(hourlyWeather.get(position).getIcon())
                 .into(holder.imgIcon);
 
-        // Set temperature, wind speed, wind scale, and wind direction
-        holder.txtHourlyTemp.setText(hourlyWeather.get(position).getTemperatureCurrent() + "\u00B0");
+        // Set hourly temperature
+        String tempHourly = hourlyWeather.get(position).getTemperatureCurrent() + "\u00B0";
+        holder.txtHourlyTemp.setText(tempHourly);
+
+        // Set wind speed, wind scale, and wind direction
         holder.txtWindValue.setText(hourlyWeather.get(position).getWindSpeed());
         holder.txtWindScale.setText(hourlyWeather.get(position).getWindScale());
         holder.txtViewDirection.setText(hourlyWeather.get(position).getWindDirection());
@@ -70,7 +73,8 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
         // Set precipitation chance if applicable
         String precipChance = hourlyWeather.get(position).getPrecipChance();
         if (!precipChance.equals("0")) {
-            holder.txtPrecipChance.setText(precipChance + "%");
+            String precipValue = precipChance + "%";
+            holder.txtPrecipChance.setText(precipChance);
         } else {
             holder.txtPrecipChance.setText("");
         }
