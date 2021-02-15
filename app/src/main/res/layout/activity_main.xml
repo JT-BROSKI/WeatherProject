@@ -239,7 +239,7 @@
                         app:layout_constraintTop_toTopOf="parent">
 
                         <TextView
-                            android:id="@+id/wind_value"
+                            android:id="@+id/wind_data"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="10 mph (N)"
@@ -251,9 +251,9 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/wind_text"
-                            app:layout_constraintEnd_toEndOf="@+id/wind_value"
-                            app:layout_constraintStart_toStartOf="@+id/wind_value"
-                            app:layout_constraintTop_toBottomOf="@+id/wind_value" />
+                            app:layout_constraintEnd_toEndOf="@+id/wind_data"
+                            app:layout_constraintStart_toStartOf="@+id/wind_data"
+                            app:layout_constraintTop_toBottomOf="@+id/wind_data" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -266,7 +266,7 @@
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/hourly_conditions_card_view"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="wrap_content"
             android:layout_below="@+id/current_conditions_card_view"
             android:layout_margin="10dp">
 
@@ -290,18 +290,11 @@
                     android:layout_below="@+id/hourly_conditions_title"
                     android:background="@color/light_gray" />
 
-                <ScrollView
-                    android:id="@+id/hourly_conditions_scroll_view"
-                    android:layout_width="match_parent"
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/hourly_conditions_recycler_view"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/third_divider">
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/hourly_conditions_recycler_view"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-
-                </ScrollView>
+                    android:layout_below="@+id/third_divider" />
 
             </RelativeLayout>
 

@@ -1,11 +1,15 @@
 package com.jtbroski.myapplication;
 
-import android.os.Build;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 public class Utils {
 
-    public static String convertWindDirection(String value)
-    {
+    public static Date currentDate;
+
+    public static String convertWindDirection(String value) {
         int valueInt = Integer.parseInt(value);
 
         if (valueInt <= 22 || valueInt >= 338)
@@ -42,19 +46,46 @@ public class Utils {
         }
     }
 
-    public static String createWeatherIconUrl(String value)
-    {
+    public static String createWeatherIconUrl(String value) {
         final String prefix = "https://openweathermap.org/img/wn/";
         final String suffix = "@2x.png";
 
         return prefix + value + suffix;
     }
 
-    public static String roundStringNumberValue(String value)
-    {
+    public static String roundStringNumberValue(String value) {
         int roundedValue =  (int)Math.round(Double.parseDouble(value));
         return String.valueOf(roundedValue);
     }
 
+    public static boolean isCurrentDay(Date date) {
+        String currentDay = formatDate(currentDate);
+        String compareDay = formatDate(date);
 
+        return currentDay.equals(compareDay);
+    }
+
+    public static String formatHour(Date date) {
+        return hourFormat.format(date);
+    }
+
+    public static String formatDate(Date date) {
+        return dateFormat.format(date);
+    }
+
+    public static String formatDay(Date day) {
+        return weekDayFormat.format(day);
+    }
+
+    public static void setTimeZone(Date date) {
+        calendar.setTime(date);
+        hourFormat.setTimeZone(calendar.getTimeZone());
+        dateFormat.setTimeZone(calendar.getTimeZone());
+        weekDayFormat.setTimeZone(calendar.getTimeZone());
+    }
+
+    private static Calendar calendar = Calendar.getInstance();
+    private static DateFormat hourFormat = new SimpleDateFormat("h a");
+    private static DateFormat dateFormat = new SimpleDateFormat("MM/dd");
+    private static DateFormat weekDayFormat = new SimpleDateFormat("EEE");
 }
