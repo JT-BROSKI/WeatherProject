@@ -1,13 +1,16 @@
 package com.jtbroski.myapplication;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.ReceiverCallNotAllowedException;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.ImageView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,7 +31,7 @@ import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ScrollView parent;
+    private Toolbar toolbar;
 
     private ImageView imgCurrentConditionsImage;
 
@@ -53,7 +56,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        parent = findViewById(R.id.parent);
+        toolbar = findViewById(R.id.tool_bar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         imgCurrentConditionsImage = findViewById(R.id.current_conditions_image);
         txtCurrentTemperature = findViewById(R.id.current_temperature);
@@ -78,6 +83,31 @@ public class MainActivity extends AppCompatActivity {
         StringRequest stringRequest = callWeatherApi("fake location");
         queue.add(stringRequest);
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    // TODO Create menu item activities
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.search_menu:
+                return true;
+
+            case R.id.my_location_menu:
+                return true;
+
+            case R.id.settings_menu:
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private StringRequest callWeatherApi(String location) {

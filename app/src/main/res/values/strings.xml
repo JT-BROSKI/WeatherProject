@@ -10,4 +10,7 @@
     <string name="wind_text">WIND</string>
     <string name="hourly_conditions">HOURLY CONDITIONS</string>
     <string name="daily_conditions">DAILY CONDITIONS</string>
+    <string name="search_title">Search</string>
+    <string name="my_location_title">My Location</string>
+    <string name="settings_title">Settings</string>
 </resources>
