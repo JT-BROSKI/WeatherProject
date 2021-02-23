@@ -1,16 +1,29 @@
 package com.jtbroski.myapplication;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -89,6 +102,23 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
+
+        // TODO implement location searching
+        MenuItem.OnActionExpandListener onActionExpandListener = new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                return false;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                return false;
+            }
+        };
+        menu.findItem(R.id.search_menu).setOnActionExpandListener(onActionExpandListener);
+        SearchView searchView = (SearchView) menu.findItem(R.id.search_menu).getActionView();
+        searchView.setQueryHint("Search by zip, city, or state");
+
         return true;
     }
 
@@ -99,7 +129,22 @@ public class MainActivity extends AppCompatActivity {
             case R.id.search_menu:
                 return true;
 
-            case R.id.my_location_menu:
+            case R.id.my_location_menu:     // TODO Potential refactor this to correctly ask and handle location permission access/deny results
+                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    createAlertMessageNoGps();
+                } else {
+                    int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+
+                    if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                        // ask permissions here using below code
+                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                    }
+
+                    LocationListener myLocationListener = new MyLocationListener();
+                    locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, myLocationListener, null);
+                }
+
                 return true;
 
             case R.id.settings_menu:
@@ -149,6 +194,27 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, "API call failed", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void createAlertMessageNoGps() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("GPS location is disabled, would you like to enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
     private void updateCurrentConditions(JSONObject currentConditions, JSONArray minutelyConditions, JSONArray dailyConditions) {
@@ -329,6 +395,26 @@ public class MainActivity extends AppCompatActivity {
             dailyConditionsRecViewAdapter.setDailyWeather(dailyWeather);
         } catch (Exception e) {
             Toast.makeText(this, "Failed to parse daily conditions.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private class MyLocationListener implements LocationListener {
+
+        public Location location;
+
+        @Override
+        public void onLocationChanged(@NonNull Location location) {
+            this.location = location;
+        }
+
+        @Override
+        public void onProviderEnabled(@NonNull String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(@NonNull String provider) {
+
         }
     }
 }
