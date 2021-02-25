@@ -1,6 +1,7 @@
 package com.jtbroski.myapplication;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -17,6 +18,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Menu;
@@ -64,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     private DailyConditionsRecViewAdapter dailyConditionsRecViewAdapter;
     private RecyclerView dailyConditionsRecView;
 
+    @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,8 +96,11 @@ public class MainActivity extends AppCompatActivity {
         dailyConditionsRecView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
         queue = Volley.newRequestQueue(this);
-        StringRequest stringRequest = callWeatherApi("fake location");
-        queue.add(stringRequest);
+
+        Location preferredLocation = Preferences.getInstance(this).getPreferredLocation();
+        if (preferredLocation != null) {
+            callWeatherApi(preferredLocation);
+        }
 
     }
 
@@ -123,28 +129,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // TODO Create menu item activities
+    @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.search_menu:
                 return true;
 
-            case R.id.my_location_menu:     // TODO Potential refactor this to correctly ask and handle location permission access/deny results
-                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    createAlertMessageNoGps();
-                } else {
-                    int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-
-                    if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-                        // ask permissions here using below code
-                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-                    }
-
-                    LocationListener myLocationListener = new MyLocationListener();
-                    locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, myLocationListener, null);
-                }
-
+            case R.id.my_location_menu:
+                Preferences.getInstance(this).getCurrentLocation(this);
                 return true;
 
             case R.id.settings_menu:
@@ -155,19 +148,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private StringRequest callWeatherApi(String location) {
+    public void callWeatherApi(Location location) {
         final String API_KEY = "&appid=4ae663188d74e9a952417c9234e8f511";
         final String END_POINT = " https://api.openweathermap.org/data";
         final String VERSION = "2.5";
         final String ONE_CALL = "onecall?";
         final String TEMP_MEASUREMENT = "&units=imperial";
 
-        //TODO properly get location data
-        String coordinates = "lat=35.4590&lon=-97.4057";
+        String coordinates = "lat=" + location.getLatitude() + "&lon=" + location.getLongitude();
 
         String url = END_POINT + "/" + VERSION + "/" + ONE_CALL + coordinates + TEMP_MEASUREMENT + API_KEY;
 
-        return new StringRequest(Request.Method.GET, url,
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -194,6 +186,8 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, "API call failed", Toast.LENGTH_SHORT).show();
                     }
                 });
+
+        queue.add(stringRequest);
     }
 
     private void createAlertMessageNoGps() {
