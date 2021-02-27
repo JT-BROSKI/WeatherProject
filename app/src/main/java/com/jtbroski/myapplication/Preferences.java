@@ -33,7 +33,7 @@ public class Preferences {
     @RequiresApi(api = Build.VERSION_CODES.R)
     private Preferences(Context context) {
         sharedPreferences = context.getSharedPreferences("preference_db", Context.MODE_PRIVATE);
-//        sharedPreferences.edit().clear().commit();
+        sharedPreferences.edit().clear().commit();
 
         if (getPreferredLocation() == null) {
             getCurrentLocation(context);

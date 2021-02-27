@@ -74,7 +74,7 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
         String precipChance = hourlyWeather.get(position).getPrecipChance();
         if (!precipChance.equals("0")) {
             String precipValue = precipChance + "%";
-            holder.txtPrecipChance.setText(precipChance);
+            holder.txtPrecipChance.setText(precipValue);
         } else {
             holder.txtPrecipChance.setText("");
         }

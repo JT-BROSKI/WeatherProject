@@ -15,6 +15,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -36,6 +38,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
+import com.google.gson.JsonIOException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,10 +46,14 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
+
+    private TextView txtCurrentLocation;
 
     private ImageView imgCurrentConditionsImage;
 
@@ -76,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        txtCurrentLocation = findViewById(R.id.current_location);
         imgCurrentConditionsImage = findViewById(R.id.current_conditions_image);
         txtCurrentTemperature = findViewById(R.id.current_temperature);
         txtCurrentTemperatureHighLow = findViewById(R.id.current_temperature_high_low);
@@ -167,13 +175,22 @@ public class MainActivity extends AppCompatActivity {
 
                             JSONObject result = new JSONObject(response);
                             JSONObject currentConditions = result.getJSONObject("current");
-                            JSONArray minutelyConditions = result.getJSONArray("minutely");
                             JSONArray hourlyConditions = result.getJSONArray("hourly");
                             JSONArray dailyConditions = result.getJSONArray("daily");
 
-                            updateCurrentConditions(currentConditions, minutelyConditions, dailyConditions);
-                            updateHourlyConditions(hourlyConditions);
+                            boolean minutelyAvailable = true;
+                            JSONArray precipConditions = null;
+                            try {
+                                precipConditions = result.getJSONArray("minutely");
+                            } catch (JSONException e) {
+                                precipConditions = hourlyConditions;
+                                minutelyAvailable = false;
+                            }
+
+                            updateCurrentConditions(currentConditions, precipConditions, dailyConditions, minutelyAvailable);
+                            updateCurrentLocation(result);
                             updateDailyConditions(dailyConditions);
+                            updateHourlyConditions(hourlyConditions);
 
                         } catch (JSONException e) {
                             Toast.makeText(MainActivity.this, "Failed to parse weather data.", Toast.LENGTH_SHORT).show();
@@ -190,28 +207,7 @@ public class MainActivity extends AppCompatActivity {
         queue.add(stringRequest);
     }
 
-    private void createAlertMessageNoGps() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("GPS location is disabled, would you like to enable it?")
-                .setCancelable(false)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                    }
-                })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-
-        AlertDialog alert = builder.create();
-        alert.show();
-    }
-
-    private void updateCurrentConditions(JSONObject currentConditions, JSONArray minutelyConditions, JSONArray dailyConditions) {
+    private void updateCurrentConditions(JSONObject currentConditions, JSONArray precipConditions, JSONArray dailyConditions, boolean minutelyAvailable) {
         String icon;
         String temp;
         String tempHighLow;
@@ -227,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
             Utils.currentDate = new Date(epocTime * 1000L);
             Utils.setTimeZone(Utils.currentDate);
         } catch (Exception e) {
-            Toast.makeText(this, "Unable to parse date.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Unable to parse date.", Toast.LENGTH_SHORT).show();
         }
 
         // Parse icon data
@@ -273,7 +269,12 @@ public class MainActivity extends AppCompatActivity {
 
         // Parse current precipitation chance
         try {
-            precip = minutelyConditions.getJSONObject(0).getString("precipitation");
+            if (minutelyAvailable) {
+                precip = precipConditions.getJSONObject(0).getString("precipitation");
+            }
+            else {
+                precip = precipConditions.getJSONObject(0).getString("pop");
+            }
             precip = Utils.roundStringNumberValue(precip) + "%";
         } catch (Exception e) {
             precip = "N/A";
@@ -314,41 +315,34 @@ public class MainActivity extends AppCompatActivity {
         txtWind.setText(wind);
     }
 
-    private void updateHourlyConditions(JSONArray hourlyConditions) {
-        ArrayList<Weather> hourlyWeather = new ArrayList<>();
-
+    private void updateCurrentLocation(JSONObject result) {
         try {
-            for (int i = 0; i < hourlyConditions.length(); i++) {
+            double latitude = result.getDouble("lat");
+            double longitude = result.getDouble("lon");
 
-                JSONObject hourlyCondition = hourlyConditions.getJSONObject(i);
+            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+            List<Address> addressList = geocoder.getFromLocation(latitude, longitude, 1);
 
-                // Parse current date
-                Date date = new Date(hourlyCondition.getInt("dt") * 1000L);
+            Address address = addressList.get(0);
+            String[] addressTokens = address.getAddressLine(0).split(",");
 
-                // Parse current temperature
-                String temperatureCurrent = Utils.roundStringNumberValue(hourlyCondition.getString("temp"));
-
-                // Parse precipitation chance
-                String precipChance = Utils.roundStringNumberValue(hourlyCondition.getString("pop"));
-
-                // TODO add options for metric vs imperial
-                // Parse wind data
-                String windSpeed = Utils.roundStringNumberValue(hourlyCondition.getString("wind_speed"));
-                String windDirection = Utils.convertWindDirection(hourlyCondition.getString("wind_deg"));
-                String windScale = "mph";
-
-                // Parse icon data
-                String icon = Utils.createWeatherIconUrl(hourlyCondition.getJSONArray("weather").getJSONObject(0).getString("icon"));
-
-                // Create new weather object and add to the array list
-                Weather weather = new Weather(i, date, temperatureCurrent, "", "", "",
-                        precipChance, "", windSpeed, windDirection, windScale, "", icon);
-                hourlyWeather.add(weather);
+            String city;
+            String admin;
+            if (addressTokens.length == 4) {
+                city = addressTokens[1].trim();
+                admin = addressTokens[2].replace(address.getPostalCode(), "").trim();
+            } else {
+                city = address.getLocality();
+                if (city == null) {
+                    city = address.getSubAdminArea();
+                }
+                admin = address.getAdminArea();
             }
 
-            hourlyConditionsRecViewAdapter.setHourlyWeather(hourlyWeather);
+            String currentLocation = city + ", " + admin;
+            txtCurrentLocation.setText(currentLocation);
         } catch (Exception e) {
-            Toast.makeText(this, "Failed to parse hourly conditions.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Failed to parse location data", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -389,6 +383,44 @@ public class MainActivity extends AppCompatActivity {
             dailyConditionsRecViewAdapter.setDailyWeather(dailyWeather);
         } catch (Exception e) {
             Toast.makeText(this, "Failed to parse daily conditions.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void updateHourlyConditions(JSONArray hourlyConditions) {
+        ArrayList<Weather> hourlyWeather = new ArrayList<>();
+
+        try {
+            for (int i = 0; i < hourlyConditions.length(); i++) {
+
+                JSONObject hourlyCondition = hourlyConditions.getJSONObject(i);
+
+                // Parse current date
+                Date date = new Date(hourlyCondition.getInt("dt") * 1000L);
+
+                // Parse current temperature
+                String temperatureCurrent = Utils.roundStringNumberValue(hourlyCondition.getString("temp"));
+
+                // Parse precipitation chance
+                String precipChance = Utils.roundStringNumberValue(hourlyCondition.getString("pop"));
+
+                // TODO add options for metric vs imperial
+                // Parse wind data
+                String windSpeed = Utils.roundStringNumberValue(hourlyCondition.getString("wind_speed"));
+                String windDirection = Utils.convertWindDirection(hourlyCondition.getString("wind_deg"));
+                String windScale = "mph";
+
+                // Parse icon data
+                String icon = Utils.createWeatherIconUrl(hourlyCondition.getJSONArray("weather").getJSONObject(0).getString("icon"));
+
+                // Create new weather object and add to the array list
+                Weather weather = new Weather(i, date, temperatureCurrent, "", "", "",
+                        precipChance, "", windSpeed, windDirection, windScale, "", icon);
+                hourlyWeather.add(weather);
+            }
+
+            hourlyConditionsRecViewAdapter.setHourlyWeather(hourlyWeather);
+        } catch (Exception e) {
+            Toast.makeText(this, "Failed to parse hourly conditions.", Toast.LENGTH_SHORT).show();
         }
     }
 
