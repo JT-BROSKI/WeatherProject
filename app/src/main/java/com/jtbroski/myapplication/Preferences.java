@@ -5,35 +5,28 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.provider.Settings;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
 import java.util.function.Consumer;
 
-public class Preferences {
-
-    private static final String PREFERRED_LOCATION_KEY = "preferred_location";
+public class Preferences{
 
     private static Preferences instance;
-    private SharedPreferences sharedPreferences;
+    DatabaseHelper dbHelper;
 
     @RequiresApi(api = Build.VERSION_CODES.R)
     private Preferences(Context context) {
-        sharedPreferences = context.getSharedPreferences("preference_db", Context.MODE_PRIVATE);
-        sharedPreferences.edit().clear().commit();
+        dbHelper = new DatabaseHelper(context);
 
         if (getPreferredLocation() == null) {
             getCurrentLocation(context);
@@ -51,10 +44,7 @@ public class Preferences {
     }
 
     public Location getPreferredLocation() {
-        Gson gson = new Gson();
-        Type type = new TypeToken<Location>() {}.getType();
-        Location preferredLocation = gson.fromJson(sharedPreferences.getString(PREFERRED_LOCATION_KEY, null), type);
-        return preferredLocation;
+        return dbHelper.getPreferredLocation();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.R)
@@ -96,14 +86,6 @@ public class Preferences {
         alert.show();
     }
 
-    public void savePreferredLocation(Location location) {
-        Gson gson = new Gson();
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.remove(PREFERRED_LOCATION_KEY);
-        editor.putString(PREFERRED_LOCATION_KEY, gson.toJson(location));
-        editor.commit();
-    }
-
     @RequiresApi(api = Build.VERSION_CODES.N)
     private class MyConsumer implements Consumer<Location>  {
 
@@ -123,7 +105,10 @@ public class Preferences {
         public void accept(Location location) {
             this.location = location;
             ((MainActivity)context).callWeatherApi(location);
-            Preferences.getInstance(context).savePreferredLocation(location);
+
+            if(!Preferences.getInstance(context).dbHelper.updatePreferredLocation(location)) {
+                Toast.makeText(context, "Unable to save preferred location.", Toast.LENGTH_SHORT).show();
+            }
         }
 
         @Override

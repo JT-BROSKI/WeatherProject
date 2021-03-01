@@ -423,24 +423,4 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Failed to parse hourly conditions.", Toast.LENGTH_SHORT).show();
         }
     }
-
-    private class MyLocationListener implements LocationListener {
-
-        public Location location;
-
-        @Override
-        public void onLocationChanged(@NonNull Location location) {
-            this.location = location;
-        }
-
-        @Override
-        public void onProviderEnabled(@NonNull String provider) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(@NonNull String provider) {
-
-        }
-    }
 }
