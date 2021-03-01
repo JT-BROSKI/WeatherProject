@@ -20,10 +20,15 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
     private static final String TAG = "DailyCondRecViewAdapter";
 
     private Context context;
+    private boolean showPrecipitation;
     private ArrayList<Weather> dailyWeather = new ArrayList<>();
 
     public DailyConditionsRecViewAdapter(Context context) {
         this.context = context;
+    }
+
+    public void setShowPrecipitation(boolean showPrecipitation) {
+        this.showPrecipitation = showPrecipitation;
     }
 
     @NonNull
@@ -71,6 +76,12 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
             holder.txtPrecipChance.setText(precipValue);
         } else {
             holder.txtPrecipChance.setText("");
+        }
+
+        if (showPrecipitation) {
+            holder.txtPrecipChance.setVisibility(View.VISIBLE);
+        } else {
+            holder.txtPrecipChance.setVisibility(View.GONE);
         }
     }
 

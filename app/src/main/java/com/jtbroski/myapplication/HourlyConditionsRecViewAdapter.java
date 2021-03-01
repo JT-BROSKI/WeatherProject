@@ -20,10 +20,16 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
     private static final String TAG = "HrlyCondRecViewAdapter";
 
     private Context context;
+
+    private boolean showPrecipitation;
     private ArrayList<Weather> hourlyWeather = new ArrayList<>();
 
     public HourlyConditionsRecViewAdapter(Context context) {
         this.context = context;
+    }
+
+    public void setShowPrecipitation(boolean showPrecipitation) {
+        this.showPrecipitation = showPrecipitation;
     }
 
     @NonNull
@@ -77,6 +83,12 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
             holder.txtPrecipChance.setText(precipValue);
         } else {
             holder.txtPrecipChance.setText("");
+        }
+
+        if (showPrecipitation) {
+            holder.txtPrecipChance.setVisibility(View.VISIBLE);
+        } else {
+            holder.txtPrecipChance.setVisibility(View.GONE);
         }
     }
 

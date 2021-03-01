@@ -349,6 +349,8 @@ public class MainActivity extends AppCompatActivity {
     private void updateDailyConditions(JSONArray dailyConditions) {
         ArrayList<Weather> dailyWeather = new ArrayList<>();
 
+        boolean hasPrecipitation = false;
+
         try {
             for (int i = 0; i < dailyConditions.length(); i++) {
 
@@ -364,6 +366,9 @@ public class MainActivity extends AppCompatActivity {
 
                 // Parse precipitation chance
                 String precipChance = Utils.roundStringNumberValue(dailyCondition.getString("pop"));
+                if (!precipChance.equals("0")) {
+                    hasPrecipitation = true;
+                }
 
                 // TODO add options for metric vs imperial
                 // Parse wind data
@@ -380,6 +385,7 @@ public class MainActivity extends AppCompatActivity {
                 dailyWeather.add(weather);
             }
 
+            dailyConditionsRecViewAdapter.setShowPrecipitation(hasPrecipitation);
             dailyConditionsRecViewAdapter.setDailyWeather(dailyWeather);
         } catch (Exception e) {
             Toast.makeText(this, "Failed to parse daily conditions.", Toast.LENGTH_SHORT).show();
@@ -388,6 +394,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateHourlyConditions(JSONArray hourlyConditions) {
         ArrayList<Weather> hourlyWeather = new ArrayList<>();
+
+        boolean hasPrecipitation = false;
 
         try {
             for (int i = 0; i < hourlyConditions.length(); i++) {
@@ -402,6 +410,9 @@ public class MainActivity extends AppCompatActivity {
 
                 // Parse precipitation chance
                 String precipChance = Utils.roundStringNumberValue(hourlyCondition.getString("pop"));
+                if (!precipChance.equals("0")) {
+                    hasPrecipitation = true;
+                }
 
                 // TODO add options for metric vs imperial
                 // Parse wind data
@@ -418,6 +429,7 @@ public class MainActivity extends AppCompatActivity {
                 hourlyWeather.add(weather);
             }
 
+            hourlyConditionsRecViewAdapter.setShowPrecipitation(hasPrecipitation);
             hourlyConditionsRecViewAdapter.setHourlyWeather(hourlyWeather);
         } catch (Exception e) {
             Toast.makeText(this, "Failed to parse hourly conditions.", Toast.LENGTH_SHORT).show();
