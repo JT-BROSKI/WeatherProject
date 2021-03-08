@@ -38,6 +38,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.util.Util;
 import com.google.gson.JsonIOException;
 
 import org.json.JSONArray;
@@ -67,11 +68,14 @@ public class MainActivity extends AppCompatActivity {
 
     private RequestQueue queue;
 
+    private DailyConditionsRecViewAdapter dailyConditionsRecViewAdapter;
+    private RecyclerView dailyConditionsRecView;
+
     private HourlyConditionsRecViewAdapter hourlyConditionsRecViewAdapter;
     private RecyclerView hourlyConditionsRecView;
 
-    private DailyConditionsRecViewAdapter dailyConditionsRecViewAdapter;
-    private RecyclerView dailyConditionsRecView;
+    private Geocoder geocoder;
+    private ArrayList<Address> addressList;
 
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
@@ -82,6 +86,12 @@ public class MainActivity extends AppCompatActivity {
         toolbar = findViewById(R.id.tool_bar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        //this.deleteDatabase("preferences.db");  // temporary database reset until full database has been created
+        Utils.getInstance(this);
+
+        geocoder = new Geocoder(this);
+        addressList = new ArrayList<>();
 
         txtCurrentLocation = findViewById(R.id.current_location);
         imgCurrentConditionsImage = findViewById(R.id.current_conditions_image);
@@ -131,7 +141,43 @@ public class MainActivity extends AppCompatActivity {
         };
         menu.findItem(R.id.search_menu).setOnActionExpandListener(onActionExpandListener);
         SearchView searchView = (SearchView) menu.findItem(R.id.search_menu).getActionView();
-        searchView.setQueryHint("Search by zip, city, or state");
+        searchView.setQueryHint("Search by city or zip code");
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                addressList.clear();
+
+                try {
+                    addressList = (ArrayList<Address>) geocoder.getFromLocationName(query, 10);
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Unable to get any locations matching with " + query, Toast.LENGTH_SHORT).show();   //TODO remove this toast once done implementing location searching
+                }
+
+                if (addressList.size() > 0) {
+
+                }
+
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+//                addressList.clear();
+//
+//                try {
+//                    addressList = (ArrayList<Address>) geocoder.getFromLocationName(newText, 10);
+//                } catch (Exception e) {
+//                    Toast.makeText(MainActivity.this, "Unable to get any locations matching with " + newText, Toast.LENGTH_SHORT).show();   //TODO remove this toast once done implementing location searching
+//                }
+//
+//                if (addressList.size() > 0) {
+//
+//                }
+
+                return false;
+            }
+        });
+//        searchView.setSuggestionsAdapter();
 
         return true;
     }

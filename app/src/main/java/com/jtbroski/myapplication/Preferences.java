@@ -22,11 +22,9 @@ import java.util.function.Consumer;
 public class Preferences{
 
     private static Preferences instance;
-    DatabaseHelper dbHelper;
 
     @RequiresApi(api = Build.VERSION_CODES.R)
     private Preferences(Context context) {
-        dbHelper = new DatabaseHelper(context);
 
         if (getPreferredLocation() == null) {
             getCurrentLocation(context);
@@ -44,7 +42,7 @@ public class Preferences{
     }
 
     public Location getPreferredLocation() {
-        return dbHelper.getPreferredLocation();
+        return Utils.dbHelper.getPreferredLocation();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.R)
@@ -106,7 +104,7 @@ public class Preferences{
             this.location = location;
             ((MainActivity)context).callWeatherApi(location);
 
-            if(!Preferences.getInstance(context).dbHelper.updatePreferredLocation(location)) {
+            if(!Utils.getInstance(context).dbHelper.updatePreferredLocation(location)) {
                 Toast.makeText(context, "Unable to save preferred location.", Toast.LENGTH_SHORT).show();
             }
         }
