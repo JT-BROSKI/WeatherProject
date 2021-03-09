@@ -2,27 +2,17 @@ package com.jtbroski.myapplication;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -38,8 +28,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.util.Util;
-import com.google.gson.JsonIOException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -76,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
 
     private Geocoder geocoder;
     private ArrayList<Address> addressList;
+
+    private SearchFilterAdapter searchFilterAdapter;
+    private Cursor citiesFilteredCursor;
 
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
@@ -141,33 +132,17 @@ public class MainActivity extends AppCompatActivity {
         };
         menu.findItem(R.id.search_menu).setOnActionExpandListener(onActionExpandListener);
         SearchView searchView = (SearchView) menu.findItem(R.id.search_menu).getActionView();
+        searchView.setMaxWidth(Integer.MAX_VALUE);
         searchView.setQueryHint("Search by city or zip code");
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                addressList.clear();
-
-                try {
-                    addressList = (ArrayList<Address>) geocoder.getFromLocationName(query, 10);
-                } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Unable to get any locations matching with " + query, Toast.LENGTH_SHORT).show();   //TODO remove this toast once done implementing location searching
-                }
-
-                if (addressList.size() > 0) {
-
-                }
-
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
 //                addressList.clear();
 //
 //                try {
-//                    addressList = (ArrayList<Address>) geocoder.getFromLocationName(newText, 10);
+//                    addressList = (ArrayList<Address>) geocoder.getFromLocationName(query, 10);
 //                } catch (Exception e) {
-//                    Toast.makeText(MainActivity.this, "Unable to get any locations matching with " + newText, Toast.LENGTH_SHORT).show();   //TODO remove this toast once done implementing location searching
+//                    Toast.makeText(MainActivity.this, "Unable to get any locations matching with " + query, Toast.LENGTH_SHORT).show();   //TODO remove this toast once done implementing location searching
 //                }
 //
 //                if (addressList.size() > 0) {
@@ -176,8 +151,18 @@ public class MainActivity extends AppCompatActivity {
 
                 return false;
             }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                citiesFilteredCursor = Utils.dbHelper.getCitiesFilteredCursor(newText);
+                searchFilterAdapter.changeCursor(citiesFilteredCursor);
+
+                return false;
+            }
         });
-//        searchView.setSuggestionsAdapter();
+
+        searchFilterAdapter = new SearchFilterAdapter(this, citiesFilteredCursor, false, searchView);
+        searchView.setSuggestionsAdapter(searchFilterAdapter);
 
         return true;
     }

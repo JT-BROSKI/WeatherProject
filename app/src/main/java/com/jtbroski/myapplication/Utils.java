@@ -21,7 +21,6 @@ public class Utils {
     private static Utils instance;
 
     public static Date currentDate;
-
     public static DatabaseHelper dbHelper;
 
     // Mostly likely remove later unless database querying is significantly slower
@@ -56,7 +55,7 @@ public class Utils {
     private Utils(Context context) {
         dbHelper = new DatabaseHelper(context);
 //        initializeCitiesList();
-//        populateAllCities(context);
+        populateAllCities(context);
     }
 
     public static Utils getInstance(Context content) {
