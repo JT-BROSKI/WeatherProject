@@ -6,18 +6,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
-import android.widget.SearchView;
 import android.widget.TextView;
 
 public class SearchFilterAdapter extends CursorAdapter {
     private Context context;
-    private SearchView searchView;
 
-    public SearchFilterAdapter(Context context, Cursor c, boolean autoRequery, SearchView searchView) {
+    public SearchFilterAdapter(Context context, Cursor c, boolean autoRequery) {
         super(context, c, autoRequery);
 
         this.context = context;
-        this.searchView = searchView;
     }
 
     @Override
@@ -38,7 +35,9 @@ public class SearchFilterAdapter extends CursorAdapter {
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                TextView textView = (TextView)((ViewGroup)v).getChildAt(0);
+                ((MainActivity)context).callWeatherApi(textView.getText().toString());
+                ((MainActivity)context).collapseSearchView();
             }
         });
     }

@@ -8,15 +8,18 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -65,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private Geocoder geocoder;
     private ArrayList<Address> addressList;
 
+    private SearchView searchView;
     private SearchFilterAdapter searchFilterAdapter;
     private Cursor citiesFilteredCursor;
 
@@ -118,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
 
-        // TODO implement location searching
         MenuItem.OnActionExpandListener onActionExpandListener = new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
@@ -130,24 +133,18 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         };
-        menu.findItem(R.id.search_menu).setOnActionExpandListener(onActionExpandListener);
-        SearchView searchView = (SearchView) menu.findItem(R.id.search_menu).getActionView();
+
+        MenuItem searchMenuItem = menu.findItem(R.id.search_menu);
+        searchMenuItem.setOnActionExpandListener(onActionExpandListener);
+
+        searchView = (SearchView) searchMenuItem.getActionView();
         searchView.setMaxWidth(Integer.MAX_VALUE);
         searchView.setQueryHint("Search by city or zip code");
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-//                addressList.clear();
-//
-//                try {
-//                    addressList = (ArrayList<Address>) geocoder.getFromLocationName(query, 10);
-//                } catch (Exception e) {
-//                    Toast.makeText(MainActivity.this, "Unable to get any locations matching with " + query, Toast.LENGTH_SHORT).show();   //TODO remove this toast once done implementing location searching
-//                }
-//
-//                if (addressList.size() > 0) {
-//
-//                }
+                callWeatherApi(query);
+                collapseSearchView();
 
                 return false;
             }
@@ -161,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        searchFilterAdapter = new SearchFilterAdapter(this, citiesFilteredCursor, false, searchView);
+        searchFilterAdapter = new SearchFilterAdapter(this, citiesFilteredCursor, false);
         searchView.setSuggestionsAdapter(searchFilterAdapter);
 
         return true;
@@ -187,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Calls the OpenWeather API and updates all weather conditions
     public void callWeatherApi(Location location) {
         final String API_KEY = "&appid=4ae663188d74e9a952417c9234e8f511";
         final String END_POINT = " https://api.openweathermap.org/data";
@@ -238,6 +236,62 @@ public class MainActivity extends AppCompatActivity {
         queue.add(stringRequest);
     }
 
+    // Creates a Location object based on the string parameter passed in, then executes the callWeatherApi(Location location) function
+    public void callWeatherApi(String location) {
+        addressList.clear();
+
+        try {
+            addressList = (ArrayList<Address>) geocoder.getFromLocationName(location, 10);
+        } catch (Exception e) {
+            Toast.makeText(MainActivity.this, "Unable to get any locations matching with " + location, Toast.LENGTH_SHORT).show();
+        }
+
+        // If more than one address was found,
+        // then create a matrix cursor from the addresses and pass in the new cursor to the search filter adapter
+        // else, then call the weather api with the new location
+        if (addressList.size() > 1) {   // This is primarily to account for domestic and international zip codes, however Geocoder does not seem to be return international zip codes
+            String[] columns = new String[] {"_id", "city", "country"};
+            MatrixCursor matrixCursor = new MatrixCursor(columns);
+
+            for (int i = 0; i < addressList.size(); i++) {
+                Address address = addressList.get(i);
+                String[] addressTokens = address.getAddressLine(0).split(",");
+
+                String city;
+                String admin;
+                if (addressTokens.length == 4) {
+                    city = addressTokens[1].trim();
+                    admin = addressTokens[2].replace(address.getPostalCode(), "").trim();
+                } else {
+                    city = address.getLocality();
+                    if (city == null) {
+                        city = address.getSubAdminArea();
+                    }
+                    admin = address.getAdminArea();
+                }
+
+                matrixCursor.addRow(new String[]{String.valueOf(i), city, admin});
+            }
+            searchFilterAdapter.changeCursor(citiesFilteredCursor);
+
+        } else if (addressList.size() > 0) {
+            Location newLocation = new Location(LocationManager.GPS_PROVIDER);
+            newLocation.setLatitude(addressList.get(0).getLatitude());
+            newLocation.setLongitude(addressList.get(0).getLongitude());
+            callWeatherApi(newLocation);    // TODO potentially implement preferred location saving here
+        }
+    }
+
+    // Collapse the search view and scroll to the top
+    public void collapseSearchView() {
+        searchView.setIconified(true);  // Clears the text within the search view
+        searchView.setIconified(true);  // Collapse the search view and the keyboard
+
+        ScrollView scrollView = findViewById(R.id.scrollView);
+        scrollView.scrollTo(0, 0);
+    }
+
+    // Updates the data within the Current Conditions Material Card View
     private void updateCurrentConditions(JSONObject currentConditions, JSONArray precipConditions, JSONArray dailyConditions, boolean minutelyAvailable) {
         String icon;
         String temp;
@@ -346,6 +400,7 @@ public class MainActivity extends AppCompatActivity {
         txtWind.setText(wind);
     }
 
+    // Updates the location string within the App Bar
     private void updateCurrentLocation(JSONObject result) {
         try {
             double latitude = result.getDouble("lat");
@@ -377,6 +432,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Updates the data within the Daily Conditions Material Card View
     private void updateDailyConditions(JSONArray dailyConditions) {
         ArrayList<Weather> dailyWeather = new ArrayList<>();
 
@@ -423,6 +479,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Updates the data within the Hour Conditions Material Card View
     private void updateHourlyConditions(JSONArray hourlyConditions) {
         ArrayList<Weather> hourlyWeather = new ArrayList<>();
 
