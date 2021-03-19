@@ -64,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
 
     private HourlyConditionsRecViewAdapter hourlyConditionsRecViewAdapter;
     private RecyclerView hourlyConditionsRecView;
+    private JSONArray fullyDayHourlyConditions;
+    private ArrayList<Integer> hoursRecorded;
 
     private Geocoder geocoder;
     private ArrayList<Address> addressList;
@@ -186,54 +188,17 @@ public class MainActivity extends AppCompatActivity {
 
     // Calls the OpenWeather API and updates all weather conditions
     public void callWeatherApi(Location location) {
+        fullyDayHourlyConditions = new JSONArray();
+        hoursRecorded = new ArrayList<>();
+
         final String API_KEY = "&appid=4ae663188d74e9a952417c9234e8f511";
         final String END_POINT = " https://api.openweathermap.org/data";
         final String VERSION = "2.5";
-        final String ONE_CALL = "onecall?";
         final String TEMP_MEASUREMENT = "&units=imperial";
-
         String coordinates = "lat=" + location.getLatitude() + "&lon=" + location.getLongitude();
+        String currentMidnight = Utils.getCurrentDayMidnight();
 
-        String url = END_POINT + "/" + VERSION + "/" + ONE_CALL + coordinates + TEMP_MEASUREMENT + API_KEY;
-
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        try {
-
-                            JSONObject result = new JSONObject(response);
-                            JSONObject currentConditions = result.getJSONObject("current");
-                            JSONArray hourlyConditions = result.getJSONArray("hourly");
-                            JSONArray dailyConditions = result.getJSONArray("daily");
-
-                            boolean minutelyAvailable = true;
-                            JSONArray precipConditions = null;
-                            try {
-                                precipConditions = result.getJSONArray("minutely");
-                            } catch (JSONException e) {
-                                precipConditions = hourlyConditions;
-                                minutelyAvailable = false;
-                            }
-
-                            updateCurrentConditions(currentConditions, precipConditions, dailyConditions, minutelyAvailable);
-                            updateCurrentLocation(result);
-                            updateDailyConditions(dailyConditions);
-                            updateHourlyConditions(hourlyConditions);
-
-                        } catch (JSONException e) {
-                            Toast.makeText(MainActivity.this, "Failed to parse weather data.", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(MainActivity.this, "API call failed", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-        queue.add(stringRequest);
+        queue.add(constructHistoricalStringRequest(currentMidnight, END_POINT, VERSION, coordinates, TEMP_MEASUREMENT, API_KEY));
     }
 
     // Creates a Location object based on the string parameter passed in, then executes the callWeatherApi(Location location) function
@@ -250,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
         // then create a matrix cursor from the addresses and pass in the new cursor to the search filter adapter
         // else, then call the weather api with the new location
         if (addressList.size() > 1) {   // This is primarily to account for domestic and international zip codes, however Geocoder does not seem to be return international zip codes
-            String[] columns = new String[] {"_id", "city", "country"};
+            String[] columns = new String[]{"_id", "city", "country"};
             MatrixCursor matrixCursor = new MatrixCursor(columns);
 
             for (int i = 0; i < addressList.size(); i++) {
@@ -270,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
                     admin = address.getAdminArea();
                 }
 
-                matrixCursor.addRow(new String[]{String.valueOf(i), city, admin});
+                matrixCursor.addRow(new String[]{String.valueOf(i + 1), city, admin});
             }
             searchFilterAdapter.changeCursor(citiesFilteredCursor);
 
@@ -289,6 +254,150 @@ public class MainActivity extends AppCompatActivity {
 
         ScrollView scrollView = findViewById(R.id.scrollView);
         scrollView.scrollTo(0, 0);
+    }
+
+    // Construct the API string request for the current and future weather conditions
+    private StringRequest constructForecastStringRequest(String currentMidnight, String endPoint, String version, String coordinates, String measurement, String apiKey) {
+        final String ONE_CALL = "onecall?";
+        String urlCurrent = endPoint + "/" + version + "/" + ONE_CALL + coordinates + measurement + apiKey;
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, urlCurrent,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+
+                            JSONObject result = new JSONObject(response);
+                            JSONObject currentConditions = result.getJSONObject("current");
+                            JSONArray hourlyConditions = result.getJSONArray("hourly");
+                            JSONArray dailyConditions = result.getJSONArray("daily");
+                            populateFinalFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
+
+                            boolean minutelyAvailable = true;
+                            JSONArray precipConditions = null;
+                            try {
+                                precipConditions = result.getJSONArray("minutely");
+                            } catch (JSONException e) {
+                                precipConditions = hourlyConditions;
+                                minutelyAvailable = false;
+                            }
+
+                            updateCurrentConditions(currentConditions, precipConditions, dailyConditions, minutelyAvailable);
+                            updateCurrentLocation(result);
+                            updateDailyConditions(dailyConditions);
+                            updateHourlyConditions(hourlyConditions);
+
+                        } catch (JSONException e) {
+                            Toast.makeText(MainActivity.this, "Failed to parse current weather data.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(MainActivity.this, "API call failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        return stringRequest;
+    }
+
+    // Construct the string request for past hourly conditions
+    private StringRequest constructHistoricalStringRequest(String currentMidnight, String endPoint, String version, String coordinates, String measurement, String apiKey) {
+        final String HISTORICAL_ONE_CALL = "onecall/timemachine?";
+        String time = "&dt=" + currentMidnight;
+        String urlHistorical = endPoint + "/" + version + "/" + HISTORICAL_ONE_CALL + coordinates + time + measurement + apiKey;
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, urlHistorical,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+
+                            JSONObject result = new JSONObject(response);
+                            JSONArray hourlyConditions = result.getJSONArray("hourly");
+                            populateInitialFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
+
+                            queue.add(constructHistoricalStringRequestBackup(currentMidnight, endPoint, version, coordinates, measurement, apiKey));
+                        } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, "Failed to parse historic weather data.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(MainActivity.this, "API call failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        return stringRequest;
+    }
+
+    // Construct the backup string request for past hourly conditions just in case the normal historical string request missed a few hours
+    private StringRequest constructHistoricalStringRequestBackup(String currentMidnight, String endPoint, String version, String coordinates, String measurement, String apiKey) {
+        final String HISTORICAL_ONE_CALL = "onecall/timemachine?";
+        String timeThreeHours = "&dt=" + Utils.getPreviousThreeHours();
+        String urlPreviousThreeHours = endPoint + "/" + version + "/" + HISTORICAL_ONE_CALL + coordinates + timeThreeHours + measurement + apiKey;
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, urlPreviousThreeHours,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+
+                            JSONObject result = new JSONObject(response);
+                            JSONArray hourlyConditions = result.getJSONArray("hourly");
+                            populateInitialFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
+
+                            queue.add(constructForecastStringRequest(currentMidnight, endPoint, version, coordinates, measurement, apiKey));
+                        } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, "Failed to parse weather data three hours in the past.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(MainActivity.this, "API call failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        return stringRequest;
+    }
+
+    // Populates a JSON array with the current and future hourly conditions
+    private void populateFinalFullDayHourlyConditionsJsonArray(JSONArray hourlyConditions, String currentMidnight) {
+        int currentMidnightTime = Integer.parseInt(currentMidnight);
+
+        try {
+            for (int i = 0; i < hourlyConditions.length(); i++) {
+                JSONObject hourlyCondition = hourlyConditions.getJSONObject(i);
+                int time = hourlyCondition.getInt("dt");
+
+                fullyDayHourlyConditions.put(hourlyCondition);
+                hoursRecorded.add(time);
+            }
+            dailyConditionsRecViewAdapter.sortFullDayHourConditions(fullyDayHourlyConditions, currentMidnightTime);
+        } catch (Exception e) {
+            Toast.makeText(MainActivity.this, "Failed to construct final fully day hourly conditions json array.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Populates a JSON array with the past hourly conditions within the current day
+    private void populateInitialFullDayHourlyConditionsJsonArray(JSONArray hourlyConditions, String currentMidnight) {
+        int currentMidnightTime = Integer.parseInt(currentMidnight);
+
+        try {
+            for (int i = 0; i < hourlyConditions.length(); i++) {
+                JSONObject hourlyCondition = hourlyConditions.getJSONObject(i);
+                int time = hourlyCondition.getInt("dt");
+
+                if (time >= currentMidnightTime && !hoursRecorded.contains(time)) {
+                    fullyDayHourlyConditions.put(hourlyCondition);
+                    hoursRecorded.add(time);
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText(MainActivity.this, "Failed to construct initial fully day hourly conditions json array.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     // Updates the data within the Current Conditions Material Card View
@@ -356,8 +465,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             if (minutelyAvailable) {
                 precip = precipConditions.getJSONObject(0).getString("precipitation");
-            }
-            else {
+            } else {
                 precip = precipConditions.getJSONObject(0).getString("pop");
             }
             precip = Utils.roundStringNumberValue(precip) + "%";

@@ -53,7 +53,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String CITIES_X_TABLE = "CITIES_X_TABLE";
     private static final String CITIES_Y_TABLE = "CITIES_Y_TABLE";
     private static final String CITIES_Z_TABLE = "CITIES_Z_TABLE";
-    private static final String COLUMN_ID = "_id";
     public static final String COLUMN_CITY = "CITY";
     public static final String COLUMN_COUNTRY = "COUNTRY";
 
@@ -68,82 +67,82 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String createPreferredLocationTableStatement = "CREATE TABLE IF NOT EXISTS " + PREFERRED_LOCATION_TABLE + " (" + COLUMN_LATITUDE + " REAL, " + COLUMN_LONGITUDE + " REAL)";
         db.execSQL(createPreferredLocationTableStatement);
 
-        String createCities_A_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_A_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_A_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_A_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_A_TableStatement);
 
-        String createCities_B_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_B_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_B_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_B_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_B_TableStatement);
 
-        String createCities_C_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_C_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_C_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_C_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_C_TableStatement);
 
-        String createCities_D_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_D_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_D_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_D_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_D_TableStatement);
 
-        String createCities_E_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_E_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_E_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_E_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_E_TableStatement);
 
-        String createCities_F_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_F_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_F_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_F_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_F_TableStatement);
 
-        String createCities_G_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_G_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_G_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_G_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_G_TableStatement);
 
-        String createCities_H_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_H_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_H_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_H_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_H_TableStatement);
 
-        String createCities_I_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_I_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_I_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_I_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_I_TableStatement);
 
-        String createCities_J_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_J_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_J_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_J_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_J_TableStatement);
 
-        String createCities_K_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_K_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_K_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_K_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_K_TableStatement);
 
-        String createCities_L_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_L_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_L_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_L_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_L_TableStatement);
 
-        String createCities_M_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_M_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_M_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_M_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_M_TableStatement);
 
-        String createCities_N_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_N_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_N_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_N_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_N_TableStatement);
 
-        String createCities_O_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_O_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_O_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_O_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_O_TableStatement);
 
-        String createCities_P_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_P_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_P_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_P_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_P_TableStatement);
 
-        String createCities_Q_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_Q_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_Q_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_Q_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_Q_TableStatement);
 
-        String createCities_R_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_R_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_R_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_R_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_R_TableStatement);
 
-        String createCities_S_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_S_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_S_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_S_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_S_TableStatement);
 
-        String createCities_T_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_T_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_T_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_T_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_T_TableStatement);
 
-        String createCities_U_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_U_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_U_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_U_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_U_TableStatement);
 
-        String createCities_V_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_V_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
+        String createCities_V_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_V_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " TEXT)";
         db.execSQL(createCities_V_TableStatement);
 
-        String createCities_W_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_W_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " REAL)";
+        String createCities_W_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_W_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " REAL)";
         db.execSQL(createCities_W_TableStatement);
 
-        String createCities_X_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_X_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " REAL)";
+        String createCities_X_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_X_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " REAL)";
         db.execSQL(createCities_X_TableStatement);
 
-        String createCities_Y_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_Y_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " REAL)";
+        String createCities_Y_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_Y_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " REAL)";
         db.execSQL(createCities_Y_TableStatement);
 
-        String createCities_Z_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_Z_TABLE + " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " REAL)";
+        String createCities_Z_TableStatement = "CREATE TABLE IF NOT EXISTS " + CITIES_Z_TABLE + " (" + COLUMN_CITY + " TEXT, " + COLUMN_COUNTRY + " REAL)";
         db.execSQL(createCities_Z_TableStatement);
     }
 
@@ -167,9 +166,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Cursor dbCursor = db.rawQuery(query, null);
 
                 if (dbCursor.moveToFirst()) {
-
+                    int id = 1;
                     do {
-                        matrixCursor.addRow(new String[]{String.valueOf(dbCursor.getInt(0)), dbCursor.getString(1), dbCursor.getString(2)});
+                        matrixCursor.addRow(new String[]{String.valueOf(id), dbCursor.getString(1), dbCursor.getString(2)});
+                        id++;
                     } while (dbCursor.moveToNext());
                 }
                 db.close();

@@ -81,8 +81,10 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
         if (!precipChance.equals("0")) {
             String precipValue = precipChance + "%";
             holder.txtPrecipChance.setText(precipValue);
+            holder.rainDrop.setVisibility(View.VISIBLE);
         } else {
             holder.txtPrecipChance.setText("");
+            holder.rainDrop.setVisibility(View.GONE);
         }
 
         if (showPrecipitation) {
@@ -112,6 +114,7 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
         private TextView txtWindValue;
         private TextView txtWindScale;
         private TextView txtViewDirection;
+        private ImageView rainDrop;
         private TextView txtPrecipChance;
 
         public ViewHolder(@NonNull View itemView) {
@@ -126,6 +129,7 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
             txtWindScale = itemView.findViewById(R.id.wind_scale);
             txtViewDirection = itemView.findViewById(R.id.wind_direction);
             txtPrecipChance = itemView.findViewById(R.id.precip_chance);
+            rainDrop = itemView.findViewById(R.id.rain_drop);
         }
     }
 }

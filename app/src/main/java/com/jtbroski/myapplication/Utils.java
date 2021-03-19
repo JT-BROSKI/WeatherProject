@@ -4,6 +4,7 @@ import android.content.Context;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -70,18 +71,6 @@ public class Utils {
         return prefix + value + suffix;
     }
 
-    public static String roundStringNumberValue(String value) {
-        int roundedValue =  (int)Math.round(Double.parseDouble(value));
-        return String.valueOf(roundedValue);
-    }
-
-    public static boolean isCurrentDay(Date date) {
-        String currentDay = formatDate(currentDate);
-        String compareDay = formatDate(date);
-
-        return currentDay.equals(compareDay);
-    }
-
     public static String formatHour(Date date) {
         return hourFormat.format(date);
     }
@@ -96,6 +85,60 @@ public class Utils {
 
     public static String formatDayHourlyCondition(Date day) {
         return weekDayFormat.format(day);
+    }
+
+    public static String getCurrentDayMidnight() {
+        String time = "";
+
+        LocalDateTime now = LocalDateTime.now();
+        now = now.minusHours(now.getHour());
+        now = now.minusMinutes(now.getMinute());
+        now = now.minusSeconds(now.getSecond());
+        now = now.minusNanos(now.getNano());
+
+        String format = "yyyy-MM-dd'T'HH:mm";
+        SimpleDateFormat formatter = new SimpleDateFormat(format);
+        try {
+            Date previousDayStart = formatter.parse(now.toString());
+            time = String.valueOf(previousDayStart.getTime() / 1000L);
+        } catch (Exception e) {
+
+        }
+
+        return time;
+    }
+
+    public static String getPreviousThreeHours() {
+        String time = "";
+
+        LocalDateTime now = LocalDateTime.now();
+        now = now.minusHours(1);
+        now = now.minusMinutes(now.getMinute());
+        now = now.minusSeconds(now.getSecond());
+        now = now.minusNanos(now.getNano());
+
+        String format = "yyyy-MM-dd'T'HH:mm";
+        SimpleDateFormat formatter = new SimpleDateFormat(format);
+        try {
+            Date previousDayStart = formatter.parse(now.toString());
+            time = String.valueOf(previousDayStart.getTime() / 1000L);
+        } catch (Exception e) {
+
+        }
+
+        return time;
+    }
+
+    public static boolean isCurrentDay(Date date) {
+        String currentDay = formatDate(currentDate);
+        String compareDay = formatDate(date);
+
+        return currentDay.equals(compareDay);
+    }
+
+    public static String roundStringNumberValue(String value) {
+        int roundedValue =  (int)Math.round(Double.parseDouble(value));
+        return String.valueOf(roundedValue);
     }
 
     public static void setTimeZone(Date date) {

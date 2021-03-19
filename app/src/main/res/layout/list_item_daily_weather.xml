@@ -1,77 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="200dp"
     android:layout_height="wrap_content"
-    android:layout_marginStart="10dp"
-    android:layout_marginEnd="10dp"
     android:theme="@style/Theme.UI.Light">
 
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/txt_Date"
+        <RelativeLayout
+            android:id="@+id/detailsLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="20dp"
-            android:text="TDY"/>
+            android:layout_centerHorizontal="true">
+
+            <TextView
+                android:id="@+id/txt_Date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:text="TDY"
+                android:textSize="16sp" />
 
 
-        <ImageView
-            android:id="@+id/img_Icon"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_below="@+id/txt_Date"
-            android:layout_centerHorizontal="true"
-            android:src="@mipmap/ic_launcher"
-            android:layout_marginBottom="10dp"/>
+            <ImageView
+                android:id="@+id/img_Icon"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_below="@+id/txt_Date"
+                android:layout_centerHorizontal="true"
+                android:src="@mipmap/ic_launcher" />
 
-        <TextView
-            android:id="@+id/txt_Temp_Max_Min"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="100&#xb0; | 0&#xb0;"
-            android:layout_below="@+id/img_Icon"
-            android:layout_marginBottom="10dp"/>
+            <TextView
+                android:id="@+id/txt_Temp_Max_Min"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/img_Icon"
+                android:layout_marginBottom="5dp"
+                android:text="100&#xb0; | 0&#xb0;"
+                android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/wind_value"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_below="@+id/txt_Temp_Max_Min"
-            android:text="10"/>
+            <TextView
+                android:id="@+id/wind_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txt_Temp_Max_Min"
+                android:layout_centerHorizontal="true"
+                android:text="10"
+                android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/wind_scale"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_below="@+id/wind_value"
-            android:text="mph"/>
+            <TextView
+                android:id="@+id/wind_scale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/wind_value"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="-5dp"
+                android:layout_marginBottom="-3dp"
+                android:text="mph"
+                android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/wind_direction"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_below="@+id/wind_scale"
-            android:layout_marginBottom="10dp"
-            android:text="(N)"/>
+            <TextView
+                android:id="@+id/wind_direction"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/wind_scale"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="5dp"
+                android:text="(N)"
+                android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/precip_chance"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_below="@+id/wind_direction"
-            android:layout_marginBottom="10dp"
-            android:text="10%"/>
+            <RelativeLayout
+                android:id="@+id/precipitation_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/wind_direction"
+                android:layout_centerHorizontal="true">
 
+                <ImageView
+                    android:id="@+id/rain_drop"
+                    android:layout_width="25dp"
+                    android:layout_height="20dp"
+                    android:layout_marginTop="2dp"
+                    android:src="@drawable/ic_rain_drop" />
+
+                <TextView
+                    android:id="@+id/precip_chance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginStart="2dp"
+                    android:layout_toEndOf="@+id/rain_drop"
+                    android:text="10%"
+                    android:textColor="@color/rain_blue"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/line_Chart"
+            android:layout_width="200dp"
+            android:layout_height="150dp"
+            android:layout_below="@+id/detailsLayout" />
     </RelativeLayout>
+
 
 </com.google.android.material.card.MaterialCardView>

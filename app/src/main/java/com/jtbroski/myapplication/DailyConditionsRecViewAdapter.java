@@ -1,6 +1,8 @@
 package com.jtbroski.myapplication;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,9 +14,19 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyConditionsRecViewAdapter.ViewHolder> {
     private static final String TAG = "DailyCondRecViewAdapter";
@@ -23,12 +35,146 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
     private boolean showPrecipitation;
     private ArrayList<Weather> dailyWeather = new ArrayList<>();
 
+    private int yAxisMax;
+    private int yAxisMin;
+    private int currentHour;
+
+    private ArrayList<Integer> dailyHighs;
+    private ArrayList<Integer> dailyLows;
+    private ArrayList<Integer> hoursRecorded;
+
+    private HashMap<Integer, ArrayList> fullDayHourlyConditions;
+
     public DailyConditionsRecViewAdapter(Context context) {
         this.context = context;
     }
 
     public void setShowPrecipitation(boolean showPrecipitation) {
         this.showPrecipitation = showPrecipitation;
+    }
+
+    public void sortFullDayHourConditions(JSONArray hourlyConditions, int currentMidnight) {
+        dailyHighs = new ArrayList<>();
+        dailyLows = new ArrayList<>();
+        hoursRecorded = new ArrayList<>();
+        fullDayHourlyConditions = new HashMap<>();
+
+        currentHour = LocalDateTime.now().getHour();
+
+        // The following booleans are used to determine when to start calculating the highest and lowest temperature of the respective day
+        boolean firstDayStart = true;
+        boolean secondDayStart = true;
+        boolean thirdDayStart = true;
+
+        // These following highest and lowest temperatures are calculated based on the hourly conditions to compare against the daily conditions values
+        // because the results from the daily values do not always contain the correct min and max temperatures
+        int firstDayHigh = 0;
+        int firstDayLow = 0;
+        int secondDayHigh = 0;
+        int secondDayLow = 0;
+        int thirdDayHigh = 0;
+        int thirdDayLow = 0;
+
+        int firstDayFirstHour = currentMidnight;
+        int firstDayLastHour = firstDayFirstHour + (23 * 3600);
+        int secondDayFirstHour = firstDayLastHour + 3600;
+        int secondDayLastHour = secondDayFirstHour + (23 * 3600);
+
+        int firstDayIndex = 0;
+        int secondDayIndex = 0;
+        int thirdDayIndex = 0;
+        ArrayList<Entry> firstDayHourlyTemperatures = new ArrayList<>();
+        ArrayList<Entry> secondDayHourlyTemperatures = new ArrayList<>();
+        ArrayList<Entry> thirdDayHourlyTemperatures = new ArrayList<>();
+
+        try {
+            for (int i = 0; i < hourlyConditions.length(); i++) {
+                JSONObject hourlyCondition = hourlyConditions.getJSONObject(i);
+                int time = hourlyCondition.getInt("dt");
+                int temperature = (int) Math.round(hourlyCondition.getDouble("temp"));
+
+                // Determine the highest and lowest temperatures within the fullDayHourlyConditions
+                if (i == 0) {
+                    yAxisMax = temperature;
+                    yAxisMin = temperature;
+                } else if (yAxisMax < temperature) {
+                    yAxisMax = temperature;
+                } else if (yAxisMin > temperature) {
+                    yAxisMin = temperature;
+                }
+
+                // Store the hourly temperature to be within its respective 24-hour window
+                if (firstDayFirstHour <= time && time <= firstDayLastHour) {
+                    if (firstDayStart) {
+                        firstDayHigh = temperature;
+                        firstDayLow = temperature;
+                        firstDayStart = false;
+                    } else if (firstDayHigh < temperature) {
+                        firstDayHigh = temperature;
+                    } else if (firstDayLow > temperature) {
+                        firstDayLow = temperature;
+                    }
+
+                    if (!hoursRecorded.contains(time)) {
+                        firstDayHourlyTemperatures.add(new Entry(firstDayIndex, temperature));
+                        firstDayIndex++;
+                    }
+                } else if (secondDayFirstHour <= time && time <= secondDayLastHour) {
+                    if (secondDayStart) {
+                        secondDayHigh = temperature;
+                        secondDayLow = temperature;
+                        secondDayStart = false;
+                    } else if (secondDayHigh < temperature) {
+                        secondDayHigh = temperature;
+                    } else if (secondDayLow > temperature) {
+                        secondDayLow = temperature;
+                    }
+
+                    if (!hoursRecorded.contains(time)) {
+                        secondDayHourlyTemperatures.add(new Entry(secondDayIndex, temperature));
+                        secondDayIndex++;
+                    }
+                } else {
+                    if (thirdDayStart) {
+                        thirdDayHigh = temperature;
+                        thirdDayLow = temperature;
+                        thirdDayStart = false;
+                    } else if (thirdDayHigh < temperature) {
+                        thirdDayHigh = temperature;
+                    } else if (thirdDayLow > temperature) {
+                        thirdDayLow = temperature;
+                    }
+
+                    if (!hoursRecorded.contains(time)) {
+                        thirdDayHourlyTemperatures.add(new Entry(thirdDayIndex, temperature));
+                        thirdDayIndex++;
+                    }
+                }
+                hoursRecorded.add(time);
+            }
+
+            // Increase the y-axis maximum value and decrease the y-axis minimum value for chart
+            int remainder = yAxisMax % 10;
+            yAxisMax += (20 - remainder);
+            remainder = yAxisMin % 10;
+            yAxisMin -= (10 + remainder);
+
+            dailyHighs.add(firstDayHigh);
+            dailyHighs.add(secondDayHigh);
+            dailyLows.add(firstDayLow);
+            dailyLows.add(secondDayLow);
+
+            fullDayHourlyConditions.put(0, firstDayHourlyTemperatures);
+            fullDayHourlyConditions.put(1, secondDayHourlyTemperatures);
+
+            if (thirdDayHourlyTemperatures.size() != 0) {
+                dailyHighs.add(thirdDayHigh);
+                dailyLows.add(thirdDayLow);
+                fullDayHourlyConditions.put(2, thirdDayHourlyTemperatures);
+            }
+        } catch (Exception e) {
+
+        }
     }
 
     @NonNull
@@ -59,8 +205,17 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
                 .into(holder.imgIcon);
 
         // Set high and low temperatures
-        String max = dailyWeather.get(position).getTemperatureMax();
-        String min = dailyWeather.get(position).getTemperatureMin();
+        // If applicable, check if calculated hourly conditions max/min are available
+        String max;
+        String min;
+        if (position >= 0 && position < fullDayHourlyConditions.size()) {
+            max = String.valueOf(dailyHighs.get(position));
+            min = String.valueOf(dailyLows.get(position));
+        } else {
+            max = dailyWeather.get(position).getTemperatureMax();
+            min = dailyWeather.get(position).getTemperatureMin();
+        }
+
         String tempMaxMin = max + "\u00B0" + " | " + min + "\u00B0";
         holder.txtTempMaxMin.setText(tempMaxMin);
 
@@ -74,14 +229,26 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         if (!precipChance.equals("0")) {
             String precipValue = precipChance + "%";
             holder.txtPrecipChance.setText(precipValue);
+            holder.rainDrop.setVisibility(View.VISIBLE);
         } else {
             holder.txtPrecipChance.setText("");
+            holder.rainDrop.setVisibility(View.GONE);
         }
 
+        // Show precipitation value if applicable
         if (showPrecipitation) {
             holder.txtPrecipChance.setVisibility(View.VISIBLE);
         } else {
             holder.txtPrecipChance.setVisibility(View.GONE);
+        }
+
+        // Set line chart values if applicable
+        configureLineChart(holder);
+        if (position >= 0 && position < fullDayHourlyConditions.size()) {
+            holder.lineChart.setData(createLineData(position, fullDayHourlyConditions.get(position), max, min));
+        } else {
+            LineData lineData = new LineData();
+            holder.lineChart.setData(lineData);
         }
     }
 
@@ -95,6 +262,118 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         notifyDataSetChanged();
     }
 
+    private void configureLineChart(ViewHolder holder) {
+        holder.lineChart.setTouchEnabled(false);
+        holder.lineChart.setDragEnabled(false);
+        holder.lineChart.setScaleEnabled(false);
+        holder.lineChart.setPinchZoom(false);
+        holder.lineChart.setDoubleTapToZoomEnabled(false);
+        holder.lineChart.setHighlightPerDragEnabled(false);
+        holder.lineChart.setHighlightPerTapEnabled(false);
+        holder.lineChart.setDescription(null);
+
+        holder.lineChart.getXAxis().setDrawLabels(false);
+        holder.lineChart.getXAxis().setDrawGridLines(false);
+        holder.lineChart.getXAxis().setAxisMaximum(23);
+
+        holder.lineChart.getAxisRight().setEnabled(false);
+
+        holder.lineChart.getAxisLeft().setAxisMaximum(yAxisMax);
+        holder.lineChart.getAxisLeft().setAxisMinimum(yAxisMin);
+        holder.lineChart.getAxisLeft().setAxisLineWidth(0.75f);
+        holder.lineChart.getAxisLeft().setLabelCount(((yAxisMax - yAxisMin) / 10) + 1, true);
+        holder.lineChart.getAxisLeft().setTextSize(14f);
+        holder.lineChart.getAxisLeft().setGridLineWidth(0.75f);
+
+        holder.lineChart.getLegend().setEnabled(false);
+    }
+
+    @SuppressLint("ResourceType")
+    private LineData createLineData(int position, ArrayList<Entry> entries, String hourlyHigh, String hourlyLow) {
+        ArrayList<ILineDataSet> dataSets = new ArrayList<>();
+        boolean highFound = false;
+        boolean lowFound = false;
+
+        float maxTempurature = Float.parseFloat(hourlyHigh);
+        float minTemperature = Float.parseFloat(hourlyLow);
+
+        ArrayList<Entry> nonPeakEntries = new ArrayList<>();
+        for (int i = 0; i < entries.size(); i++) {
+            if (entries.get(i).getY() == maxTempurature && !highFound) {
+                ArrayList<Entry> highPeakEntry = new ArrayList<>();
+                highPeakEntry.add(entries.get(i));
+
+                LineDataSet lineDataSet = new LineDataSet(highPeakEntry, "");
+                lineDataSet.setDrawCircles(true);
+                lineDataSet.setCircleHoleRadius(3f);
+                lineDataSet.setCircleRadius(6f);
+                lineDataSet.setDrawValues(false);
+
+                int color = entries.get(i).getX() < currentHour && position == 0 ?
+                        Color.parseColor(context.getResources().getString(R.color.light_gray)) :
+                        Color.parseColor(context.getResources().getString(R.color.red));
+                lineDataSet.setCircleColor(color);
+
+                dataSets.add(lineDataSet);
+
+                highFound = true;
+                nonPeakEntries.add(entries.get(i));
+            } else if (entries.get(i).getY() == minTemperature && !lowFound) {
+                ArrayList<Entry> lowPeakEntry = new ArrayList<>();
+                lowPeakEntry.add(entries.get(i));
+
+                LineDataSet lineDataSet = new LineDataSet(lowPeakEntry, "");
+                lineDataSet.setDrawCircles(true);
+                lineDataSet.setCircleHoleRadius(3f);
+                lineDataSet.setCircleRadius(6f);
+                lineDataSet.setDrawValues(false);
+
+                int color = entries.get(i).getX() < currentHour && position == 0 ?
+                        Color.parseColor(context.getResources().getString(R.color.light_gray)) :
+                        Color.parseColor(context.getResources().getString(R.color.red));
+                lineDataSet.setCircleColor(color);
+
+                dataSets.add(lineDataSet);
+
+                lowFound = true;
+                nonPeakEntries.add(entries.get(i));
+            } else {
+                nonPeakEntries.add(entries.get(i));
+            }
+        }
+
+        ArrayList<Entry> nonPeakEntriesPast = new ArrayList<>();
+        ArrayList<Entry> nonPeakEntriesFuture = new ArrayList<>();
+        for (Entry entry : nonPeakEntries) {
+            if ((int) entry.getX() < currentHour && position == 0) {
+                nonPeakEntriesPast.add(entry);
+            } else {
+                if ((int) entry.getX() == currentHour) {
+                    nonPeakEntriesPast.add(entry);
+                }
+                nonPeakEntriesFuture.add(entry);
+            }
+        }
+
+        LineDataSet lineDataSetPast = new LineDataSet(nonPeakEntriesPast, "");
+        lineDataSetPast.setDrawCircles(false);
+        lineDataSetPast.setDrawValues(false);
+        lineDataSetPast.setLineWidth(4f);
+        lineDataSetPast.setMode(LineDataSet.Mode.CUBIC_BEZIER);     // this supposedly smooths out the line
+        lineDataSetPast.setColor(Color.parseColor(context.getResources().getString(R.color.light_gray)));
+        dataSets.add(lineDataSetPast);
+
+        LineDataSet lineDataSetFuture = new LineDataSet(nonPeakEntriesFuture, "");
+        lineDataSetFuture.setDrawCircles(false);
+        lineDataSetFuture.setDrawValues(false);
+        lineDataSetFuture.setLineWidth(4f);
+        lineDataSetFuture.setMode(LineDataSet.Mode.CUBIC_BEZIER);   // this supposedly smooths out the line
+        lineDataSetFuture.setColor(Color.parseColor(context.getResources().getString(R.color.red)));
+        dataSets.add(lineDataSetFuture);
+
+        return new LineData(dataSets);
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView txtDate;
@@ -104,6 +383,8 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         private TextView txtWindScale;
         private TextView txtViewDirection;
         private TextView txtPrecipChance;
+        private ImageView rainDrop;
+        private LineChart lineChart;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -115,6 +396,8 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
             txtWindScale = itemView.findViewById(R.id.wind_scale);
             txtViewDirection = itemView.findViewById(R.id.wind_direction);
             txtPrecipChance = itemView.findViewById(R.id.precip_chance);
+            rainDrop = itemView.findViewById(R.id.rain_drop);
+            lineChart = itemView.findViewById(R.id.line_Chart);
         }
     }
 }

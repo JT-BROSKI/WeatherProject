@@ -318,7 +318,8 @@
                         android:layout_marginStart="20dp"
                         android:layout_marginTop="20dp"
                         android:layout_marginBottom="20dp"
-                        android:text="@string/daily_conditions" />
+                        android:text="@string/daily_conditions"
+                        android:textColor="@color/dark_gray" />
 
                     <View
                         android:id="@+id/fourth_divider"
@@ -346,7 +347,8 @@
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:paddingBottom="5dp">
 
                     <TextView
                         android:id="@+id/hourly_conditions_title"
@@ -355,7 +357,8 @@
                         android:layout_marginStart="20dp"
                         android:layout_marginTop="20dp"
                         android:layout_marginBottom="20dp"
-                        android:text="@string/hourly_conditions" />
+                        android:text="@string/hourly_conditions"
+                        android:textColor="@color/dark_gray" />
 
                     <View
                         android:id="@+id/third_divider"
