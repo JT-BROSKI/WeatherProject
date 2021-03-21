@@ -13,10 +13,12 @@ public class Utils {
     private static Utils instance;
 
     public static Date currentDate;
-    public static DatabaseHelper dbHelper;
+    public static LocationDatabaseHelper locationDbHelper;
+    public static PreferenceDatabaseHelper preferenceDbHelper;
 
     private Utils(Context context) {
-        dbHelper = new DatabaseHelper(context);
+        locationDbHelper = new LocationDatabaseHelper(context);
+        preferenceDbHelper = new PreferenceDatabaseHelper(context);
     }
 
     public static Utils getInstance(Context content) {

@@ -1,7 +1,6 @@
 package com.jtbroski.myapplication;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -13,7 +12,6 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -77,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
     private SearchFilterAdapter searchFilterAdapter;
     private Cursor citiesFilteredCursor;
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,7 +84,8 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        //this.deleteDatabase("preferences.db");  // temporary database reset until full database has been created
+//        this.deleteDatabase("locations.db");
+//        this.deleteDatabase("preferences.db");  // temporary database reset until full database has been created
         Utils.getInstance(this);
 
         geocoder = new Geocoder(this);
@@ -115,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
 
         queue = Volley.newRequestQueue(this);
 
-        Location preferredLocation = Preferences.getInstance(this).getPreferredLocation();
+        Location preferredLocation = Utils.preferenceDbHelper.getPreferredLocation();
         if (preferredLocation != null) {
             callWeatherApi(preferredLocation);
         }
@@ -156,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                citiesFilteredCursor = Utils.dbHelper.getCitiesFilteredCursor(newText);
+                citiesFilteredCursor = Utils.locationDbHelper.getCitiesFilteredCursor(newText);
                 searchFilterAdapter.changeCursor(citiesFilteredCursor);
 
                 return false;
@@ -170,7 +168,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // TODO Create menu item activities
-    @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
@@ -178,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
 
             case R.id.my_location_menu:
-                Preferences.getInstance(this).getCurrentLocation(this);
+                Utils.preferenceDbHelper.getCurrentLocation(this);
                 return true;
 
             case R.id.settings_menu:
@@ -392,8 +389,7 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (Exception e) {
             Toast.makeText(this, "Unable to the API key.", Toast.LENGTH_SHORT).show();
-        }
-        finally {
+        } finally {
             try {
                 inputStream.close();
             } catch (Exception e) {

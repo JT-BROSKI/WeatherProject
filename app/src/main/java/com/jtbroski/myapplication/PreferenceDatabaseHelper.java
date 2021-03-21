@@ -2,50 +2,57 @@ package com.jtbroski.myapplication;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.Build;
 import android.provider.Settings;
 import android.widget.Toast;
 
-import androidx.annotation.RequiresApi;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.function.Consumer;
 
-public class Preferences{
+public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
 
-    private static Preferences instance;
+    private static final String PREFERRED_LOCATION_TABLE = "PREFERRED_LOCATION_TABLE";
+    private static final String COLUMN_LATITUDE = "LATITUDE";
+    private static final String COLUMN_LONGITUDE = "LONGITUDE";
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
-    private Preferences(Context context) {
+    public PreferenceDatabaseHelper(@Nullable Context context) {
+        super(context, "preferences.db", null, 1);
+    }
 
-        if (getPreferredLocation() == null) {
-            getCurrentLocation(context);
-        }
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        // Create preferred location table
+        String createPreferredLocationTableStatement = "CREATE TABLE IF NOT EXISTS " + PREFERRED_LOCATION_TABLE + " (" + COLUMN_LATITUDE + " REAL, " + COLUMN_LONGITUDE + " REAL)";
+        db.execSQL(createPreferredLocationTableStatement);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
-    public static Preferences getInstance(Context context) {
-        if (instance == null) {
-            instance = new Preferences(context);
-        }
-
-        return instance;
-    }
-
-    public Location getPreferredLocation() {
-        return Utils.dbHelper.getPreferredLocation();
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.R)
     public void getCurrentLocation(Context context) {   // TODO Potential refactor this to correctly ask and handle location permission access/deny results
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -58,9 +65,48 @@ public class Preferences{
                 ActivityCompat.requestPermissions((Activity)context, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             }
 
-            Consumer<Location> myConsumer = new MyConsumer(context);
+            Consumer<Location> myConsumer = new PreferenceDatabaseHelper.MyConsumer(context);
             locationManager.getCurrentLocation(LocationManager.GPS_PROVIDER, null, context.getMainExecutor(), myConsumer);
         }
+    }
+
+    public Location getPreferredLocation() {
+        Location preferredLocation = null;
+
+        if (hasPreferredLocation()) {
+            String queryString = "SELECT * FROM " + PREFERRED_LOCATION_TABLE;
+            SQLiteDatabase db = this.getReadableDatabase();
+            Cursor cursor = db.rawQuery(queryString, null);
+            cursor.moveToFirst();
+
+            preferredLocation = new Location(LocationManager.GPS_PROVIDER);
+            preferredLocation.setLatitude(cursor.getDouble(0));
+            preferredLocation.setLongitude(cursor.getDouble(1));
+
+            cursor.close();
+            db.close();
+        }
+
+        return preferredLocation;
+    }
+
+    public boolean updatePreferredLocation(Location location) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        cv.put(COLUMN_LATITUDE, location.getLatitude());
+        cv.put(COLUMN_LONGITUDE, location.getLongitude());
+
+        long insert;
+        if (hasPreferredLocation()) {
+            insert = db.update(PREFERRED_LOCATION_TABLE, cv, null, null);
+        }
+        else {
+            insert = db.insert(PREFERRED_LOCATION_TABLE, null, cv);
+        }
+
+        db.close();
+        return insert == 1;
     }
 
     private void createAlertMessageNoGps(Context context) {
@@ -84,8 +130,18 @@ public class Preferences{
         alert.show();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    private class MyConsumer implements Consumer<Location>  {
+    private boolean hasPreferredLocation() {
+        String queryString = "SELECT * FROM " + PREFERRED_LOCATION_TABLE;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(queryString, null);
+
+        boolean hasResults = cursor.moveToFirst();
+        cursor.close();
+
+        return hasResults;
+    }
+
+    private class MyConsumer implements Consumer<Location> {
 
         public Location location;
         private Context context;
@@ -98,13 +154,12 @@ public class Preferences{
             return location;
         }
 
-        @RequiresApi(api = Build.VERSION_CODES.R)
         @Override
         public void accept(Location location) {
             this.location = location;
             ((MainActivity)context).callWeatherApi(location);
 
-            if(!Utils.getInstance(context).dbHelper.updatePreferredLocation(location)) {
+            if(!Utils.getInstance(context).preferenceDbHelper.updatePreferredLocation(location)) {
                 Toast.makeText(context, "Unable to save preferred location.", Toast.LENGTH_SHORT).show();
             }
         }

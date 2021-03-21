@@ -27,8 +27,8 @@ public class SearchFilterAdapter extends CursorAdapter {
     public void bindView(View view, Context context, Cursor cursor) {
         TextView txtSearchSuggestion = view.findViewById(R.id.txt_Search_Suggestion);
 
-        String city = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CITY));
-        String country = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_COUNTRY));
+        String city = cursor.getString(cursor.getColumnIndexOrThrow(LocationDatabaseHelper.COLUMN_CITY));
+        String country = cursor.getString(cursor.getColumnIndexOrThrow(LocationDatabaseHelper.COLUMN_COUNTRY));
         String citySuggestion = city + ", " + country;
         txtSearchSuggestion.setText(citySuggestion);
 
