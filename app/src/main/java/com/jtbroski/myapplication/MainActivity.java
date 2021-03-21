@@ -35,7 +35,10 @@ import com.bumptech.glide.Glide;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserFactory;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -191,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
         fullyDayHourlyConditions = new JSONArray();
         hoursRecorded = new ArrayList<>();
 
-        final String API_KEY = "&appid=4ae663188d74e9a952417c9234e8f511";
+        final String API_KEY = "&appid=" + getApiKey();
         final String END_POINT = " https://api.openweathermap.org/data";
         final String VERSION = "2.5";
         final String TEMP_MEASUREMENT = "&units=imperial";
@@ -361,6 +364,44 @@ public class MainActivity extends AppCompatActivity {
                 });
 
         return stringRequest;
+    }
+
+    // Reads and return the Open Weather Map API key from OpenWeatherMap-Info.xml within assets
+    private String getApiKey() {
+        String apiKey = "";
+        String fileName = "OpenWeatherMap-Info.xml";
+
+        InputStream inputStream = null;
+        try {
+            inputStream = getAssets().open(fileName);
+            XmlPullParserFactory xmlPullParserFactory = XmlPullParserFactory.newInstance();
+            XmlPullParser xmlPullParser = xmlPullParserFactory.newPullParser();
+            xmlPullParser.setInput(inputStream, null);
+
+            int event = xmlPullParser.getEventType();
+            while (event != XmlPullParser.END_DOCUMENT) {
+                String name = xmlPullParser.getName();
+                switch (event) {
+                    case XmlPullParser.START_TAG:
+                        if (name.equals("apiKey")) {
+                            apiKey = xmlPullParser.nextText();
+                        }
+                        break;
+                }
+                event = xmlPullParser.next();
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Unable to the API key.", Toast.LENGTH_SHORT).show();
+        }
+        finally {
+            try {
+                inputStream.close();
+            } catch (Exception e) {
+
+            }
+        }
+
+        return apiKey;
     }
 
     // Populates a JSON array with the current and future hourly conditions
