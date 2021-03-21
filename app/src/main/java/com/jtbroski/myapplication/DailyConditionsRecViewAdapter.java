@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -25,6 +26,7 @@ import org.json.JSONObject;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -244,6 +246,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
 
         // Set line chart values if applicable
         configureLineChart(holder);
+        addLimitLines(holder, dailyWeather.get(position).getSunrise(), dailyWeather.get(position).getSunset());
         if (position >= 0 && position < fullDayHourlyConditions.size()) {
             holder.lineChart.setData(createLineData(position, fullDayHourlyConditions.get(position), max, min));
         } else {
@@ -262,6 +265,64 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         notifyDataSetChanged();
     }
 
+    // Adds limit lines to the x-axis of the line chart to represent the dark hours of the day
+    @SuppressLint("ResourceType")
+    private void addLimitLines(ViewHolder holder, Date sunrise, Date sunset) {
+        Calendar calendar = Calendar.getInstance();
+
+        // Create the sunrise limit lines
+        calendar.setTime(sunrise);
+        int sunriseHour = calendar.get(Calendar.HOUR_OF_DAY);
+        int sunriseMinute = calendar.get(Calendar.MINUTE);
+
+        // Create the first limit line zone and set its width to the maximum value
+        LimitLine lineFirst = new LimitLine(1);
+        lineFirst.setLineWidth(12);
+        lineFirst.setLineColor(Color.parseColor(context.getResources().getString(R.color.lighter_gray)));
+        holder.lineChart.getXAxis().addLimitLine(lineFirst);
+
+        // Create the limit lines between the first line and the actual sunrise line
+        for (int i = 2; i < sunriseHour; i++) {
+            LimitLine ll = new LimitLine(i);
+            ll.setLineWidth(8);
+            ll.setLineColor(Color.parseColor(context.getResources().getString(R.color.lighter_gray)));
+            holder.lineChart.getXAxis().addLimitLine(ll);
+        }
+
+        // Create the actual sunrise limit line
+        float sunriseTime = sunriseHour + (sunriseMinute / 60f) - 0.5f;     // the 0.5f value is an estimate correction due to how the line width is expanded
+        LimitLine sunriseLine = new LimitLine(sunriseTime);
+        sunriseLine.setLineWidth(8);
+        sunriseLine.setLineColor(Color.parseColor(context.getResources().getString(R.color.lighter_gray)));
+        holder.lineChart.getXAxis().addLimitLine(sunriseLine);
+
+        // Create the sunset limit lines
+        calendar.setTime(sunset);
+        int sunsetHour = calendar.get(Calendar.HOUR_OF_DAY);
+        int sunsetMinute = calendar.get(Calendar.MINUTE);
+
+        // Create the limit lines between the sunset line and the last line
+        for (int i = sunsetHour; i < 22; i++) {
+            LimitLine ll = new LimitLine(i);
+            ll.setLineWidth(8);
+            ll.setLineColor(Color.parseColor(context.getResources().getString(R.color.lighter_gray)));
+            holder.lineChart.getXAxis().addLimitLine(ll);
+        }
+
+        // Create the last limit line zone and set its width to the maximum value
+        LimitLine lineLast = new LimitLine(22);
+        lineLast.setLineWidth(12);
+        lineLast.setLineColor(Color.parseColor(context.getResources().getString(R.color.lighter_gray)));
+        holder.lineChart.getXAxis().addLimitLine(lineLast);
+
+        // Create the actual sunset limit line
+        float sunsetTime = sunsetHour + (sunsetMinute / 60f) + 0.5f;    // the 0.5f value is an estimate correction due to how the line width is expanded
+        LimitLine sunsetLine = new LimitLine(sunsetTime);
+        sunsetLine.setLineWidth(8);
+        sunsetLine.setLineColor(Color.parseColor(context.getResources().getString(R.color.lighter_gray)));
+        holder.lineChart.getXAxis().addLimitLine(sunsetLine);
+    }
+
     private void configureLineChart(ViewHolder holder) {
         holder.lineChart.setTouchEnabled(false);
         holder.lineChart.setDragEnabled(false);
@@ -275,6 +336,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         holder.lineChart.getXAxis().setDrawLabels(false);
         holder.lineChart.getXAxis().setDrawGridLines(false);
         holder.lineChart.getXAxis().setAxisMaximum(23);
+        holder.lineChart.getXAxis().setDrawLimitLinesBehindData(true);
 
         holder.lineChart.getAxisRight().setEnabled(false);
 
@@ -284,6 +346,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         holder.lineChart.getAxisLeft().setLabelCount(((yAxisMax - yAxisMin) / 10) + 1, true);
         holder.lineChart.getAxisLeft().setTextSize(14f);
         holder.lineChart.getAxisLeft().setGridLineWidth(0.75f);
+        holder.lineChart.getAxisLeft().setDrawGridLinesBehindData(false);
 
         holder.lineChart.getLegend().setEnabled(false);
     }

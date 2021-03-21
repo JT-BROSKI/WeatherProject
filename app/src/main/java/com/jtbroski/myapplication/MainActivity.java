@@ -554,6 +554,10 @@ public class MainActivity extends AppCompatActivity {
                 // Parse current date
                 Date date = new Date(dailyCondition.getInt("dt") * 1000L);
 
+                // Parse sunrise and sunset date
+                Date sunrise = new Date(dailyCondition.getInt("sunrise") * 1000L);
+                Date sunset = new Date(dailyCondition.getInt("sunset") * 1000l);
+
                 // Parse high and low temperature
                 JSONObject temperature = dailyCondition.getJSONObject("temp");
                 String temperatureMax = Utils.roundStringNumberValue(temperature.getString("max"));
@@ -575,7 +579,7 @@ public class MainActivity extends AppCompatActivity {
                 String icon = Utils.createWeatherIconUrl(dailyCondition.getJSONArray("weather").getJSONObject(0).getString("icon"));
 
                 // Create new weather object and add to the array list
-                Weather weather = new Weather(i, date, "", temperatureMax, temperatureMin, "",
+                Weather weather = new Weather(i, date, sunrise, sunset, "", temperatureMax, temperatureMin, "",
                         precipChance, "", windSpeed, windDirection, windScale, "", icon);
                 dailyWeather.add(weather);
             }
@@ -620,7 +624,7 @@ public class MainActivity extends AppCompatActivity {
                 String icon = Utils.createWeatherIconUrl(hourlyCondition.getJSONArray("weather").getJSONObject(0).getString("icon"));
 
                 // Create new weather object and add to the array list
-                Weather weather = new Weather(i, date, temperatureCurrent, "", "", "",
+                Weather weather = new Weather(i, date, null, null, temperatureCurrent, "", "", "",
                         precipChance, "", windSpeed, windDirection, windScale, "", icon);
                 hourlyWeather.add(weather);
             }

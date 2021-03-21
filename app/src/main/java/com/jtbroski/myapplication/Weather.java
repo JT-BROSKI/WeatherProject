@@ -6,6 +6,8 @@ public class Weather {
 
     private int id;
     private Date date;
+    private Date sunrise;
+    private Date sunset;
     private String temperatureCurrent;
     private String temperatureMax;
     private String temperatureMin;
@@ -18,10 +20,12 @@ public class Weather {
     private String description;
     private String icon;
 
-    public Weather(int id, Date date, String temperatureCurrent, String temperatureMax, String temperatureMin, String feelsLike,
+    public Weather(int id, Date date, Date sunrise, Date sunset, String temperatureCurrent, String temperatureMax, String temperatureMin, String feelsLike,
                    String precipChance, String humidity, String windSpeed, String windDirection, String windScale, String description, String icon) {
         this.id = id;
         this.date = date;
+        this.sunrise = sunrise;
+        this.sunset = sunset;
         this.temperatureCurrent = temperatureCurrent;
         this.temperatureMax = temperatureMax;
         this.temperatureMin = temperatureMin;
@@ -49,6 +53,14 @@ public class Weather {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public Date getSunrise() {
+        return sunrise;
+    }
+
+    public Date getSunset() {
+        return sunset;
     }
 
     public String getTemperatureCurrent() {
