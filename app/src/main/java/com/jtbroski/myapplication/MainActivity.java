@@ -175,12 +175,14 @@ public class MainActivity extends AppCompatActivity {
             newLocation.setLongitude(addressList.get(0).getLongitude());
             callWeatherApi(newLocation);    // TODO potentially implement preferred location saving here
         }
+        else {
+            Toast.makeText(this, "Unable to get any geocoded location data for " + location, Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void resetScrollView() {
         ScrollView scrollView = findViewById(R.id.scrollView);
-        scrollView.setFocusable(true);
-        scrollView.requestFocusFromTouch();
+        scrollView.setFocusable(false);     // this is necessary so that the scroll view contents don't turn dim upon programmatically scrolling
         scrollView.fullScroll(ScrollView.FOCUS_UP);
     }
 
