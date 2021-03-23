@@ -6,27 +6,40 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 public class Utils {
 
     private static Utils instance;
+    private static Context mContext;
 
-    public static Date currentDate;
+    public static Calendar currentDate;
     public static LocationDatabaseHelper locationDbHelper;
     public static PreferenceDatabaseHelper preferenceDbHelper;
+    public static String location;
+    public static String timeZone;
 
     private Utils(Context context) {
         locationDbHelper = new LocationDatabaseHelper(context);
         preferenceDbHelper = new PreferenceDatabaseHelper(context);
+        location = null;
     }
 
-    public static Utils getInstance(Context content) {
+    public static Utils getInstance(Context context) {
         if (instance == null) {
-            instance = new Utils(content);
+            instance = new Utils(context);
+            mContext = context;
         }
 
         return instance;
+    }
+
+    public static Calendar convertUnixTimeToLocalCalendarDate(long unixTime) {
+        Calendar localDate = new GregorianCalendar(TimeZone.getTimeZone(timeZone));
+        localDate.setTimeInMillis(unixTime);
+
+        return localDate;
     }
 
     public static String convertWindDirection(String value) {
@@ -73,20 +86,24 @@ public class Utils {
         return prefix + value + suffix;
     }
 
-    public static String formatHour(Date date) {
-        return hourFormat.format(date);
+    public static String formatHour(Calendar date) {
+        return hourFormat.format(date.getTime());
     }
 
-    public static String formatDate(Date date) {
-        return dateFormat.format(date);
+    public static String formatDate(Calendar date) {
+        return dateFormat.format(date.getTime());
     }
 
-    public static String formatDayDailyCondition(Date date) {
-        return weekDayDateFormat.format(date);
+    public static String formatDayDailyCondition(Calendar date) {
+        return weekDayDateFormat.format(date.getTime());
     }
 
-    public static String formatDayHourlyCondition(Date day) {
-        return weekDayFormat.format(day);
+    public static String formatDayHourlyCondition(Calendar day) {
+        return weekDayFormat.format(day.getTime());
+    }
+
+    public static void forwardToWeatherApiCall(String query) {
+        ((MainActivity)mContext).callWeatherApi(query);
     }
 
     public static String getCurrentDayMidnight() {
@@ -101,8 +118,9 @@ public class Utils {
         String format = "yyyy-MM-dd'T'HH:mm";
         SimpleDateFormat formatter = new SimpleDateFormat(format);
         try {
-            Date previousDayStart = formatter.parse(now.toString());
-            time = String.valueOf(previousDayStart.getTime() / 1000L);
+            Calendar previousDayStart = Calendar.getInstance();
+            previousDayStart.setTime(formatter.parse(now.toString()));
+            time = String.valueOf(previousDayStart.getTimeInMillis() / 1000L);
         } catch (Exception e) {
 
         }
@@ -122,8 +140,9 @@ public class Utils {
         String format = "yyyy-MM-dd'T'HH:mm";
         SimpleDateFormat formatter = new SimpleDateFormat(format);
         try {
-            Date previousDayStart = formatter.parse(now.toString());
-            time = String.valueOf(previousDayStart.getTime() / 1000L);
+            Calendar previousDayStart = Calendar.getInstance();
+            previousDayStart.setTime(formatter.parse(now.toString()));
+            time = String.valueOf(previousDayStart.getTimeInMillis() / 1000L);
         } catch (Exception e) {
 
         }
@@ -131,7 +150,7 @@ public class Utils {
         return time;
     }
 
-    public static boolean isCurrentDay(Date date) {
+    public static boolean isCurrentDay(Calendar date) {
         String currentDay = formatDate(currentDate);
         String compareDay = formatDate(date);
 
@@ -143,15 +162,13 @@ public class Utils {
         return String.valueOf(roundedValue);
     }
 
-    public static void setTimeZone(Date date) {
-        calendar.setTime(date);
-        hourFormat.setTimeZone(calendar.getTimeZone());
-        dateFormat.setTimeZone(calendar.getTimeZone());
-        weekDayFormat.setTimeZone(calendar.getTimeZone());
-        weekDayDateFormat.setTimeZone(calendar.getTimeZone());
+    public static void setTimeZone(Calendar date) {
+        hourFormat.setTimeZone(date.getTimeZone());
+        dateFormat.setTimeZone(date.getTimeZone());
+        weekDayFormat.setTimeZone(date.getTimeZone());
+        weekDayDateFormat.setTimeZone(date.getTimeZone());
     }
 
-    private static Calendar calendar = Calendar.getInstance();
     private static DateFormat hourFormat = new SimpleDateFormat("h a");
     private static DateFormat dateFormat = new SimpleDateFormat("M/dd");
     private static DateFormat weekDayFormat = new SimpleDateFormat("EEE");

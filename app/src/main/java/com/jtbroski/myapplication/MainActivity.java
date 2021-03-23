@@ -6,8 +6,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.database.Cursor;
-import android.database.MatrixCursor;
+import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -18,7 +17,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.ScrollView;
-import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,7 +36,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -71,10 +69,6 @@ public class MainActivity extends AppCompatActivity {
     private Geocoder geocoder;
     private ArrayList<Address> addressList;
 
-    private SearchView searchView;
-    private SearchFilterAdapter searchFilterAdapter;
-    private Cursor citiesFilteredCursor;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,11 +99,13 @@ public class MainActivity extends AppCompatActivity {
         hourlyConditionsRecView = findViewById(R.id.hourly_conditions_recycler_view);
         hourlyConditionsRecView.setAdapter(hourlyConditionsRecViewAdapter);
         hourlyConditionsRecView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        hourlyConditionsRecView.setFocusable(false);    // this is set to false so that it does not mess with the scroll view's scroll position upon updated its data
 
         dailyConditionsRecViewAdapter = new DailyConditionsRecViewAdapter(this);
         dailyConditionsRecView = findViewById(R.id.daily_conditions_recycler_view);
         dailyConditionsRecView.setAdapter(dailyConditionsRecViewAdapter);
         dailyConditionsRecView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        dailyConditionsRecView.setFocusable(false);     // this is set to false so that it does not mess with the scroll view's scroll position upon updated its data
 
         queue = Volley.newRequestQueue(this);
 
@@ -117,53 +113,12 @@ public class MainActivity extends AppCompatActivity {
         if (preferredLocation != null) {
             callWeatherApi(preferredLocation);
         }
-
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
-
-        MenuItem.OnActionExpandListener onActionExpandListener = new MenuItem.OnActionExpandListener() {
-            @Override
-            public boolean onMenuItemActionExpand(MenuItem item) {
-                return false;
-            }
-
-            @Override
-            public boolean onMenuItemActionCollapse(MenuItem item) {
-                return false;
-            }
-        };
-
-        MenuItem searchMenuItem = menu.findItem(R.id.search_menu);
-        searchMenuItem.setOnActionExpandListener(onActionExpandListener);
-
-        searchView = (SearchView) searchMenuItem.getActionView();
-        searchView.setMaxWidth(Integer.MAX_VALUE);
-        searchView.setQueryHint("Search by city or zip code");
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                callWeatherApi(query);
-                collapseSearchView();
-
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                citiesFilteredCursor = Utils.locationDbHelper.getCitiesFilteredCursor(newText);
-                searchFilterAdapter.changeCursor(citiesFilteredCursor);
-
-                return false;
-            }
-        });
-
-        searchFilterAdapter = new SearchFilterAdapter(this, citiesFilteredCursor, false);
-        searchView.setSuggestionsAdapter(searchFilterAdapter);
-
         return true;
     }
 
@@ -172,9 +127,12 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.search_menu:
+                Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+                startActivity(intent);
                 return true;
 
             case R.id.my_location_menu:
+                Utils.location = null;
                 Utils.preferenceDbHelper.getCurrentLocation(this);
                 return true;
 
@@ -211,35 +169,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this, "Unable to get any locations matching with " + location, Toast.LENGTH_SHORT).show();
         }
 
-        // If more than one address was found,
-        // then create a matrix cursor from the addresses and pass in the new cursor to the search filter adapter
-        // else, then call the weather api with the new location
-        if (addressList.size() > 1) {   // This is primarily to account for domestic and international zip codes, however Geocoder does not seem to be return international zip codes
-            String[] columns = new String[]{"_id", "city", "country"};
-            MatrixCursor matrixCursor = new MatrixCursor(columns);
-
-            for (int i = 0; i < addressList.size(); i++) {
-                Address address = addressList.get(i);
-                String[] addressTokens = address.getAddressLine(0).split(",");
-
-                String city;
-                String admin;
-                if (addressTokens.length == 4) {
-                    city = addressTokens[1].trim();
-                    admin = addressTokens[2].replace(address.getPostalCode(), "").trim();
-                } else {
-                    city = address.getLocality();
-                    if (city == null) {
-                        city = address.getSubAdminArea();
-                    }
-                    admin = address.getAdminArea();
-                }
-
-                matrixCursor.addRow(new String[]{String.valueOf(i + 1), city, admin});
-            }
-            searchFilterAdapter.changeCursor(citiesFilteredCursor);
-
-        } else if (addressList.size() > 0) {
+        if (addressList.size() > 0) {
             Location newLocation = new Location(LocationManager.GPS_PROVIDER);
             newLocation.setLatitude(addressList.get(0).getLatitude());
             newLocation.setLongitude(addressList.get(0).getLongitude());
@@ -247,13 +177,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Collapse the search view and scroll to the top
-    public void collapseSearchView() {
-        searchView.setIconified(true);  // Clears the text within the search view
-        searchView.setIconified(true);  // Collapse the search view and the keyboard
-
+    public void resetScrollView() {
         ScrollView scrollView = findViewById(R.id.scrollView);
-        scrollView.scrollTo(0, 0);
+        scrollView.setFocusable(true);
+        scrollView.requestFocusFromTouch();
+        scrollView.fullScroll(ScrollView.FOCUS_UP);
     }
 
     // Construct the API string request for the current and future weather conditions
@@ -270,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
                             JSONObject currentConditions = result.getJSONObject("current");
                             JSONArray hourlyConditions = result.getJSONArray("hourly");
                             JSONArray dailyConditions = result.getJSONArray("daily");
+                            parseCurrentTimeZone(result);
                             populateFinalFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
 
                             boolean minutelyAvailable = true;
@@ -288,6 +217,8 @@ public class MainActivity extends AppCompatActivity {
 
                         } catch (JSONException e) {
                             Toast.makeText(MainActivity.this, "Failed to parse current weather data.", Toast.LENGTH_SHORT).show();
+                        } finally {
+                            resetScrollView();
                         }
                     }
                 },
@@ -400,6 +331,15 @@ public class MainActivity extends AppCompatActivity {
         return apiKey;
     }
 
+    // Parse the current time zone of the weather data
+    private void parseCurrentTimeZone(JSONObject data) {
+        try {
+            Utils.timeZone = data.getString("timezone");
+        } catch (Exception e) {
+            Toast.makeText(this, "Unable to parse the current time zone.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     // Populates a JSON array with the current and future hourly conditions
     private void populateFinalFullDayHourlyConditionsJsonArray(JSONArray hourlyConditions, String currentMidnight) {
         int currentMidnightTime = Integer.parseInt(currentMidnight);
@@ -450,8 +390,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Parse current date and set current time zone
         try {
-            int epocTime = currentConditions.getInt("dt");
-            Utils.currentDate = new Date(epocTime * 1000L);
+            Utils.currentDate = Utils.convertUnixTimeToLocalCalendarDate(currentConditions.getInt("dt") * 1000L);
             Utils.setTimeZone(Utils.currentDate);
         } catch (Exception e) {
             Toast.makeText(this, "Unable to parse date.", Toast.LENGTH_SHORT).show();
@@ -499,12 +438,20 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Parse current precipitation chance
+        int precipChance;
         try {
             if (minutelyAvailable) {
-                precip = precipConditions.getJSONObject(0).getString("precipitation");
+                int chance = 0;
+                for (int i = 0; i < 30; i++) {
+                    double precipitation = precipConditions.getJSONObject(i).getDouble("precipitation");
+                    if (precipitation > 0)
+                        chance++;
+                }
+                precipChance = (int)Math.round(chance / 30.0 * 100);
             } else {
-                precip = precipConditions.getJSONObject(0).getString("pop");
+                precipChance = (int) (precipConditions.getJSONObject(0).getDouble("pop") * 100);
             }
+            precip = String.valueOf(precipChance);
             precip = Utils.roundStringNumberValue(precip) + "%";
         } catch (Exception e) {
             precip = "N/A";
@@ -552,7 +499,8 @@ public class MainActivity extends AppCompatActivity {
             double longitude = result.getDouble("lon");
 
             Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-            List<Address> addressList = geocoder.getFromLocation(latitude, longitude, 1);
+            List<Address> addressList = Utils.location == null ? geocoder.getFromLocation(latitude, longitude, 1) :
+                                                                 geocoder.getFromLocationName(Utils.location, 1);
 
             Address address = addressList.get(0);
             String[] addressTokens = address.getAddressLine(0).split(",");
@@ -567,7 +515,16 @@ public class MainActivity extends AppCompatActivity {
                 if (city == null) {
                     city = address.getSubAdminArea();
                 }
+
                 admin = address.getAdminArea();
+                if (admin == null) {
+                    admin = address.getCountryName();
+                }
+
+                if (city == null && admin != null) {
+                    city = address.getAdminArea();
+                    admin = address.getCountryName();
+                }
             }
 
             String currentLocation = city + ", " + admin;
@@ -589,11 +546,11 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject dailyCondition = dailyConditions.getJSONObject(i);
 
                 // Parse current date
-                Date date = new Date(dailyCondition.getInt("dt") * 1000L);
+                Calendar date = Utils.convertUnixTimeToLocalCalendarDate(dailyCondition.getInt("dt") * 1000L);
 
                 // Parse sunrise and sunset date
-                Date sunrise = new Date(dailyCondition.getInt("sunrise") * 1000L);
-                Date sunset = new Date(dailyCondition.getInt("sunset") * 1000l);
+                Calendar sunrise = Utils.convertUnixTimeToLocalCalendarDate(dailyCondition.getInt("sunrise") * 1000L);
+                Calendar sunset = Utils.convertUnixTimeToLocalCalendarDate(dailyCondition.getInt("sunset") * 1000l);
 
                 // Parse high and low temperature
                 JSONObject temperature = dailyCondition.getJSONObject("temp");
@@ -601,8 +558,9 @@ public class MainActivity extends AppCompatActivity {
                 String temperatureMin = Utils.roundStringNumberValue(temperature.getString("min"));
 
                 // Parse precipitation chance
-                String precipChance = Utils.roundStringNumberValue(dailyCondition.getString("pop"));
-                if (!precipChance.equals("0")) {
+                int precipChance = (int) (dailyCondition.getDouble("pop") * 100);
+                String precipChanceString = String.valueOf(precipChance);
+                if (!precipChanceString.equals("0")) {
                     hasPrecipitation = true;
                 }
 
@@ -617,7 +575,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Create new weather object and add to the array list
                 Weather weather = new Weather(i, date, sunrise, sunset, "", temperatureMax, temperatureMin, "",
-                        precipChance, "", windSpeed, windDirection, windScale, "", icon);
+                        precipChanceString, "", windSpeed, windDirection, windScale, "", icon);
                 dailyWeather.add(weather);
             }
 
@@ -640,14 +598,15 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject hourlyCondition = hourlyConditions.getJSONObject(i);
 
                 // Parse current date
-                Date date = new Date(hourlyCondition.getInt("dt") * 1000L);
+                Calendar date = Utils.convertUnixTimeToLocalCalendarDate(hourlyCondition.getInt("dt") * 1000L);
 
                 // Parse current temperature
                 String temperatureCurrent = Utils.roundStringNumberValue(hourlyCondition.getString("temp"));
 
                 // Parse precipitation chance
-                String precipChance = Utils.roundStringNumberValue(hourlyCondition.getString("pop"));
-                if (!precipChance.equals("0")) {
+                int precipChance = (int) (hourlyCondition.getDouble("pop") * 100);
+                String precipChanceString = String.valueOf(precipChance);
+                if (!precipChanceString.equals("0")) {
                     hasPrecipitation = true;
                 }
 
@@ -662,7 +621,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Create new weather object and add to the array list
                 Weather weather = new Weather(i, date, null, null, temperatureCurrent, "", "", "",
-                        precipChance, "", windSpeed, windDirection, windScale, "", icon);
+                        precipChanceString, "", windSpeed, windDirection, windScale, "", icon);
                 hourlyWeather.add(weather);
             }
 

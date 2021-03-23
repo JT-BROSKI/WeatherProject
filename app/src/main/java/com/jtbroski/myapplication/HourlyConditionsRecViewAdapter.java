@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Calendar;
 
 public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyConditionsRecViewAdapter.ViewHolder>{
     private static final String TAG = "HrlyCondRecViewAdapter";
@@ -43,7 +43,7 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder: Called");
 
-        Date date = hourlyWeather.get(position).getDate();
+        Calendar date = hourlyWeather.get(position).getDate();
 
         // Set week day
         if (Utils.isCurrentDay(date)) {

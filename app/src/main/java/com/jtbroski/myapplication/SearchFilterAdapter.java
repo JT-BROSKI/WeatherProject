@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 
+import androidx.core.app.ComponentActivity;
+
 public class SearchFilterAdapter extends CursorAdapter {
     private Context context;
 
@@ -15,6 +17,7 @@ public class SearchFilterAdapter extends CursorAdapter {
         super(context, c, autoRequery);
 
         this.context = context;
+
     }
 
     @Override
@@ -36,8 +39,11 @@ public class SearchFilterAdapter extends CursorAdapter {
             @Override
             public void onClick(View v) {
                 TextView textView = (TextView)((ViewGroup)v).getChildAt(0);
-                ((MainActivity)context).callWeatherApi(textView.getText().toString());
-                ((MainActivity)context).collapseSearchView();
+                String location = textView.getText().toString();
+
+                Utils.location = location;
+                Utils.forwardToWeatherApiCall(location);
+                ((ComponentActivity)context).onBackPressed();
             }
         });
     }

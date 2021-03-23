@@ -3,9 +3,7 @@
     package="com.jtbroski.myapplication">
 
     <uses-permission android:name="android.permission.INTERNET" />
-
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
@@ -15,6 +13,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.WeatherProject">
+        <activity android:name=".SearchActivity"></activity>
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait">

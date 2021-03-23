@@ -27,7 +27,6 @@ import org.json.JSONObject;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 
 public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyConditionsRecViewAdapter.ViewHolder> {
@@ -190,7 +189,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder: Called");
 
-        Date date = dailyWeather.get(position).getDate();
+        Calendar date = dailyWeather.get(position).getDate();
 
         // Set date
         if (Utils.isCurrentDay(date)) {
@@ -267,13 +266,11 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
 
     // Adds limit lines to the x-axis of the line chart to represent the dark hours of the day
     @SuppressLint("ResourceType")
-    private void addLimitLines(ViewHolder holder, Date sunrise, Date sunset) {
-        Calendar calendar = Calendar.getInstance();
+    private void addLimitLines(ViewHolder holder, Calendar sunrise, Calendar sunset) {
 
         // Create the sunrise limit lines
-        calendar.setTime(sunrise);
-        int sunriseHour = calendar.get(Calendar.HOUR_OF_DAY);
-        int sunriseMinute = calendar.get(Calendar.MINUTE);
+        int sunriseHour = sunrise.get(Calendar.HOUR_OF_DAY);
+        int sunriseMinute = sunrise.get(Calendar.MINUTE);
 
         // Create the first limit line zone and set its width to the maximum value
         LimitLine lineFirst = new LimitLine(1);
@@ -297,9 +294,8 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         holder.lineChart.getXAxis().addLimitLine(sunriseLine);
 
         // Create the sunset limit lines
-        calendar.setTime(sunset);
-        int sunsetHour = calendar.get(Calendar.HOUR_OF_DAY);
-        int sunsetMinute = calendar.get(Calendar.MINUTE);
+        int sunsetHour = sunset.get(Calendar.HOUR_OF_DAY);
+        int sunsetMinute = sunset.get(Calendar.MINUTE);
 
         // Create the limit lines between the sunset line and the last line
         for (int i = sunsetHour; i < 22; i++) {

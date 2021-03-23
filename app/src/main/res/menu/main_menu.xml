@@ -6,8 +6,7 @@
         android:id="@+id/search_menu"
         android:icon="@drawable/ic_search"
         android:title="@string/search_title"
-        app:showAsAction="always"
-        app:actionViewClass="android.widget.SearchView" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/my_location_menu"
