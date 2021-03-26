@@ -13,4 +13,6 @@
     <string name="search_title">Search</string>
     <string name="my_location_title">My Location</string>
     <string name="settings_title">Settings</string>
+    <string name="imperial">Imperial</string>
+    <string name="metric">Metric</string>
 </resources>

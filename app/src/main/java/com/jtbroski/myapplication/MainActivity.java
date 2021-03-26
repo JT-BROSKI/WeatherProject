@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView imgCurrentConditionsImage;
 
     private TextView txtCurrentTemperature;
+    private TextView txtCurrentTemperatureScale;
     private TextView txtCurrentTemperatureHighLow;
     private TextView txtCurrentConditionsDescription;
     private TextView txtFeelsLike;
@@ -69,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
     private Geocoder geocoder;
     private ArrayList<Address> addressList;
 
+    private boolean isImperial;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
         txtCurrentLocation = findViewById(R.id.current_location);
         imgCurrentConditionsImage = findViewById(R.id.current_conditions_image);
         txtCurrentTemperature = findViewById(R.id.current_temperature);
+        txtCurrentTemperatureScale = findViewById(R.id.temperature_scale);
         txtCurrentTemperatureHighLow = findViewById(R.id.current_temperature_high_low);
         txtCurrentConditionsDescription = findViewById(R.id.current_conditions_description);
         txtFeelsLike = findViewById(R.id.feels_like);
@@ -99,13 +103,13 @@ public class MainActivity extends AppCompatActivity {
         hourlyConditionsRecView = findViewById(R.id.hourly_conditions_recycler_view);
         hourlyConditionsRecView.setAdapter(hourlyConditionsRecViewAdapter);
         hourlyConditionsRecView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        hourlyConditionsRecView.setFocusable(false);    // this is set to false so that it does not mess with the scroll view's scroll position upon updated its data
+        hourlyConditionsRecView.setFocusable(false);    // this is set to false so that it does not mess with the scroll view's scroll position upon updating its data
 
         dailyConditionsRecViewAdapter = new DailyConditionsRecViewAdapter(this);
         dailyConditionsRecView = findViewById(R.id.daily_conditions_recycler_view);
         dailyConditionsRecView.setAdapter(dailyConditionsRecViewAdapter);
         dailyConditionsRecView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        dailyConditionsRecView.setFocusable(false);     // this is set to false so that it does not mess with the scroll view's scroll position upon updated its data
+        dailyConditionsRecView.setFocusable(false);     // this is set to false so that it does not mess with the scroll view's scroll position upon updating its data
 
         queue = Volley.newRequestQueue(this);
 
@@ -122,21 +126,22 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    // TODO Create menu item activities
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.search_menu:
-                Intent intent = new Intent(MainActivity.this, SearchActivity.class);
-                startActivity(intent);
+                Intent searchIntent = new Intent(MainActivity.this, SearchActivity.class);
+                startActivity(searchIntent);
                 return true;
 
             case R.id.my_location_menu:
-                Utils.location = null;
-                Utils.preferenceDbHelper.getCurrentLocation(this);
+                Utils.locationName = null;
+                Utils.preferenceDbHelper.getCurrentLocation();
                 return true;
 
             case R.id.settings_menu:
+                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(settingsIntent);
                 return true;
 
             default:
@@ -148,11 +153,12 @@ public class MainActivity extends AppCompatActivity {
     public void callWeatherApi(Location location) {
         fullyDayHourlyConditions = new JSONArray();
         hoursRecorded = new ArrayList<>();
+        isImperial = Utils.preferenceDbHelper.getImperialFlag();
 
         final String API_KEY = "&appid=" + getApiKey();
         final String END_POINT = " https://api.openweathermap.org/data";
         final String VERSION = "2.5";
-        final String TEMP_MEASUREMENT = "&units=imperial";
+        final String TEMP_MEASUREMENT = "&units=" + (isImperial ? "imperial" : "metric");
         String coordinates = "lat=" + location.getLatitude() + "&lon=" + location.getLongitude();
         String currentMidnight = Utils.getCurrentDayMidnight();
 
@@ -200,8 +206,10 @@ public class MainActivity extends AppCompatActivity {
                             JSONObject currentConditions = result.getJSONObject("current");
                             JSONArray hourlyConditions = result.getJSONArray("hourly");
                             JSONArray dailyConditions = result.getJSONArray("daily");
+
                             parseCurrentTimeZone(result);
                             populateFinalFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
+                            Utils.updateLastQueriedLocation(result);
 
                             boolean minutelyAvailable = true;
                             JSONArray precipConditions = null;
@@ -470,9 +478,9 @@ public class MainActivity extends AppCompatActivity {
         try {
             String windSpeed = Utils.roundStringNumberValue(currentConditions.getString("wind_speed"));
             String windDirection = Utils.convertWindDirection(currentConditions.getString("wind_deg"));
+            String units = isImperial ? "mph" : "kph";
 
-            // TODO add options for metric vs imperial
-            wind = windSpeed + " mph " + windDirection;
+            wind = windSpeed + " " + units + " " + windDirection;
         } catch (Exception e) {
             wind = "N/A";
         }
@@ -486,6 +494,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Load current conditions
         txtCurrentTemperature.setText(temp);
+        txtCurrentTemperatureScale.setText(isImperial ? "F" : "C");
         txtCurrentTemperatureHighLow.setText(tempHighLow);
         txtCurrentConditionsDescription.setText(description);
         txtFeelsLike.setText(feelsLike);
@@ -501,8 +510,8 @@ public class MainActivity extends AppCompatActivity {
             double longitude = result.getDouble("lon");
 
             Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-            List<Address> addressList = Utils.location == null ? geocoder.getFromLocation(latitude, longitude, 1) :
-                                                                 geocoder.getFromLocationName(Utils.location, 1);
+            List<Address> addressList = Utils.locationName == null ? geocoder.getFromLocation(latitude, longitude, 1) :
+                                                                 geocoder.getFromLocationName(Utils.locationName, 1);
 
             Address address = addressList.get(0);
             String[] addressTokens = address.getAddressLine(0).split(",");
@@ -566,11 +575,10 @@ public class MainActivity extends AppCompatActivity {
                     hasPrecipitation = true;
                 }
 
-                // TODO add options for metric vs imperial
                 // Parse wind data
                 String windSpeed = Utils.roundStringNumberValue(dailyCondition.getString("wind_speed"));
                 String windDirection = Utils.convertWindDirection(dailyCondition.getString("wind_deg"));
-                String windScale = "mph";
+                String windScale = isImperial ? "mph" : "kph";
 
                 // Parse icon data
                 String icon = Utils.createWeatherIconUrl(dailyCondition.getJSONArray("weather").getJSONObject(0).getString("icon"));
@@ -612,11 +620,10 @@ public class MainActivity extends AppCompatActivity {
                     hasPrecipitation = true;
                 }
 
-                // TODO add options for metric vs imperial
                 // Parse wind data
                 String windSpeed = Utils.roundStringNumberValue(hourlyCondition.getString("wind_speed"));
                 String windDirection = Utils.convertWindDirection(hourlyCondition.getString("wind_deg"));
-                String windScale = "mph";
+                String windScale = isImperial ? "mph" : "kph";
 
                 // Parse icon data
                 String icon = Utils.createWeatherIconUrl(hourlyCondition.getJSONArray("weather").getJSONObject(0).getString("icon"));

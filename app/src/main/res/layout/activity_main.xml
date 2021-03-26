@@ -28,7 +28,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:text="City, ST"
                 android:textAlignment="center"
                 android:textSize="20sp"
                 android:theme="@style/Theme.UI.Dark" />
@@ -95,7 +94,6 @@
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="@+id/guideline"
@@ -114,7 +112,6 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_centerHorizontal="true"
-                                    android:text="50"
                                     android:textSize="50sp"
                                     app:layout_constraintBottom_toBottomOf="parent"
                                     app:layout_constraintEnd_toEndOf="parent"
@@ -135,7 +132,6 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginBottom="10dp"
-                                    android:text="@string/temperature_scale_fahrenheit"
                                     app:layout_constraintBottom_toBottomOf="@+id/current_temperature"
                                     app:layout_constraintEnd_toEndOf="@+id/degree"
                                     app:layout_constraintStart_toEndOf="@+id/current_temperature" />
@@ -147,7 +143,6 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_centerHorizontal="true"
-                                android:text="100&#xb0; | 0&#xb0;"
                                 android:textSize="16sp"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintEnd_toEndOf="@+id/current_temperature_value_layout"
@@ -178,7 +173,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_centerHorizontal="true"
-                            android:text="Current Weather Description"
                             android:textSize="20sp"
                             android:textStyle="bold"
                             android:theme="@style/Theme.UI.Light"
@@ -192,7 +186,6 @@
                             android:layout_height="wrap_content"
                             android:layout_below="@+id/current_conditions_description"
                             android:layout_centerHorizontal="true"
-                            android:text="Feels like"
                             app:layout_constraintEnd_toEndOf="@+id/current_conditions_description"
                             app:layout_constraintStart_toStartOf="@+id/current_conditions_description"
                             app:layout_constraintTop_toBottomOf="@+id/current_conditions_description" />
@@ -225,7 +218,6 @@
                                 android:id="@+id/precipitation_value"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="4%"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toTopOf="parent" />
@@ -252,7 +244,6 @@
                                 android:id="@+id/humidity_value"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="40%"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toTopOf="parent" />
@@ -278,7 +269,6 @@
                                 android:id="@+id/wind_data"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="10 mph (N)"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toTopOf="parent" />
@@ -299,7 +289,6 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!--        TODO Make a temperature graph-->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/daily_conditions_card_view"
                 android:layout_width="match_parent"

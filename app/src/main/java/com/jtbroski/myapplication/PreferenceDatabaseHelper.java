@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.MatrixCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
@@ -21,14 +20,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.function.Consumer;
 
 public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
@@ -37,8 +28,19 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_LATITUDE = "LATITUDE";
     private static final String COLUMN_LONGITUDE = "LONGITUDE";
 
+    private static final String SETTINGS_TABLE = "SETTINGS_TABLE";
+    private static final String COLUMN_SETTINGS = "SETTINGS";
+    private static final String COLUMN_FLAG = "FLAG";
+
+    private static final String IN_IMPERIAL = "IN_IMPERIAL";
+    private static final String DARK_THEME = "DARK_THEME";
+
+    private Context context;
+
     public PreferenceDatabaseHelper(@Nullable Context context) {
         super(context, "preferences.db", null, 1);
+        this.context = context;
+        initializeDatabase();
     }
 
     @Override
@@ -46,6 +48,10 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
         // Create preferred location table
         String createPreferredLocationTableStatement = "CREATE TABLE IF NOT EXISTS " + PREFERRED_LOCATION_TABLE + " (" + COLUMN_LATITUDE + " REAL, " + COLUMN_LONGITUDE + " REAL)";
         db.execSQL(createPreferredLocationTableStatement);
+
+        // Create settings table
+        String createSettingsTableStatment = "CREATE TABLE IF NOT EXISTS " + SETTINGS_TABLE + " (" + COLUMN_SETTINGS + " TEXT, " + COLUMN_FLAG + " BOOL)";
+        db.execSQL(createSettingsTableStatment);
     }
 
     @Override
@@ -53,21 +59,35 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public void getCurrentLocation(Context context) {   // TODO Potential refactor this to correctly ask and handle location permission access/deny results
+    public void getCurrentLocation() {   // TODO Potential refactor this to correctly ask and handle location permission access/deny results
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            createAlertMessageNoGps(context);
+            createAlertMessageNoGps();
         } else {
             int permissionCheck = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
 
             if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
                 // ask permissions here using below code
-                ActivityCompat.requestPermissions((Activity)context, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             }
 
             Consumer<Location> myConsumer = new PreferenceDatabaseHelper.MyConsumer(context);
             locationManager.getCurrentLocation(LocationManager.GPS_PROVIDER, null, context.getMainExecutor(), myConsumer);
         }
+    }
+
+    public boolean getImperialFlag() {
+        SQLiteDatabase db = getReadableDatabase();
+        String queryString = "SELECT " +  COLUMN_FLAG + " FROM " + SETTINGS_TABLE + " WHERE " + COLUMN_SETTINGS + " LIKE '" + IN_IMPERIAL + "'";
+        Cursor cursor = db.rawQuery(queryString, null);
+        cursor.moveToFirst();
+
+        boolean flag = cursor.getInt(0) == 1;
+
+        db.close();
+        cursor.close();
+
+        return flag;
     }
 
     public Location getPreferredLocation() {
@@ -100,8 +120,7 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
         long insert;
         if (hasPreferredLocation()) {
             insert = db.update(PREFERRED_LOCATION_TABLE, cv, null, null);
-        }
-        else {
+        } else {
             insert = db.insert(PREFERRED_LOCATION_TABLE, null, cv);
         }
 
@@ -109,7 +128,18 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
         return insert == 1;
     }
 
-    private void createAlertMessageNoGps(Context context) {
+    public void updateImperialFlag(boolean flag) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        cv.put(COLUMN_SETTINGS, IN_IMPERIAL);
+        cv.put(COLUMN_FLAG, flag);
+        db.update(SETTINGS_TABLE, cv, COLUMN_SETTINGS + " = ?", new String[] {IN_IMPERIAL});
+
+        db.close();
+    }
+
+    private void createAlertMessageNoGps() {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage("GPS location is disabled, would you like to enable it?")
                 .setCancelable(false)
@@ -141,6 +171,47 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
         return hasResults;
     }
 
+    private boolean hasSettings() {
+        String queryString = "SELECT * FROM " + SETTINGS_TABLE;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(queryString, null);
+
+        boolean hasResults = cursor.moveToFirst();
+        cursor.close();
+
+        return hasResults;
+    }
+
+    // Initializes the database and if applicable add the data to the tables
+    private void initializeDatabase() {
+        if (!hasPreferredLocation()) {
+            getCurrentLocation();
+        }
+
+        if (!hasSettings()) {
+            setSettingsToDefaults();
+        }
+    }
+
+    // Set the settings to defaults (use imperial units and light theme)
+    private void setSettingsToDefaults() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Add the units settings to the table
+        ContentValues unitsCv = new ContentValues();
+        unitsCv.put(COLUMN_SETTINGS, IN_IMPERIAL);
+        unitsCv.put(COLUMN_FLAG, true);
+        db.insert(SETTINGS_TABLE, null, unitsCv);
+
+        // Add the theme settings to the table
+        ContentValues themeCv = new ContentValues();
+        themeCv.put(COLUMN_SETTINGS, DARK_THEME);
+        themeCv.put(COLUMN_FLAG, false);
+        db.insert(SETTINGS_TABLE, null, themeCv);
+
+        db.close();
+    }
+
     private class MyConsumer implements Consumer<Location> {
 
         public Location location;
@@ -157,9 +228,9 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
         @Override
         public void accept(Location location) {
             this.location = location;
-            ((MainActivity)context).callWeatherApi(location);
+            ((MainActivity) context).callWeatherApi(location);
 
-            if(!Utils.getInstance(context).preferenceDbHelper.updatePreferredLocation(location)) {
+            if (!Utils.getInstance(context).preferenceDbHelper.updatePreferredLocation(location)) {
                 Toast.makeText(context, "Unable to save preferred location.", Toast.LENGTH_SHORT).show();
             }
         }

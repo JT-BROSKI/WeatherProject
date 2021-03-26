@@ -39,6 +39,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/img_Icon"
                 android:layout_marginBottom="5dp"
+                android:layout_centerHorizontal="true"
                 android:text="100&#xb0; | 0&#xb0;"
                 android:textSize="16sp" />
 

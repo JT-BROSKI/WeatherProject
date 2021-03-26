@@ -74,7 +74,7 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
 
             if (table != null) {
                 SQLiteDatabase db = this.getWritableDatabase();
-                String query = "SELECT * FROM " + table + " WHERE " + COLUMN_CITY + " LIKE " + "'" + text + "%'";
+                String query = "SELECT * FROM " + table + " WHERE " + COLUMN_CITY + " LIKE '" + text + "%'";
                 Cursor dbCursor = db.rawQuery(query, null);
 
                 if (dbCursor.moveToFirst()) {
@@ -85,6 +85,7 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
                     } while (dbCursor.moveToNext());
                 }
                 db.close();
+                dbCursor.close();
             }
         }
 
@@ -114,7 +115,7 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
                 outputStream.close();
                 inputStream.close();
             } catch (Exception e) {
-
+                Toast.makeText(context, "Failed to close input/output stream.", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -215,5 +216,6 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
             copyDatabase();
         }
         db.close();
+        dbCursor.close();
     }
 }

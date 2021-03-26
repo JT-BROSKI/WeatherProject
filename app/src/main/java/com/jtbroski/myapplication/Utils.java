@@ -1,6 +1,10 @@
 package com.jtbroski.myapplication;
 
 import android.content.Context;
+import android.location.Location;
+import android.widget.Toast;
+
+import org.json.JSONObject;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -17,13 +21,15 @@ public class Utils {
     public static Calendar currentDate;
     public static LocationDatabaseHelper locationDbHelper;
     public static PreferenceDatabaseHelper preferenceDbHelper;
-    public static String location;
+    public static Location lastQueriedLocation;
+    public static String locationName;      // Used as a reference for updating the current location based on what the geocoder finds
     public static String timeZone;
 
     private Utils(Context context) {
         locationDbHelper = new LocationDatabaseHelper(context);
         preferenceDbHelper = new PreferenceDatabaseHelper(context);
-        location = null;
+        lastQueriedLocation = new Location("");
+        locationName = null;
     }
 
     public static Utils getInstance(Context context) {
@@ -122,7 +128,7 @@ public class Utils {
             previousDayStart.setTime(formatter.parse(now.toString()));
             time = String.valueOf(previousDayStart.getTimeInMillis() / 1000L);
         } catch (Exception e) {
-
+            Toast.makeText(mContext, "Failed to parse local date time for current midnight calendar object.", Toast.LENGTH_SHORT).show();
         }
 
         return time;
@@ -144,7 +150,7 @@ public class Utils {
             previousDayStart.setTime(formatter.parse(now.toString()));
             time = String.valueOf(previousDayStart.getTimeInMillis() / 1000L);
         } catch (Exception e) {
-
+            Toast.makeText(mContext, "Failed to parse local date time for previous three hour calendar object.", Toast.LENGTH_SHORT).show();
         }
 
         return time;
@@ -157,6 +163,10 @@ public class Utils {
         return currentDay.equals(compareDay);
     }
 
+    public static void refreshMainActivity() {
+        ((MainActivity)mContext).callWeatherApi(lastQueriedLocation);
+    }
+
     public static String roundStringNumberValue(String value) {
         int roundedValue =  (int)Math.round(Double.parseDouble(value));
         return String.valueOf(roundedValue);
@@ -167,6 +177,15 @@ public class Utils {
         dateFormat.setTimeZone(date.getTimeZone());
         weekDayFormat.setTimeZone(date.getTimeZone());
         weekDayDateFormat.setTimeZone(date.getTimeZone());
+    }
+
+    public static void updateLastQueriedLocation(JSONObject data) {
+        try {
+            lastQueriedLocation.setLatitude(data.getDouble("lat"));
+            lastQueriedLocation.setLongitude(data.getDouble("lon"));
+        } catch (Exception e) {
+            Toast.makeText(mContext, "Unable to update last queried location.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private static DateFormat hourFormat = new SimpleDateFormat("h a");

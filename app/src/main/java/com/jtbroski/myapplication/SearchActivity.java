@@ -60,7 +60,7 @@ public class SearchActivity extends AppCompatActivity {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     String location = textView.getText().toString();
 
-                    Utils.location = location;
+                    Utils.locationName = location;
                     Utils.forwardToWeatherApiCall(location);
                     onBackPressed();
                 }

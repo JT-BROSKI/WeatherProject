@@ -17,7 +17,6 @@ public class SearchFilterAdapter extends CursorAdapter {
         super(context, c, autoRequery);
 
         this.context = context;
-
     }
 
     @Override
@@ -41,7 +40,7 @@ public class SearchFilterAdapter extends CursorAdapter {
                 TextView textView = (TextView)((ViewGroup)v).getChildAt(0);
                 String location = textView.getText().toString();
 
-                Utils.location = location;
+                Utils.locationName = location;
                 Utils.forwardToWeatherApiCall(location);
                 ((ComponentActivity)context).onBackPressed();
             }
