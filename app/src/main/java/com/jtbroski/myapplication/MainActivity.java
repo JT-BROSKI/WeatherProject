@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Intent;
 import android.location.Address;
@@ -67,6 +68,8 @@ public class MainActivity extends AppCompatActivity {
     private JSONArray fullyDayHourlyConditions;
     private ArrayList<Integer> hoursRecorded;
 
+    private SwipeRefreshLayout swipeRefreshLayout;
+
     private Geocoder geocoder;
     private ArrayList<Address> addressList;
 
@@ -110,6 +113,14 @@ public class MainActivity extends AppCompatActivity {
         dailyConditionsRecView.setAdapter(dailyConditionsRecViewAdapter);
         dailyConditionsRecView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         dailyConditionsRecView.setFocusable(false);     // this is set to false so that it does not mess with the scroll view's scroll position upon updating its data
+
+        swipeRefreshLayout = findViewById(R.id.pullDownRefresh);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                callWeatherApi(Utils.lastQueriedLocation);
+            }
+        });
 
         queue = Volley.newRequestQueue(this);
 
@@ -201,6 +212,9 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(String response) {
                         try {
+                            if (swipeRefreshLayout.isRefreshing()) {
+                                swipeRefreshLayout.setRefreshing(false);
+                            }
 
                             JSONObject result = new JSONObject(response);
                             JSONObject currentConditions = result.getJSONObject("current");
