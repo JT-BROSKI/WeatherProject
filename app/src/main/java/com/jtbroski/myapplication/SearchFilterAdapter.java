@@ -1,7 +1,9 @@
 package com.jtbroski.myapplication;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +27,7 @@ public class SearchFilterAdapter extends CursorAdapter {
         return view;
     }
 
+    @SuppressLint("ResourceType")
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         TextView txtSearchSuggestion = view.findViewById(R.id.txt_Search_Suggestion);
@@ -34,15 +37,25 @@ public class SearchFilterAdapter extends CursorAdapter {
         String citySuggestion = city + ", " + country;
         txtSearchSuggestion.setText(citySuggestion);
 
+        // For some reason list_item_search_suggestion will not use its designated attribute values for its background and text color
+        // So we have to manually set it here
+        if (Utils.preferenceDbHelper.getDarkThemeFlag()) {
+            txtSearchSuggestion.setBackgroundColor(Color.parseColor(context.getResources().getString(R.color.dark_gray1)));
+            txtSearchSuggestion.setTextColor(Color.parseColor(context.getResources().getString(R.color.light_gray1)));
+        } else {
+            txtSearchSuggestion.setBackgroundColor(Color.parseColor(context.getResources().getString(R.color.white)));
+            txtSearchSuggestion.setTextColor(Color.parseColor(context.getResources().getString(R.color.black)));
+        }
+
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TextView textView = (TextView)((ViewGroup)v).getChildAt(0);
+                TextView textView = (TextView) ((ViewGroup) v).getChildAt(0);
                 String location = textView.getText().toString();
 
                 Utils.locationName = location;
                 Utils.forwardToWeatherApiCall(location);
-                ((ComponentActivity)context).onBackPressed();
+                ((ComponentActivity) context).onBackPressed();
             }
         });
     }

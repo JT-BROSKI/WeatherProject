@@ -104,7 +104,7 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
 
             int length;
             byte[] buffer = new byte[1024];
-            while ((length = inputStream.read(buffer)) > 0 ) {
+            while ((length = inputStream.read(buffer)) > 0) {
                 outputStream.write(buffer, 0, length);
             }
         } catch (Exception e) {
@@ -206,7 +206,7 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Populate the locations database, if applicable
-    private  void populateDatabase() {
+    private void populateDatabase() {
         SQLiteDatabase db = getWritableDatabase();
 
         String query = "SELECT name FROM sqlite_master WHERE type='table' AND name='" + CITIES_A_TABLE + "'";

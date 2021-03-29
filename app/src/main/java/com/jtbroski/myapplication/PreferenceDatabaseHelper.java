@@ -76,9 +76,23 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    public boolean getDarkThemeFlag() {
+        SQLiteDatabase db = getReadableDatabase();
+        String queryString = "SELECT " + COLUMN_FLAG + " FROM " + SETTINGS_TABLE + " WHERE " + COLUMN_SETTINGS + " LIKE '" + DARK_THEME + "'";
+        Cursor cursor = db.rawQuery(queryString, null);
+        cursor.moveToFirst();
+
+        boolean flag = cursor.getInt(0) == 1;
+
+        db.close();
+        cursor.close();
+
+        return flag;
+    }
+
     public boolean getImperialFlag() {
         SQLiteDatabase db = getReadableDatabase();
-        String queryString = "SELECT " +  COLUMN_FLAG + " FROM " + SETTINGS_TABLE + " WHERE " + COLUMN_SETTINGS + " LIKE '" + IN_IMPERIAL + "'";
+        String queryString = "SELECT " + COLUMN_FLAG + " FROM " + SETTINGS_TABLE + " WHERE " + COLUMN_SETTINGS + " LIKE '" + IN_IMPERIAL + "'";
         Cursor cursor = db.rawQuery(queryString, null);
         cursor.moveToFirst();
 
@@ -134,7 +148,18 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
 
         cv.put(COLUMN_SETTINGS, IN_IMPERIAL);
         cv.put(COLUMN_FLAG, flag);
-        db.update(SETTINGS_TABLE, cv, COLUMN_SETTINGS + " = ?", new String[] {IN_IMPERIAL});
+        db.update(SETTINGS_TABLE, cv, COLUMN_SETTINGS + " = ?", new String[]{IN_IMPERIAL});
+
+        db.close();
+    }
+
+    public void updateDarkThemeFlag(boolean flag) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        cv.put(COLUMN_SETTINGS, DARK_THEME);
+        cv.put(COLUMN_FLAG, flag);
+        db.update(SETTINGS_TABLE, cv, COLUMN_SETTINGS + " = ?", new String[]{DARK_THEME});
 
         db.close();
     }

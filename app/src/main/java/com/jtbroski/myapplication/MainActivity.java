@@ -1,7 +1,7 @@
 package com.jtbroski.myapplication;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,9 +13,8 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -77,20 +76,45 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        toolbar = findViewById(R.id.tool_bar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-
-//        this.deleteDatabase("locations.db");
 //        this.deleteDatabase("preferences.db");  // temporary database reset until full database has been created
         Utils.getInstance(this);
+        updateTheme(Utils.preferenceDbHelper.getDarkThemeFlag());
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
         geocoder = new Geocoder(this);
         addressList = new ArrayList<>();
 
+        // Toolbar Image Buttons
+        ImageButton searchButton = findViewById(R.id.btn_search);
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent searchIntent = new Intent(MainActivity.this, SearchActivity.class);
+                startActivity(searchIntent);
+            }
+        });
+
+        ImageButton myLocationButton = findViewById(R.id.btn_myLocation);
+        myLocationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Utils.locationName = null;
+                Utils.preferenceDbHelper.getCurrentLocation();
+            }
+        });
+
+        ImageButton settingsButton = findViewById(R.id.btn_settings);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(settingsIntent);
+            }
+        });
+
+        // Current Conditions Material Card View
         txtCurrentLocation = findViewById(R.id.current_location);
         imgCurrentConditionsImage = findViewById(R.id.current_conditions_image);
         txtCurrentTemperature = findViewById(R.id.current_temperature);
@@ -102,18 +126,21 @@ public class MainActivity extends AppCompatActivity {
         txtHumidity = findViewById(R.id.humidity_value);
         txtWind = findViewById(R.id.wind_data);
 
+        // Hourly Conditions Material Card View
         hourlyConditionsRecViewAdapter = new HourlyConditionsRecViewAdapter(this);
         hourlyConditionsRecView = findViewById(R.id.hourly_conditions_recycler_view);
         hourlyConditionsRecView.setAdapter(hourlyConditionsRecViewAdapter);
         hourlyConditionsRecView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         hourlyConditionsRecView.setFocusable(false);    // this is set to false so that it does not mess with the scroll view's scroll position upon updating its data
 
+        // Daily Conditions Material Card View
         dailyConditionsRecViewAdapter = new DailyConditionsRecViewAdapter(this);
         dailyConditionsRecView = findViewById(R.id.daily_conditions_recycler_view);
         dailyConditionsRecView.setAdapter(dailyConditionsRecViewAdapter);
         dailyConditionsRecView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         dailyConditionsRecView.setFocusable(false);     // this is set to false so that it does not mess with the scroll view's scroll position upon updating its data
 
+        // Pull Down Swipe Layout
         swipeRefreshLayout = findViewById(R.id.pullDownRefresh);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -127,36 +154,6 @@ public class MainActivity extends AppCompatActivity {
         Location preferredLocation = Utils.preferenceDbHelper.getPreferredLocation();
         if (preferredLocation != null) {
             callWeatherApi(preferredLocation);
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.search_menu:
-                Intent searchIntent = new Intent(MainActivity.this, SearchActivity.class);
-                startActivity(searchIntent);
-                return true;
-
-            case R.id.my_location_menu:
-                Utils.locationName = null;
-                Utils.preferenceDbHelper.getCurrentLocation();
-                return true;
-
-            case R.id.settings_menu:
-                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
-                startActivity(settingsIntent);
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -191,8 +188,7 @@ public class MainActivity extends AppCompatActivity {
             newLocation.setLatitude(addressList.get(0).getLatitude());
             newLocation.setLongitude(addressList.get(0).getLongitude());
             callWeatherApi(newLocation);    // TODO potentially implement preferred location saving here
-        }
-        else {
+        } else {
             Toast.makeText(this, "Unable to get any geocoded location data for " + location, Toast.LENGTH_SHORT).show();
         }
     }
@@ -348,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 inputStream.close();
             } catch (Exception e) {
-
+                Toast.makeText(this, "Failed to close input stream.", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -471,7 +467,7 @@ public class MainActivity extends AppCompatActivity {
                     if (precipitation > 0)
                         chance++;
                 }
-                precipChance = (int)Math.round(chance / 30.0 * 100);
+                precipChance = (int) Math.round(chance / 30.0 * 100);
             } else {
                 precipChance = (int) (precipConditions.getJSONObject(0).getDouble("pop") * 100);
             }
@@ -525,7 +521,7 @@ public class MainActivity extends AppCompatActivity {
 
             Geocoder geocoder = new Geocoder(this, Locale.getDefault());
             List<Address> addressList = Utils.locationName == null ? geocoder.getFromLocation(latitude, longitude, 1) :
-                                                                 geocoder.getFromLocationName(Utils.locationName, 1);
+                                                                     geocoder.getFromLocationName(Utils.locationName, 1);
 
             Address address = addressList.get(0);
             String[] addressTokens = address.getAddressLine(0).split(",");
@@ -575,7 +571,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Parse sunrise and sunset date
                 Calendar sunrise = Utils.convertUnixTimeToLocalCalendarDate(dailyCondition.getInt("sunrise") * 1000L);
-                Calendar sunset = Utils.convertUnixTimeToLocalCalendarDate(dailyCondition.getInt("sunset") * 1000l);
+                Calendar sunset = Utils.convertUnixTimeToLocalCalendarDate(dailyCondition.getInt("sunset") * 1000L);
 
                 // Parse high and low temperature
                 JSONObject temperature = dailyCondition.getJSONObject("temp");
@@ -652,6 +648,16 @@ public class MainActivity extends AppCompatActivity {
             hourlyConditionsRecViewAdapter.setHourlyWeather(hourlyWeather);
         } catch (Exception e) {
             Toast.makeText(this, "Failed to parse hourly conditions.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void updateTheme(boolean isDark) {
+        if (isDark) {
+            setTheme(R.style.Theme_UI_Dark);
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            setTheme(R.style.Theme_UI_Light);
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
     }
 }

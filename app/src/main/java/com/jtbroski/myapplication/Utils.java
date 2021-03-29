@@ -51,36 +51,21 @@ public class Utils {
     public static String convertWindDirection(String value) {
         int valueInt = Integer.parseInt(value);
 
-        if (valueInt <= 22 || valueInt >= 338)
-        {
+        if (valueInt <= 22 || valueInt >= 338) {
             return "(N)";
-        }
-        else if (valueInt > 22 && valueInt < 68)
-        {
+        } else if (valueInt > 22 && valueInt < 68) {
             return "(NE)";
-        }
-        else if (valueInt >= 68 && valueInt <= 121)
-        {
+        } else if (valueInt >= 68 && valueInt <= 121) {
             return "(E)";
-        }
-        else if (valueInt > 121 && valueInt < 158)
-        {
+        } else if (valueInt > 121 && valueInt < 158) {
             return "(SE)";
-        }
-        else if (valueInt >= 158 && valueInt <= 202)
-        {
+        } else if (valueInt >= 158 && valueInt <= 202) {
             return "(S)";
-        }
-        else if (valueInt > 202 && valueInt < 248)
-        {
+        } else if (valueInt > 202 && valueInt < 248) {
             return "(SW)";
-        }
-        else if (valueInt >= 248 && valueInt <= 292)
-        {
+        } else if (valueInt >= 248 && valueInt <= 292) {
             return "(W)";
-        }
-        else
-        {
+        } else {
             return "(NW)";
         }
     }
@@ -109,7 +94,7 @@ public class Utils {
     }
 
     public static void forwardToWeatherApiCall(String query) {
-        ((MainActivity)mContext).callWeatherApi(query);
+        ((MainActivity) mContext).callWeatherApi(query);
     }
 
     public static String getCurrentDayMidnight() {
@@ -164,11 +149,11 @@ public class Utils {
     }
 
     public static void refreshMainActivity() {
-        ((MainActivity)mContext).callWeatherApi(lastQueriedLocation);
+        ((MainActivity) mContext).callWeatherApi(lastQueriedLocation);
     }
 
     public static String roundStringNumberValue(String value) {
-        int roundedValue =  (int)Math.round(Double.parseDouble(value));
+        int roundedValue = (int) Math.round(Double.parseDouble(value));
         return String.valueOf(roundedValue);
     }
 

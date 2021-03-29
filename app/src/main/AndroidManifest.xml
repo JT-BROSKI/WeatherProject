@@ -13,8 +13,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.WeatherProject">
-        <activity android:name=".SettingsActivity"></activity>
         <activity android:name=".SearchActivity" />
+        <activity android:name=".SettingsActivity" />
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait">

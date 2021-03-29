@@ -7,12 +7,19 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="light_gray">#B4B4B4</color>
     <color name="lighter_gray">#F0F0F0</color>
     <color name="dark_gray">#4B4B4B</color>
+    <color name="dark_gray_theme">#121212</color>
     <color name="red">#FF0000</color>
     <color name="rain_blue">#0096DC</color>
     <color name="light_blue">#32B4F0</color>
     <color name="dark_blue">#0073AA</color>
     <color name="transparent">#00FFFFFF</color>
+
+    // Dark Theme Colors
+    <color name="light_gray1">#B4B4B4</color>
+    <color name="light_gray2">#BCBCBC</color>
+    <color name="light_gray3">#797979</color>
+    <color name="dark_gray1">#1C1C1C</color>
+    <color name="dark_gray2">#272727</color>
 </resources>

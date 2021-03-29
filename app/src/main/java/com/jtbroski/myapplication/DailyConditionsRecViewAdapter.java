@@ -2,14 +2,17 @@ package com.jtbroski.myapplication;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -267,6 +270,13 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
     // Adds limit lines to the x-axis of the line chart to represent the dark hours of the day
     @SuppressLint("ResourceType")
     private void addLimitLines(ViewHolder holder, Calendar sunrise, Calendar sunset) {
+        // Set the dark hours color
+        int darkHoursColor;
+        if (Utils.preferenceDbHelper.getDarkThemeFlag()) {
+            darkHoursColor = Color.parseColor(context.getResources().getString(R.color.black));
+        } else {
+            darkHoursColor = Color.parseColor(context.getResources().getString(R.color.lighter_gray));
+        }
 
         // Create the sunrise limit lines
         int sunriseHour = sunrise.get(Calendar.HOUR_OF_DAY);
@@ -275,14 +285,14 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         // Create the first limit line zone and set its width to the maximum value
         LimitLine lineFirst = new LimitLine(1);
         lineFirst.setLineWidth(12);
-        lineFirst.setLineColor(Color.parseColor(context.getResources().getString(R.color.lighter_gray)));
+        lineFirst.setLineColor(darkHoursColor);
         holder.lineChart.getXAxis().addLimitLine(lineFirst);
 
         // Create the limit lines between the first line and the actual sunrise line
         for (int i = 2; i < sunriseHour; i++) {
             LimitLine ll = new LimitLine(i);
             ll.setLineWidth(8);
-            ll.setLineColor(Color.parseColor(context.getResources().getString(R.color.lighter_gray)));
+            ll.setLineColor(darkHoursColor);
             holder.lineChart.getXAxis().addLimitLine(ll);
         }
 
@@ -290,7 +300,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         float sunriseTime = sunriseHour + (sunriseMinute / 60f) - 0.5f;     // the 0.5f value is an estimate correction due to how the line width is expanded
         LimitLine sunriseLine = new LimitLine(sunriseTime);
         sunriseLine.setLineWidth(8);
-        sunriseLine.setLineColor(Color.parseColor(context.getResources().getString(R.color.lighter_gray)));
+        sunriseLine.setLineColor(darkHoursColor);
         holder.lineChart.getXAxis().addLimitLine(sunriseLine);
 
         // Create the sunset limit lines
@@ -301,21 +311,21 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         for (int i = sunsetHour; i < 22; i++) {
             LimitLine ll = new LimitLine(i);
             ll.setLineWidth(8);
-            ll.setLineColor(Color.parseColor(context.getResources().getString(R.color.lighter_gray)));
+            ll.setLineColor(darkHoursColor);
             holder.lineChart.getXAxis().addLimitLine(ll);
         }
 
         // Create the last limit line zone and set its width to the maximum value
         LimitLine lineLast = new LimitLine(22);
         lineLast.setLineWidth(12);
-        lineLast.setLineColor(Color.parseColor(context.getResources().getString(R.color.lighter_gray)));
+        lineLast.setLineColor(darkHoursColor);
         holder.lineChart.getXAxis().addLimitLine(lineLast);
 
         // Create the actual sunset limit line
         float sunsetTime = sunsetHour + (sunsetMinute / 60f) + 0.5f;    // the 0.5f value is an estimate correction due to how the line width is expanded
         LimitLine sunsetLine = new LimitLine(sunsetTime);
         sunsetLine.setLineWidth(8);
-        sunsetLine.setLineColor(Color.parseColor(context.getResources().getString(R.color.lighter_gray)));
+        sunsetLine.setLineColor(darkHoursColor);
         holder.lineChart.getXAxis().addLimitLine(sunsetLine);
     }
 
@@ -341,6 +351,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         holder.lineChart.getAxisLeft().setAxisLineWidth(0.75f);
         holder.lineChart.getAxisLeft().setLabelCount(((yAxisMax - yAxisMin) / 10) + 1, true);
         holder.lineChart.getAxisLeft().setTextSize(14f);
+        holder.lineChart.getAxisLeft().setTextColor(getThemeTextColor());
         holder.lineChart.getAxisLeft().setGridLineWidth(0.75f);
         holder.lineChart.getAxisLeft().setDrawGridLinesBehindData(false);
 
@@ -369,7 +380,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
                 lineDataSet.setDrawValues(false);
 
                 int color = entries.get(i).getX() < currentHour && position == 0 ?
-                        Color.parseColor(context.getResources().getString(R.color.light_gray)) :
+                        Color.parseColor(context.getResources().getString(R.color.light_gray1)) :
                         Color.parseColor(context.getResources().getString(R.color.red));
                 lineDataSet.setCircleColor(color);
 
@@ -388,7 +399,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
                 lineDataSet.setDrawValues(false);
 
                 int color = entries.get(i).getX() < currentHour && position == 0 ?
-                        Color.parseColor(context.getResources().getString(R.color.light_gray)) :
+                        Color.parseColor(context.getResources().getString(R.color.light_gray1)) :
                         Color.parseColor(context.getResources().getString(R.color.red));
                 lineDataSet.setCircleColor(color);
 
@@ -419,7 +430,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         lineDataSetPast.setDrawValues(false);
         lineDataSetPast.setLineWidth(4f);
         lineDataSetPast.setMode(LineDataSet.Mode.CUBIC_BEZIER);     // this supposedly smooths out the line
-        lineDataSetPast.setColor(Color.parseColor(context.getResources().getString(R.color.light_gray)));
+        lineDataSetPast.setColor(Color.parseColor(context.getResources().getString(R.color.light_gray1)));
         dataSets.add(lineDataSetPast);
 
         LineDataSet lineDataSetFuture = new LineDataSet(nonPeakEntriesFuture, "");
@@ -431,6 +442,14 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         dataSets.add(lineDataSetFuture);
 
         return new LineData(dataSets);
+    }
+
+    private int getThemeTextColor() {
+        TypedValue typedValue = new TypedValue();
+        Resources.Theme theme = context.getTheme();
+        theme.resolveAttribute(R.attr.primaryTextColor, typedValue, true);
+        @ColorInt int color = typedValue.data;
+        return color;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

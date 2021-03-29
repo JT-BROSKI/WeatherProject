@@ -16,7 +16,7 @@ import com.bumptech.glide.Glide;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyConditionsRecViewAdapter.ViewHolder>{
+public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyConditionsRecViewAdapter.ViewHolder> {
     private static final String TAG = "HrlyCondRecViewAdapter";
 
     private Context context;

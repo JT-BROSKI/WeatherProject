@@ -1,37 +1,40 @@
 package com.jtbroski.myapplication;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import android.os.Bundle;
-import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import java.util.HashMap;
 
 public class SettingsActivity extends AppCompatActivity {
-
-    private final String isInImperial = "isInImperial";
-    private final String isInDarkTheme = "isInDarkTheme";
-    private HashMap<String, Boolean> originalSettings;
+    boolean isOriginallyImperial;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        boolean inImperial = Utils.preferenceDbHelper.getImperialFlag();
+        boolean inDarkTheme = Utils.preferenceDbHelper.getDarkThemeFlag();
+        updateSettingsTheme(inDarkTheme);
+        isOriginallyImperial = inImperial;
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        Toolbar toolbar = findViewById(R.id.tool_bar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // Toolbar Back Arrow
+        ImageButton backArrowButton = findViewById(R.id.btn_backArrow);
+        backArrowButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkForChange();
+                onBackPressed();
+            }
+        });
 
-        boolean inImperial = Utils.preferenceDbHelper.getImperialFlag();
-
-        originalSettings = new HashMap<>();
-        originalSettings.put(isInImperial, inImperial);
-
+        // Units Radio Group
         RadioButton imperialRadioButton = findViewById(R.id.rb_imperial);
         imperialRadioButton.setChecked(inImperial);
 
@@ -43,28 +46,44 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 RadioButton checkedRadioButton = unitsRadioGroup.findViewById(checkedId);
-                boolean isImperial = checkedRadioButton.getText().toString().equals("Imperial");
+                boolean isImperial = checkedRadioButton.getText().toString().equals(getString(R.string.imperial));
                 Utils.preferenceDbHelper.updateImperialFlag(isImperial);
+            }
+        });
+
+        // Theme Radio Group
+        RadioButton lightRadioButton = findViewById(R.id.rb_light);
+        lightRadioButton.setChecked(!inDarkTheme);
+
+        RadioButton darkRadioButton = findViewById(R.id.rb_dark);
+        darkRadioButton.setChecked(inDarkTheme);
+
+        RadioGroup themeRadioGroup = findViewById(R.id.rg_theme);
+        themeRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                RadioButton checkedRadioButton = themeRadioGroup.findViewById(checkedId);
+                boolean isDark = checkedRadioButton.getText().toString().equals(getString(R.string.dark));
+                Utils.preferenceDbHelper.updateDarkThemeFlag(isDark);
+                updateSettingsTheme(isDark);
             }
         });
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                checkForChange();
-                onBackPressed();
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     private void checkForChange() {
         boolean inImperial = Utils.preferenceDbHelper.getImperialFlag();
-        if (inImperial != originalSettings.get(isInImperial)) {
+        if (inImperial != isOriginallyImperial) {
             Utils.refreshMainActivity();
+        }
+    }
+
+    private void updateSettingsTheme(boolean isDark) {
+        if (isDark) {
+            setTheme(R.style.Theme_UI_Dark);
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            setTheme(R.style.Theme_UI_Light);
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
     }
 }

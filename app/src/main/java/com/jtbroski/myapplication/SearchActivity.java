@@ -6,13 +6,16 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 
 public class SearchActivity extends AppCompatActivity {
@@ -21,14 +24,18 @@ public class SearchActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        updateTheme(Utils.preferenceDbHelper.getDarkThemeFlag());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
-        Toolbar toolbar = findViewById(R.id.tool_bar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
+        // Toolbar Back Arrow
+        ImageButton backArrowButton = findViewById(R.id.btn_backArrow);
+        backArrowButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
 
         searchFilterAdapter = new SearchFilterAdapter(this, citiesFilteredCursor, false);
         ListView searchFilterList = findViewById(R.id.search_filter_list);
@@ -45,7 +52,7 @@ public class SearchActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 citiesFilteredCursor = s.length() > 2 ? Utils.locationDbHelper.getCitiesFilteredCursor(s.toString()) :
-                                                        Utils.locationDbHelper.getCitiesFilteredCursor("");
+                        Utils.locationDbHelper.getCitiesFilteredCursor("");
                 searchFilterAdapter.changeCursor(citiesFilteredCursor);
             }
 
@@ -71,14 +78,11 @@ public class SearchActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
+    private void updateTheme(boolean isDark) {
+        if (isDark) {
+            setTheme(R.style.Theme_UI_Dark);
+        } else {
+            setTheme(R.style.Theme_UI_Light);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 }

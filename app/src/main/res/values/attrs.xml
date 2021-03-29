@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="appbarColor" format="color" />
+    <attr name="appbarTextColor" format="color" />
+    <attr name="bgColor" format="color" />
+    <attr name="surfaceColor" format="color" />
+    <attr name="primaryTextColor" format="color" />
+    <attr name="secondaryTextColor" format="color" />
+</resources>
