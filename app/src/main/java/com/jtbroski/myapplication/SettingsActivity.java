@@ -2,14 +2,15 @@ package com.jtbroski.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.content.ContextCompat;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-
-import java.util.HashMap;
 
 public class SettingsActivity extends AppCompatActivity {
     boolean isOriginallyImperial;
@@ -31,6 +32,23 @@ public class SettingsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 checkForChange();
                 onBackPressed();
+            }
+        });
+        backArrowButton.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("ResourceType")
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        v.setBackgroundColor(Utils.preferenceDbHelper.getDarkThemeFlag() ? ContextCompat.getColor(SettingsActivity.this, R.color.black)
+                                : ContextCompat.getColor(SettingsActivity.this, R.color.purple_700));
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        v.setBackgroundColor(ContextCompat.getColor(SettingsActivity.this, R.color.transparent));
+                        break;
+                }
+                return false;
             }
         });
 
@@ -70,6 +88,7 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
+    // Change for changes in the settings and refresh main activity if necessary
     private void checkForChange() {
         boolean inImperial = Utils.preferenceDbHelper.getImperialFlag();
         if (inImperial != isOriginallyImperial) {
@@ -77,6 +96,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
+    // Update the theme of the activity
     private void updateSettingsTheme(boolean isDark) {
         if (isDark) {
             setTheme(R.style.Theme_UI_Dark);

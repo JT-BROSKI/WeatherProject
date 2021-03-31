@@ -3,16 +3,19 @@ package com.jtbroski.myapplication;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -95,6 +98,23 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(searchIntent);
             }
         });
+        searchButton.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("ResourceType")
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        v.setBackgroundColor(Utils.preferenceDbHelper.getDarkThemeFlag() ? ContextCompat.getColor(MainActivity.this, R.color.black)
+                                                                                         : ContextCompat.getColor(MainActivity.this, R.color.purple_700));
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        v.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.transparent));
+                        break;
+                }
+                return false;
+            }
+        });
 
         ImageButton myLocationButton = findViewById(R.id.btn_myLocation);
         myLocationButton.setOnClickListener(new View.OnClickListener() {
@@ -104,6 +124,23 @@ public class MainActivity extends AppCompatActivity {
                 Utils.preferenceDbHelper.getCurrentLocation();
             }
         });
+        myLocationButton.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("ResourceType")
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        v.setBackgroundColor(Utils.preferenceDbHelper.getDarkThemeFlag() ? ContextCompat.getColor(MainActivity.this, R.color.black)
+                                : ContextCompat.getColor(MainActivity.this, R.color.purple_700));
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        v.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.transparent));
+                        break;
+                }
+                return false;
+            }
+        });
 
         ImageButton settingsButton = findViewById(R.id.btn_settings);
         settingsButton.setOnClickListener(new View.OnClickListener() {
@@ -111,6 +148,23 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivity(settingsIntent);
+            }
+        });
+        settingsButton.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("ResourceType")
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        v.setBackgroundColor(Utils.preferenceDbHelper.getDarkThemeFlag() ? ContextCompat.getColor(MainActivity.this, R.color.black)
+                                : ContextCompat.getColor(MainActivity.this, R.color.purple_700));
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        v.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.transparent));
+                        break;
+                }
+                return false;
             }
         });
 
@@ -651,6 +705,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Update the theme of the activity
     private void updateTheme(boolean isDark) {
         if (isDark) {
             setTheme(R.style.Theme_UI_Dark);

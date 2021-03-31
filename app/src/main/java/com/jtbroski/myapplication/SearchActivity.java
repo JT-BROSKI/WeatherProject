@@ -1,11 +1,12 @@
 package com.jtbroski.myapplication;
 
+import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
-import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
@@ -13,10 +14,8 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 
 public class SearchActivity extends AppCompatActivity {
     private SearchFilterAdapter searchFilterAdapter;
@@ -34,6 +33,23 @@ public class SearchActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 onBackPressed();
+            }
+        });
+        backArrowButton.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("ResourceType")
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        v.setBackgroundColor(Utils.preferenceDbHelper.getDarkThemeFlag() ? ContextCompat.getColor(SearchActivity.this, R.color.black)
+                                : ContextCompat.getColor(SearchActivity.this, R.color.purple_700));
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        v.setBackgroundColor(ContextCompat.getColor(SearchActivity.this, R.color.transparent));
+                        break;
+                }
+                return false;
             }
         });
 
@@ -78,6 +94,7 @@ public class SearchActivity extends AppCompatActivity {
 
     }
 
+    // Update the theme of the activity
     private void updateTheme(boolean isDark) {
         if (isDark) {
             setTheme(R.style.Theme_UI_Dark);
