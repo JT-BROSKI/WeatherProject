@@ -13,4 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
-OpenWeatherMap-Info.xml
+WeatherProject-Info.xml
+/app/src/main/res/values/api_keys.xml
