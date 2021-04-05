@@ -264,8 +264,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         map = googleMap;
         map.getUiSettings().setAllGesturesEnabled(false);
 
-        // Insert if-check for lat and lon
-        updateTileOverlay();
+        TileOverlayOptions tileOverlayOptions = new TileOverlayOptions().tileProvider(createTileProvider());
+        tileOverlayOptions.transparency(0.5f);
+        currentTileOverlay = map.addTileOverlay(tileOverlayOptions);
     }
 
     public void resetScrollView() {
@@ -394,15 +395,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         TileProvider tileProvider = new UrlTileProvider(256, 256) {
             @Override
             public URL getTileUrl(int x, int y, int zoom) {
-                String url = String.format(Locale.US, "http://tile.openweathermap.org/map/temp_new/%d/%d/%d.png?appid=%s",
+                String urlString = String.format(Locale.US, "https://tile.openweathermap.org/map/precipitation/%d/%d/%d.png?appid=%s",
                         zoom, x, y, getResources().getString(R.string.open_weather_map_key));
 
+                URL url = null;
                 try {
-                    return new URL(url);
+                    url = new URL(urlString);
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "Failed the create the URL for Open Weather Maps precipitation layer.", Toast.LENGTH_SHORT).show();
                 }
-                return null;
+                return url;
             }
         };
         return tileProvider;
@@ -575,7 +577,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         try {
             double latitude = result.getDouble("lat");
             double longitude = result.getDouble("lon");
-//            updateCurrentLocationOnWeatherMap(latitude, longitude);
+            updateCurrentLocationOnWeatherMap(latitude, longitude);
 
             Geocoder geocoder = new Geocoder(this, Locale.getDefault());
             List<Address> addressList = Utils.locationName == null ? geocoder.getFromLocation(latitude, longitude, 1) :
@@ -617,7 +619,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (map != null) {
             LatLng location = new LatLng(latitude, longitude);
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 8f));
-//            updateTileOverlay();
         }
     }
 
@@ -726,13 +727,5 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             setTheme(R.style.Theme_UI_Light);
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
-    }
-
-    private void updateTileOverlay() {
-        if (currentTileOverlay != null) {
-            currentTileOverlay.remove();
-        }
-        currentTileOverlay = map.addTileOverlay(new TileOverlayOptions().tileProvider(createTileProvider()));
-        int i = 0;
     }
 }
