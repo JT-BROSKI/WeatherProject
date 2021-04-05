@@ -2,7 +2,6 @@ package com.jtbroski.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,23 +29,27 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.TileOverlay;
+import com.google.android.gms.maps.model.TileOverlayOptions;
+import com.google.android.gms.maps.model.TileProvider;
+import com.google.android.gms.maps.model.UrlTileProvider;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserFactory;
 
-import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity {
-
-    private Toolbar toolbar;
-
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
     private TextView txtCurrentLocation;
 
     private ImageView imgCurrentConditionsImage;
@@ -59,6 +62,10 @@ public class MainActivity extends AppCompatActivity {
     private TextView txtPrecipitation;
     private TextView txtHumidity;
     private TextView txtWind;
+
+    private SupportMapFragment mapFragment;
+    private GoogleMap map;
+    private TileOverlay currentTileOverlay;
 
     private RequestQueue queue;
 
@@ -105,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         v.setBackgroundColor(Utils.preferenceDbHelper.getDarkThemeFlag() ? ContextCompat.getColor(MainActivity.this, R.color.black)
-                                                                                         : ContextCompat.getColor(MainActivity.this, R.color.purple_700));
+                                : ContextCompat.getColor(MainActivity.this, R.color.purple_700));
                         break;
 
                     case MotionEvent.ACTION_UP:
@@ -180,6 +187,10 @@ public class MainActivity extends AppCompatActivity {
         txtHumidity = findViewById(R.id.humidity_value);
         txtWind = findViewById(R.id.wind_data);
 
+        // Weather Map Material Card View
+        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.weather_map_fragment);
+        mapFragment.getMapAsync(this);
+
         // Hourly Conditions Material Card View
         hourlyConditionsRecViewAdapter = new HourlyConditionsRecViewAdapter(this);
         hourlyConditionsRecView = findViewById(R.id.hourly_conditions_recycler_view);
@@ -217,14 +228,15 @@ public class MainActivity extends AppCompatActivity {
         hoursRecorded = new ArrayList<>();
         isImperial = Utils.preferenceDbHelper.getImperialFlag();
 
-        final String API_KEY = "&appid=" + getApiKey();
-        final String END_POINT = " https://api.openweathermap.org/data";
+        final String API_KEY = "appid=" + getResources().getString(R.string.open_weather_map_key);
+        final String END_POINT = "https://api.openweathermap.org/data";
         final String VERSION = "2.5";
         final String TEMP_MEASUREMENT = "&units=" + (isImperial ? "imperial" : "metric");
         String coordinates = "lat=" + location.getLatitude() + "&lon=" + location.getLongitude();
         String currentMidnight = Utils.getCurrentDayMidnight();
 
         queue.add(constructHistoricalStringRequest(currentMidnight, END_POINT, VERSION, coordinates, TEMP_MEASUREMENT, API_KEY));
+//        queue.add(constructWeatherMapStringRequest(String.valueOf(Math.abs(Math.round(location.getLatitude()))), String.valueOf(Math.abs(Math.round(location.getLongitude()))), API_KEY));
     }
 
     // Creates a Location object based on the string parameter passed in, then executes the callWeatherApi(Location location) function
@@ -247,6 +259,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        map = googleMap;
+        map.getUiSettings().setAllGesturesEnabled(false);
+
+        // Insert if-check for lat and lon
+        updateTileOverlay();
+    }
+
     public void resetScrollView() {
         ScrollView scrollView = findViewById(R.id.scrollView);
         scrollView.setFocusable(false);     // this is necessary so that the scroll view contents don't turn dim upon programmatically scrolling
@@ -256,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
     // Construct the API string request for the current and future weather conditions
     private StringRequest constructForecastStringRequest(String currentMidnight, String endPoint, String version, String coordinates, String measurement, String apiKey) {
         final String ONE_CALL = "onecall?";
-        String urlCurrent = endPoint + "/" + version + "/" + ONE_CALL + coordinates + measurement + apiKey;
+        String urlCurrent = endPoint + "/" + version + "/" + ONE_CALL + coordinates + measurement + "&" + apiKey;
         StringRequest stringRequest = new StringRequest(Request.Method.GET, urlCurrent,
                 new Response.Listener<String>() {
                     @Override
@@ -299,7 +320,7 @@ public class MainActivity extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(MainActivity.this, "API call failed", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Forecast API call failed", Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -310,7 +331,7 @@ public class MainActivity extends AppCompatActivity {
     private StringRequest constructHistoricalStringRequest(String currentMidnight, String endPoint, String version, String coordinates, String measurement, String apiKey) {
         final String HISTORICAL_ONE_CALL = "onecall/timemachine?";
         String time = "&dt=" + currentMidnight;
-        String urlHistorical = endPoint + "/" + version + "/" + HISTORICAL_ONE_CALL + coordinates + time + measurement + apiKey;
+        String urlHistorical = endPoint + "/" + version + "/" + HISTORICAL_ONE_CALL + coordinates + time + measurement + "&" + apiKey;
         StringRequest stringRequest = new StringRequest(Request.Method.GET, urlHistorical,
                 new Response.Listener<String>() {
                     @Override
@@ -330,7 +351,7 @@ public class MainActivity extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(MainActivity.this, "API call failed", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Historical API call failed", Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -341,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
     private StringRequest constructHistoricalStringRequestBackup(String currentMidnight, String endPoint, String version, String coordinates, String measurement, String apiKey) {
         final String HISTORICAL_ONE_CALL = "onecall/timemachine?";
         String timeThreeHours = "&dt=" + Utils.getPreviousThreeHours();
-        String urlPreviousThreeHours = endPoint + "/" + version + "/" + HISTORICAL_ONE_CALL + coordinates + timeThreeHours + measurement + apiKey;
+        String urlPreviousThreeHours = endPoint + "/" + version + "/" + HISTORICAL_ONE_CALL + coordinates + timeThreeHours + measurement + "&" + apiKey;
         StringRequest stringRequest = new StringRequest(Request.Method.GET, urlPreviousThreeHours,
                 new Response.Listener<String>() {
                     @Override
@@ -361,48 +382,30 @@ public class MainActivity extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(MainActivity.this, "API call failed", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Historical Backup API call failed", Toast.LENGTH_SHORT).show();
                     }
                 });
 
         return stringRequest;
     }
 
-    // Reads and return the Open Weather Map API key from OpenWeatherMap-Info.xml within assets
-    private String getApiKey() {
-        String apiKey = "";
-        String fileName = "OpenWeatherMap-Info.xml";
+    // Create the tile provider for the weather maps
+    private TileProvider createTileProvider() {
+        TileProvider tileProvider = new UrlTileProvider(256, 256) {
+            @Override
+            public URL getTileUrl(int x, int y, int zoom) {
+                String url = String.format(Locale.US, "http://tile.openweathermap.org/map/temp_new/%d/%d/%d.png?appid=%s",
+                        zoom, x, y, getResources().getString(R.string.open_weather_map_key));
 
-        InputStream inputStream = null;
-        try {
-            inputStream = getAssets().open(fileName);
-            XmlPullParserFactory xmlPullParserFactory = XmlPullParserFactory.newInstance();
-            XmlPullParser xmlPullParser = xmlPullParserFactory.newPullParser();
-            xmlPullParser.setInput(inputStream, null);
-
-            int event = xmlPullParser.getEventType();
-            while (event != XmlPullParser.END_DOCUMENT) {
-                String name = xmlPullParser.getName();
-                switch (event) {
-                    case XmlPullParser.START_TAG:
-                        if (name.equals("apiKey")) {
-                            apiKey = xmlPullParser.nextText();
-                        }
-                        break;
+                try {
+                    return new URL(url);
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Failed the create the URL for Open Weather Maps precipitation layer.", Toast.LENGTH_SHORT).show();
                 }
-                event = xmlPullParser.next();
+                return null;
             }
-        } catch (Exception e) {
-            Toast.makeText(this, "Unable to the API key.", Toast.LENGTH_SHORT).show();
-        } finally {
-            try {
-                inputStream.close();
-            } catch (Exception e) {
-                Toast.makeText(this, "Failed to close input stream.", Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        return apiKey;
+        };
+        return tileProvider;
     }
 
     // Parse the current time zone of the weather data
@@ -572,10 +575,11 @@ public class MainActivity extends AppCompatActivity {
         try {
             double latitude = result.getDouble("lat");
             double longitude = result.getDouble("lon");
+//            updateCurrentLocationOnWeatherMap(latitude, longitude);
 
             Geocoder geocoder = new Geocoder(this, Locale.getDefault());
             List<Address> addressList = Utils.locationName == null ? geocoder.getFromLocation(latitude, longitude, 1) :
-                                                                     geocoder.getFromLocationName(Utils.locationName, 1);
+                    geocoder.getFromLocationName(Utils.locationName, 1);
 
             Address address = addressList.get(0);
             String[] addressTokens = address.getAddressLine(0).split(",");
@@ -606,6 +610,14 @@ public class MainActivity extends AppCompatActivity {
             txtCurrentLocation.setText(currentLocation);
         } catch (Exception e) {
             Toast.makeText(MainActivity.this, "Failed to parse location data", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void updateCurrentLocationOnWeatherMap(double latitude, double longitude) {
+        if (map != null) {
+            LatLng location = new LatLng(latitude, longitude);
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 8f));
+//            updateTileOverlay();
         }
     }
 
@@ -714,5 +726,13 @@ public class MainActivity extends AppCompatActivity {
             setTheme(R.style.Theme_UI_Light);
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
+    }
+
+    private void updateTileOverlay() {
+        if (currentTileOverlay != null) {
+            currentTileOverlay.remove();
+        }
+        currentTileOverlay = map.addTileOverlay(new TileOverlayOptions().tileProvider(createTileProvider()));
+        int i = 0;
     }
 }

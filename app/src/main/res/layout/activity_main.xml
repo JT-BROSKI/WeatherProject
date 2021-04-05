@@ -117,7 +117,7 @@
                             android:textColor="?attr/primaryTextColor" />
 
                         <View
-                            android:id="@+id/first_divider"
+                            android:id="@+id/current_conditions_divider_1"
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:layout_below="@+id/current_conditions_title"
@@ -127,7 +127,7 @@
                             android:id="@+id/current_temperature_layout"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_below="@+id/first_divider"
+                            android:layout_below="@+id/current_conditions_divider_1"
                             android:layout_marginTop="20dp"
                             android:orientation="horizontal">
 
@@ -249,7 +249,7 @@
                         </androidx.constraintlayout.widget.ConstraintLayout>
 
                         <View
-                            android:id="@+id/second_divider"
+                            android:id="@+id/current_conditions_divider_2"
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:layout_below="@+id/current_description_layout"
@@ -259,7 +259,7 @@
                             android:id="@+id/current_weather_basic_layout"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_below="@id/second_divider"
+                            android:layout_below="@id/current_conditions_divider_2"
                             android:layout_marginTop="15dp"
                             android:layout_marginBottom="15dp">
 
@@ -352,10 +352,51 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/daily_conditions_card_view"
+                    android:id="@+id/weather_map_card_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/current_conditions_card_view"
+                    android:layout_margin="10dp"
+                    android:background="?attr/surfaceColor">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/weather_map_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="20dp"
+                            android:layout_marginTop="20dp"
+                            android:layout_marginBottom="20dp"
+                            android:text="@string/weather_map"
+                            android:textColor="?attr/primaryTextColor" />
+
+                        <View
+                            android:id="@+id/weather_divider"
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_below="@+id/weather_map_title"
+                            android:background="@color/light_gray1" />
+
+                        <fragment
+                            android:id="@+id/weather_map_fragment"
+                            android:name="com.google.android.gms.maps.SupportMapFragment"
+                            android:layout_width="match_parent"
+                            android:layout_height="250dp"
+                            android:layout_below="@+id/weather_divider"
+                            android:layout_margin="10dp" />
+
+                    </RelativeLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/daily_conditions_card_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/weather_map_card_view"
                     android:layout_margin="10dp"
                     android:background="?attr/surfaceColor">
 
@@ -374,7 +415,7 @@
                             android:textColor="?attr/primaryTextColor" />
 
                         <View
-                            android:id="@+id/fourth_divider"
+                            android:id="@+id/daily_conditions_divider"
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:layout_below="@+id/daily_conditions_title"
@@ -384,7 +425,7 @@
                             android:id="@+id/daily_conditions_recycler_view"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_below="@+id/fourth_divider" />
+                            android:layout_below="@+id/daily_conditions_divider" />
 
                     </RelativeLayout>
 
@@ -414,7 +455,7 @@
                             android:textColor="?attr/primaryTextColor" />
 
                         <View
-                            android:id="@+id/third_divider"
+                            android:id="@+id/hourly_conditions_divider"
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:layout_below="@+id/hourly_conditions_title"
@@ -424,7 +465,7 @@
                             android:id="@+id/hourly_conditions_recycler_view"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_below="@+id/third_divider" />
+                            android:layout_below="@+id/hourly_conditions_divider" />
 
                     </RelativeLayout>
 

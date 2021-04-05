@@ -8,6 +8,7 @@
     <string name="precipitation_short_text">PRECIP</string>
     <string name="humidity_short_text">HUMD</string>
     <string name="wind_text">WIND</string>
+    <string name="weather_map">WEATHER MAP</string>
     <string name="hourly_conditions">HOURLY CONDITIONS</string>
     <string name="daily_conditions">DAILY CONDITIONS</string>
     <string name="search_title">Search</string>
