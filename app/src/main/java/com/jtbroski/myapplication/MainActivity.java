@@ -24,8 +24,6 @@ import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
@@ -34,7 +32,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.android.gms.maps.model.TileProvider;
 import com.google.android.gms.maps.model.UrlTileProvider;
@@ -65,7 +62,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private SupportMapFragment mapFragment;
     private GoogleMap map;
-    private TileOverlay currentTileOverlay;
+    private int mapZoom;
+    private ArrayList<Triplet<Integer, Integer, Integer>> tiles;
 
     private RequestQueue queue;
 
@@ -207,12 +205,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Pull Down Swipe Layout
         swipeRefreshLayout = findViewById(R.id.pullDownRefresh);
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                callWeatherApi(Utils.lastQueriedLocation);
-            }
-        });
+        swipeRefreshLayout.setOnRefreshListener(() -> callWeatherApi(Utils.lastQueriedLocation));
 
         queue = Volley.newRequestQueue(this);
 
@@ -227,6 +220,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         fullyDayHourlyConditions = new JSONArray();
         hoursRecorded = new ArrayList<>();
         isImperial = Utils.preferenceDbHelper.getImperialFlag();
+
+        if (tiles != null) {
+            tiles.clear();
+        }
 
         final String API_KEY = "appid=" + getResources().getString(R.string.open_weather_map_key);
         final String END_POINT = "https://api.openweathermap.org/data";
@@ -264,9 +261,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         map = googleMap;
         map.getUiSettings().setAllGesturesEnabled(false);
 
+        mapZoom = 8;
+        tiles = new ArrayList<>();
+
         TileOverlayOptions tileOverlayOptions = new TileOverlayOptions().tileProvider(createTileProvider());
         tileOverlayOptions.transparency(0.5f);
-        currentTileOverlay = map.addTileOverlay(tileOverlayOptions);
+        map.addTileOverlay(tileOverlayOptions);
     }
 
     public void resetScrollView() {
@@ -279,53 +279,44 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private StringRequest constructForecastStringRequest(String currentMidnight, String endPoint, String version, String coordinates, String measurement, String apiKey) {
         final String ONE_CALL = "onecall?";
         String urlCurrent = endPoint + "/" + version + "/" + ONE_CALL + coordinates + measurement + "&" + apiKey;
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, urlCurrent,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        try {
-                            if (swipeRefreshLayout.isRefreshing()) {
-                                swipeRefreshLayout.setRefreshing(false);
-                            }
 
-                            JSONObject result = new JSONObject(response);
-                            JSONObject currentConditions = result.getJSONObject("current");
-                            JSONArray hourlyConditions = result.getJSONArray("hourly");
-                            JSONArray dailyConditions = result.getJSONArray("daily");
-
-                            parseCurrentTimeZone(result);
-                            populateFinalFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
-                            Utils.updateLastQueriedLocation(result);
-
-                            boolean minutelyAvailable = true;
-                            JSONArray precipConditions = null;
-                            try {
-                                precipConditions = result.getJSONArray("minutely");
-                            } catch (JSONException e) {
-                                precipConditions = hourlyConditions;
-                                minutelyAvailable = false;
-                            }
-
-                            updateCurrentConditions(currentConditions, precipConditions, dailyConditions, minutelyAvailable);
-                            updateCurrentLocation(result);
-                            updateDailyConditions(dailyConditions);
-                            updateHourlyConditions(hourlyConditions);
-
-                        } catch (JSONException e) {
-                            Toast.makeText(MainActivity.this, "Failed to parse current weather data.", Toast.LENGTH_SHORT).show();
-                        } finally {
-                            resetScrollView();
+        return new StringRequest(Request.Method.GET, urlCurrent,
+                response -> {
+                    try {
+                        if (swipeRefreshLayout.isRefreshing()) {
+                            swipeRefreshLayout.setRefreshing(false);
                         }
+
+                        JSONObject result = new JSONObject(response);
+                        JSONObject currentConditions = result.getJSONObject("current");
+                        JSONArray hourlyConditions = result.getJSONArray("hourly");
+                        JSONArray dailyConditions = result.getJSONArray("daily");
+
+                        parseCurrentTimeZone(result);
+                        populateFinalFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
+                        Utils.updateLastQueriedLocation(result);
+
+                        boolean minutelyAvailable = true;
+                        JSONArray precipConditions = null;
+                        try {
+                            precipConditions = result.getJSONArray("minutely");
+                        } catch (JSONException e) {
+                            precipConditions = hourlyConditions;
+                            minutelyAvailable = false;
+                        }
+
+                        updateCurrentConditions(currentConditions, precipConditions, dailyConditions, minutelyAvailable);
+                        updateCurrentLocation(result);
+                        updateDailyConditions(dailyConditions);
+                        updateHourlyConditions(hourlyConditions);
+
+                    } catch (JSONException e) {
+                        Toast.makeText(this, "Failed to parse current weather data.", Toast.LENGTH_SHORT).show();
+                    } finally {
+                        resetScrollView();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(MainActivity.this, "Forecast API call failed", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-        return stringRequest;
+                error -> Toast.makeText(this, "Forecast API call failed", Toast.LENGTH_SHORT).show());
     }
 
     // Construct the string request for past hourly conditions
@@ -333,30 +324,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         final String HISTORICAL_ONE_CALL = "onecall/timemachine?";
         String time = "&dt=" + currentMidnight;
         String urlHistorical = endPoint + "/" + version + "/" + HISTORICAL_ONE_CALL + coordinates + time + measurement + "&" + apiKey;
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, urlHistorical,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        try {
 
-                            JSONObject result = new JSONObject(response);
-                            JSONArray hourlyConditions = result.getJSONArray("hourly");
-                            populateInitialFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
+        return new StringRequest(Request.Method.GET, urlHistorical,
+                response -> {
+                    try {
 
-                            queue.add(constructHistoricalStringRequestBackup(currentMidnight, endPoint, version, coordinates, measurement, apiKey));
-                        } catch (Exception e) {
-                            Toast.makeText(MainActivity.this, "Failed to parse historic weather data.", Toast.LENGTH_SHORT).show();
-                        }
+                        JSONObject result = new JSONObject(response);
+                        JSONArray hourlyConditions = result.getJSONArray("hourly");
+                        populateInitialFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
+
+                        queue.add(constructHistoricalStringRequestBackup(currentMidnight, endPoint, version, coordinates, measurement, apiKey));
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Failed to parse historic weather data.", Toast.LENGTH_SHORT).show();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(MainActivity.this, "Historical API call failed", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-        return stringRequest;
+                error -> Toast.makeText(this, "Historical API call failed", Toast.LENGTH_SHORT).show());
     }
 
     // Construct the backup string request for past hourly conditions just in case the normal historical string request missed a few hours
@@ -364,50 +346,59 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         final String HISTORICAL_ONE_CALL = "onecall/timemachine?";
         String timeThreeHours = "&dt=" + Utils.getPreviousThreeHours();
         String urlPreviousThreeHours = endPoint + "/" + version + "/" + HISTORICAL_ONE_CALL + coordinates + timeThreeHours + measurement + "&" + apiKey;
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, urlPreviousThreeHours,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        try {
 
-                            JSONObject result = new JSONObject(response);
-                            JSONArray hourlyConditions = result.getJSONArray("hourly");
-                            populateInitialFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
+        return new StringRequest(Request.Method.GET, urlPreviousThreeHours,
+                response -> {
+                    try {
 
-                            queue.add(constructForecastStringRequest(currentMidnight, endPoint, version, coordinates, measurement, apiKey));
-                        } catch (Exception e) {
-                            Toast.makeText(MainActivity.this, "Failed to parse weather data three hours in the past.", Toast.LENGTH_SHORT).show();
-                        }
+                        JSONObject result = new JSONObject(response);
+                        JSONArray hourlyConditions = result.getJSONArray("hourly");
+                        populateInitialFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
+
+                        queue.add(constructForecastStringRequest(currentMidnight, endPoint, version, coordinates, measurement, apiKey));
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Failed to parse weather data three hours in the past.", Toast.LENGTH_SHORT).show();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(MainActivity.this, "Historical Backup API call failed", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-        return stringRequest;
+                error -> Toast.makeText(this, "Historical Backup API call failed", Toast.LENGTH_SHORT).show());
     }
 
     // Create the tile provider for the weather maps
     private TileProvider createTileProvider() {
-        TileProvider tileProvider = new UrlTileProvider(256, 256) {
+        return new UrlTileProvider(256, 256) {
             @Override
             public URL getTileUrl(int x, int y, int zoom) {
                 String urlString = String.format(Locale.US, "https://tile.openweathermap.org/map/precipitation/%d/%d/%d.png?appid=%s",
                         zoom, x, y, getResources().getString(R.string.open_weather_map_key));
 
                 URL url = null;
-                try {
-                    url = new URL(urlString);
-                } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Failed the create the URL for Open Weather Maps precipitation layer.", Toast.LENGTH_SHORT).show();
+                if (zoom == mapZoom && isNewTile(x, y, zoom)) {
+                    try {
+                        url = new URL(urlString);
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "Failed the create the URL for Open Weather Maps precipitation layer.", Toast.LENGTH_SHORT).show();
+                    }
                 }
                 return url;
             }
         };
-        return tileProvider;
+    }
+
+    // Check if the map tile values have already been requested before
+    // If it is a new tile return true, else return false
+    private boolean isNewTile(int x, int y, int zoom) {
+        if (tiles.size() == 0) {
+            tiles.add(new Triplet(x, y, zoom));
+        } else {
+            for (int i = 0; i < tiles.size(); i++) {
+                Triplet tile = tiles.get(0);
+                if ((int) tile.getFirst() == x && (int) tile.geSecond() == y && (int) tile.getThird() == zoom) {
+                    return false;
+                }
+            }
+            tiles.add(new Triplet<>(x, y, zoom));
+        }
+        return true;
     }
 
     // Parse the current time zone of the weather data
@@ -618,7 +609,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void updateCurrentLocationOnWeatherMap(double latitude, double longitude) {
         if (map != null) {
             LatLng location = new LatLng(latitude, longitude);
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 8f));
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, mapZoom));
         }
     }
 
