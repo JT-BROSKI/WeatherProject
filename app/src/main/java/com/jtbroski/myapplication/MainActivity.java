@@ -16,8 +16,10 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +34,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.android.gms.maps.model.TileProvider;
 import com.google.android.gms.maps.model.UrlTileProvider;
@@ -41,13 +44,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import static com.jtbroski.myapplication.WeatherAlertActivity.ALERT_DATA_ID;
+
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
     private TextView txtCurrentLocation;
+    private TextView txtWeatherAlert;
 
     private ImageView imgCurrentConditionsImage;
 
@@ -63,7 +70,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private SupportMapFragment mapFragment;
     private GoogleMap map;
     private int mapZoom;
-    private ArrayList<Triplet<Integer, Integer, Integer>> tiles;
+    private TileOverlay weatherTileOverlay;
+    private ArrayList<Triplet<Integer, Integer, Integer>> weatherTiles;
 
     private RequestQueue queue;
 
@@ -80,6 +88,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Geocoder geocoder;
     private ArrayList<Address> addressList;
 
+    private RelativeLayout weatherAlertLayout;
+    private ArrayList<WeatherAlert> weatherAlerts;
+
     private boolean isImperial;
 
     @Override
@@ -94,6 +105,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         geocoder = new Geocoder(this);
         addressList = new ArrayList<>();
 
+        // Ensure the scrollview is scrolled to the top once all elements in the entire view have been loaded
+        RelativeLayout mainLayout = findViewById(R.id.main_layout);
+        mainLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                resetScrollView();
+            }
+        });
+
+        // Appbar Info
         // Toolbar Image Buttons
         ImageButton searchButton = findViewById(R.id.btn_search);
         searchButton.setOnClickListener(new View.OnClickListener() {
@@ -173,8 +194,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        // Current Conditions Material Card View
         txtCurrentLocation = findViewById(R.id.current_location);
+        txtWeatherAlert = findViewById(R.id.alert_info);
+        weatherAlertLayout = findViewById(R.id.alert_layout);
+        weatherAlertLayout.setOnClickListener(v -> {
+            Intent intent = new Intent(this, WeatherAlertActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putParcelableArrayList(ALERT_DATA_ID, weatherAlerts);
+            intent.putExtras(bundle);
+            startActivity(intent);
+        });
+
+        // Current Conditions Material Card View
         imgCurrentConditionsImage = findViewById(R.id.current_conditions_image);
         txtCurrentTemperature = findViewById(R.id.current_temperature);
         txtCurrentTemperatureScale = findViewById(R.id.temperature_scale);
@@ -209,9 +240,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         queue = Volley.newRequestQueue(this);
 
-        Location preferredLocation = Utils.preferenceDbHelper.getPreferredLocation();
-        if (preferredLocation != null) {
-            callWeatherApi(preferredLocation);
+        // If the program is starting up, then get the weather for the preferred location
+        // Else, then this is being called due to a theme change and we want to get the weather for the last queried location
+        if (Utils.startUp) {
+            Utils.startUp = false;
+            Location preferredLocation = Utils.preferenceDbHelper.getPreferredLocation();
+            if (preferredLocation != null) {
+                callWeatherApi(preferredLocation);
+            }
+        } else {
+            callWeatherApi(Utils.lastQueriedLocation);
         }
     }
 
@@ -221,8 +259,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         hoursRecorded = new ArrayList<>();
         isImperial = Utils.preferenceDbHelper.getImperialFlag();
 
-        if (tiles != null) {
-            tiles.clear();
+        // Clear the weather tiles when a new location is being request
+        // This may not be necessary now that we have the correct weather map URL, the tile overlay options may already be checking if it contains certain tiles
+        if (weatherTiles != null) {
+            weatherTiles.clear();
+        }
+
+        // Update the weather tile overlay
+        if (map != null && !Utils.startUp) {
+            updateWeatherTileOverlay();
         }
 
         final String API_KEY = "appid=" + getResources().getString(R.string.open_weather_map_key);
@@ -233,7 +278,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         String currentMidnight = Utils.getCurrentDayMidnight();
 
         queue.add(constructHistoricalStringRequest(currentMidnight, END_POINT, VERSION, coordinates, TEMP_MEASUREMENT, API_KEY));
-//        queue.add(constructWeatherMapStringRequest(String.valueOf(Math.abs(Math.round(location.getLatitude()))), String.valueOf(Math.abs(Math.round(location.getLongitude()))), API_KEY));
     }
 
     // Creates a Location object based on the string parameter passed in, then executes the callWeatherApi(Location location) function
@@ -260,19 +304,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
         map.getUiSettings().setAllGesturesEnabled(false);
+        map.setOnMapLoadedCallback(() -> resetScrollView());    // Make sure the scroll view is scrolled to the top on the map finishes loading (this is generally only useful on startup_
 
         mapZoom = 8;
-        tiles = new ArrayList<>();
+        weatherTiles = new ArrayList<>();
 
-        TileOverlayOptions tileOverlayOptions = new TileOverlayOptions().tileProvider(createTileProvider());
-        tileOverlayOptions.transparency(0.5f);
-        map.addTileOverlay(tileOverlayOptions);
+        updateWeatherTileOverlay();
     }
 
     public void resetScrollView() {
         ScrollView scrollView = findViewById(R.id.scrollView);
-        scrollView.setFocusable(false);     // this is necessary so that the scroll view contents don't turn dim upon programmatically scrolling
-        scrollView.fullScroll(ScrollView.FOCUS_UP);
+
+        // We need to use "post" here to ensure that a runnable is added to the thread queue
+        // This ensures that this task will execute after previously queued task have properly executed (i.e weather tile loading)
+        scrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                scrollView.fullScroll(ScrollView.FOCUS_UP);
+            }
+        });
     }
 
     // Construct the API string request for the current and future weather conditions
@@ -309,6 +359,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         updateCurrentLocation(result);
                         updateDailyConditions(dailyConditions);
                         updateHourlyConditions(hourlyConditions);
+                        updateWeatherAlerts(result);
 
                     } catch (JSONException e) {
                         Toast.makeText(this, "Failed to parse current weather data.", Toast.LENGTH_SHORT).show();
@@ -385,18 +436,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     // Check if the map tile values have already been requested before
+    // NOTE: This may be unnecessary now that we have the correct weather map URL, the tile overlay options may already be checking if it contains certain tiles
     // If it is a new tile return true, else return false
     private boolean isNewTile(int x, int y, int zoom) {
-        if (tiles.size() == 0) {
-            tiles.add(new Triplet(x, y, zoom));
+        if (weatherTiles.size() == 0) {
+            weatherTiles.add(new Triplet(x, y, zoom));
         } else {
-            for (int i = 0; i < tiles.size(); i++) {
-                Triplet tile = tiles.get(0);
-                if ((int) tile.getFirst() == x && (int) tile.geSecond() == y && (int) tile.getThird() == zoom) {
+            for (int i = 0; i < weatherTiles.size(); i++) {
+                Triplet tile = weatherTiles.get(0);
+                if ((int) tile.getFirst() == x && (int) tile.getSecond() == y && (int) tile.getThird() == zoom) {
                     return false;
                 }
             }
-            tiles.add(new Triplet<>(x, y, zoom));
+            weatherTiles.add(new Triplet<>(x, y, zoom));
         }
         return true;
     }
@@ -709,6 +761,42 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    // Update the weather alerts notification
+    private void updateWeatherAlerts(JSONObject result) {
+        RelativeLayout weatherAlertLayout = findViewById(R.id.alert_layout);
+
+        try {
+            JSONArray alerts = result.getJSONArray("alerts");
+
+            JSONObject firstAlert = alerts.getJSONObject(0);
+            txtWeatherAlert.setText(firstAlert.getString("event"));
+
+            weatherAlerts = new ArrayList<>();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mma z EEE, MMM d, yyyy");
+            for (int i = 0; i < alerts.length(); i++) {
+                JSONObject alert = alerts.getJSONObject(i);
+
+                String sender = "Sent by " + alert.getString("sender_name");
+                String title = alert.getString("event");
+
+                Calendar startDate = Utils.convertUnixTimeToLocalCalendarDate(alert.getInt("start") * 1000L);
+                String startString = dateFormat.format(startDate.getTime());
+
+                Calendar endDate = Utils.convertUnixTimeToLocalCalendarDate(alert.getInt("end") * 1000L);
+                String endString = dateFormat.format(endDate.getTime());
+
+                String description = alert.getString("description");
+
+                weatherAlerts.add(new WeatherAlert(sender, title, startString, endString, description));
+            }
+
+            weatherAlertLayout.setVisibility(View.VISIBLE);
+            resetScrollView();
+        } catch (Exception e) {
+            weatherAlertLayout.setVisibility(View.GONE);
+        }
+    }
+
     // Update the theme of the activity
     private void updateTheme(boolean isDark) {
         if (isDark) {
@@ -718,5 +806,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             setTheme(R.style.Theme_UI_Light);
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
+    }
+
+    // Updates the weather tile overlay for our google maps
+    private void updateWeatherTileOverlay() {
+        if (weatherTileOverlay != null) {
+            weatherTileOverlay.remove();
+        }
+
+        TileOverlayOptions tileOverlayOptions = new TileOverlayOptions().tileProvider(createTileProvider());
+        tileOverlayOptions.transparency(0.5f);
+        weatherTileOverlay = map.addTileOverlay(tileOverlayOptions);
     }
 }

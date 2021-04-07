@@ -6,4 +6,5 @@
     <attr name="surfaceColor" format="color" />
     <attr name="primaryTextColor" format="color" />
     <attr name="secondaryTextColor" format="color" />
+    <attr name="alertSecondaryTextColor" format="color" />
 </resources>

@@ -12,6 +12,6 @@ public class Triplet<A, B, C> {
     }
 
     public A getFirst() { return first; }
-    public B geSecond() { return second; }
+    public B getSecond() { return second; }
     public C getThird() { return third; }
 }

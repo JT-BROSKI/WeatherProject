@@ -246,10 +246,6 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
             this.context = context;
         }
 
-        public Location getLocation() {
-            return location;
-        }
-
         @Override
         public void accept(Location location) {
             this.location = location;

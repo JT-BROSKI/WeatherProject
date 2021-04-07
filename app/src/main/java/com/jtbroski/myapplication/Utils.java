@@ -18,6 +18,7 @@ public class Utils {
     private static Utils instance;
     private static Context mContext;
 
+    public static boolean startUp = true;
     public static Calendar currentDate;
     public static LocationDatabaseHelper locationDbHelper;
     public static PreferenceDatabaseHelper preferenceDbHelper;
