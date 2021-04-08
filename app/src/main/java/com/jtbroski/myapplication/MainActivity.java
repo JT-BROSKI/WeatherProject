@@ -776,7 +776,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             for (int i = 0; i < alerts.length(); i++) {
                 JSONObject alert = alerts.getJSONObject(i);
 
-                String sender = "Sent by " + alert.getString("sender_name");
+                String sender = alert.getString("sender_name");
                 String title = alert.getString("event");
 
                 Calendar startDate = Utils.convertUnixTimeToLocalCalendarDate(alert.getInt("start") * 1000L);

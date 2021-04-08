@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/surfaceColor"
+    android:layout_margin="10dp"
+    android:background="@drawable/material_card"
     android:padding="20dp">
 
     <TextView
@@ -13,20 +14,41 @@
         android:textColor="?attr/primaryTextColor"
         android:textSize="18sp" />
 
-    <TextView
-        android:id="@+id/txt_sender"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/sender_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/txt_alert_title"
-        android:layout_marginTop="10dp"
-        android:textColor="?attr/alertSecondaryTextColor"
-        android:textSize="14sp" />
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sent_by"
+            android:textColor="?attr/alertSecondaryTextColor"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/txt_sender"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="70dp"
+            android:textColor="?attr/alertSecondaryTextColor"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/from_date_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/txt_sender">
+        android:layout_below="@+id/sender_layout">
 
         <TextView
             android:layout_width="wrap_content"
@@ -34,7 +56,6 @@
             android:text="@string/from"
             android:textColor="?attr/alertSecondaryTextColor"
             android:textSize="14sp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -42,7 +63,7 @@
             android:id="@+id/txt_from_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="50dp"
+            android:layout_marginStart="70dp"
             android:textColor="?attr/alertSecondaryTextColor"
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -63,7 +84,6 @@
             android:text="@string/to"
             android:textColor="?attr/alertSecondaryTextColor"
             android:textSize="14sp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -71,7 +91,7 @@
             android:id="@+id/txt_to_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="50dp"
+            android:layout_marginStart="70dp"
             android:textColor="?attr/alertSecondaryTextColor"
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="parent"
