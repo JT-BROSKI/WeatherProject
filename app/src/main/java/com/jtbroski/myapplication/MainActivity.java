@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onGlobalLayout() {
                 resetScrollView();
                 // Troubleshoot this
-//                mainLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                mainLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
         });
 
@@ -326,19 +326,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void resetScrollView() {
-
         // We need to use "post" here to ensure that a runnable is added to the thread queue
         // This ensures that this task will execute after previously queued task have properly executed (i.e weather tile loading)
-        scrollView.post(new Runnable() {
-            @Override
-            public void run() {
-
-                // Troubleshoot this
-                if (scrollView.getY() != 0.0) {
-                    scrollView.fullScroll(ScrollView.FOCUS_UP);
-                }
-            }
-        });
+        scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_UP));
     }
 
     // Construct the API string request for the current and future weather conditions
@@ -732,6 +722,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             dailyConditionsRecViewAdapter.setShowPrecipitation(hasPrecipitation);
             dailyConditionsRecViewAdapter.setDailyWeather(dailyWeather);
+            dailyConditionsRecView.post(() -> dailyConditionsRecView.smoothScrollToPosition(0));
         } catch (Exception e) {
             Toast.makeText(this, "Failed to parse daily conditions.", Toast.LENGTH_SHORT).show();
         }
@@ -777,6 +768,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             hourlyConditionsRecViewAdapter.setShowPrecipitation(hasPrecipitation);
             hourlyConditionsRecViewAdapter.setHourlyWeather(hourlyWeather);
+            hourlyConditionsRecView.post(() -> hourlyConditionsRecView.smoothScrollToPosition(0));
         } catch (Exception e) {
             Toast.makeText(this, "Failed to parse hourly conditions.", Toast.LENGTH_SHORT).show();
         }

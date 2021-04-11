@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/light_gray1"
+    android:descendantFocusability="blocksDescendants"
     tools:context=".MainActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -134,7 +135,6 @@
             android:id="@+id/scrollView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:descendantFocusability="blocksDescendants"
             android:focusable="false">
 
             <RelativeLayout
@@ -528,8 +528,9 @@
         android:id="@+id/splash"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/dark_gray1"
         android:paddingTop="20dp"
         android:scaleType="centerInside"
-        android:background="@color/dark_gray1"
         android:src="@drawable/ic_splash" />
+
 </RelativeLayout>
