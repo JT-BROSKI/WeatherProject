@@ -298,7 +298,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         if (Utils.preferenceDbHelper.getDarkThemeFlag()) {
             darkHoursColor = Color.parseColor(context.getResources().getString(R.color.black));
         } else {
-            darkHoursColor = Color.parseColor(context.getResources().getString(R.color.lighter_gray));
+            darkHoursColor = Color.parseColor(context.getResources().getString(R.color.light_gray2));
         }
 
         // Create the sunrise limit lines

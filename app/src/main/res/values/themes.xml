@@ -32,7 +32,7 @@
         <item name="appbarColor">@color/purple_500</item>
         <item name="appbarTextColor">@color/white</item>
         <item name="bgColor">@color/light_gray1</item>
-        <item name="surfaceColor">@color/white</item>
+        <item name="surfaceColor">@color/light_gray0</item>
         <item name="primaryTextColor">@color/black</item>
         <item name="secondaryTextColor">@color/light_gray3</item>
         <item name="alertSecondaryTextColor">@color/light_gray3</item>
@@ -40,7 +40,9 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.UI.Search" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-
+    <style name="LaunchTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@drawable/background_splash</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
     </style>
 </resources>

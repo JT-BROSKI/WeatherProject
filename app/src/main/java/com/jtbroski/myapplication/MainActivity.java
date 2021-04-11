@@ -53,6 +53,9 @@ import java.util.Locale;
 import static com.jtbroski.myapplication.WeatherAlertActivity.ALERT_DATA_ID;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+    private ImageView splash;
+    private ScrollView scrollView;
+
     private TextView txtCurrentLocation;
     private TextView txtWeatherAlert;
 
@@ -105,12 +108,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         geocoder = new Geocoder(this);
         addressList = new ArrayList<>();
 
+        // Ensure the splash image is not displayed if it isn't a startup action
+        splash = findViewById(R.id.splash);
+        if (!Utils.startUp) {
+            splash.setVisibility(View.GONE);
+        }
+
         // Ensure the scrollview is scrolled to the top once all elements in the entire view have been loaded
         RelativeLayout mainLayout = findViewById(R.id.main_layout);
         mainLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 resetScrollView();
+                // Troubleshoot this
+//                mainLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
         });
 
@@ -204,6 +215,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             intent.putExtras(bundle);
             startActivity(intent);
         });
+
+        scrollView = findViewById(R.id.scrollView);
 
         // Current Conditions Material Card View
         imgCurrentConditionsImage = findViewById(R.id.current_conditions_image);
@@ -313,14 +326,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void resetScrollView() {
-        ScrollView scrollView = findViewById(R.id.scrollView);
 
         // We need to use "post" here to ensure that a runnable is added to the thread queue
         // This ensures that this task will execute after previously queued task have properly executed (i.e weather tile loading)
         scrollView.post(new Runnable() {
             @Override
             public void run() {
-                scrollView.fullScroll(ScrollView.FOCUS_UP);
+
+                // Troubleshoot this
+                if (scrollView.getY() != 0.0) {
+                    scrollView.fullScroll(ScrollView.FOCUS_UP);
+                }
             }
         });
     }
@@ -365,6 +381,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         Toast.makeText(this, "Failed to parse current weather data.", Toast.LENGTH_SHORT).show();
                     } finally {
                         resetScrollView();
+
+                        // Hide the splash image when the data has been loaded
+                        if (splash.getVisibility() != View.GONE) {
+                            splash.setVisibility(View.GONE);
+                        }
                     }
                 },
                 error -> Toast.makeText(this, "Forecast API call failed", Toast.LENGTH_SHORT).show());

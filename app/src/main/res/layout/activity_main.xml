@@ -147,7 +147,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
-                    android:background="?attr/surfaceColor">
+                    app:cardBackgroundColor="?attr/surfaceColor">
 
                     <RelativeLayout
                         android:layout_width="match_parent"
@@ -404,7 +404,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/current_conditions_card_view"
                     android:layout_margin="10dp"
-                    android:background="?attr/surfaceColor">
+                    app:cardBackgroundColor="?attr/surfaceColor">
 
                     <RelativeLayout
                         android:layout_width="match_parent"
@@ -445,7 +445,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/weather_map_card_view"
                     android:layout_margin="10dp"
-                    android:background="?attr/surfaceColor">
+                    app:cardBackgroundColor="?attr/surfaceColor">
 
                     <RelativeLayout
                         android:layout_width="match_parent"
@@ -484,7 +484,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/daily_conditions_card_view"
                     android:layout_margin="10dp"
-                    android:background="?attr/surfaceColor">
+                    app:cardBackgroundColor="?attr/surfaceColor">
 
                     <RelativeLayout
                         android:layout_width="match_parent"
@@ -523,4 +523,13 @@
         </ScrollView>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <ImageView
+        android:id="@+id/splash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="20dp"
+        android:scaleType="centerInside"
+        android:background="@color/dark_gray1"
+        android:src="@drawable/ic_splash" />
 </RelativeLayout>
