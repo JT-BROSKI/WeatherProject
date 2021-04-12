@@ -81,10 +81,12 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
         if (!precipChance.equals("0")) {
             String precipValue = precipChance + "%";
             holder.txtPrecipChance.setText(precipValue);
-            holder.rainDrop.setVisibility(View.VISIBLE);
+
+            setPrecipitationIcon(holder, position);
+            holder.precipIcon.setVisibility(View.VISIBLE);
         } else {
             holder.txtPrecipChance.setText("");
-            holder.rainDrop.setVisibility(View.GONE);
+            holder.precipIcon.setVisibility(View.GONE);
         }
 
         if (showPrecipitation) {
@@ -104,6 +106,14 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
         notifyDataSetChanged();
     }
 
+    private void setPrecipitationIcon(HourlyConditionsRecViewAdapter.ViewHolder holder, int position) {
+        if (hourlyWeather.get(position).getIcon().contains("13")) {
+            holder.precipIcon.setImageResource(R.drawable.ic_snowflake);
+        } else {
+            holder.precipIcon.setImageResource(R.drawable.ic_rain_drop);
+        }
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView txtDateDay;
@@ -114,7 +124,7 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
         private TextView txtWindValue;
         private TextView txtWindScale;
         private TextView txtViewDirection;
-        private ImageView rainDrop;
+        private ImageView precipIcon;
         private TextView txtPrecipChance;
 
         public ViewHolder(@NonNull View itemView) {
@@ -129,7 +139,7 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
             txtWindScale = itemView.findViewById(R.id.wind_scale);
             txtViewDirection = itemView.findViewById(R.id.wind_direction);
             txtPrecipChance = itemView.findViewById(R.id.precip_chance);
-            rainDrop = itemView.findViewById(R.id.rain_drop);
+            precipIcon = itemView.findViewById(R.id.precip_icon);
         }
     }
 }

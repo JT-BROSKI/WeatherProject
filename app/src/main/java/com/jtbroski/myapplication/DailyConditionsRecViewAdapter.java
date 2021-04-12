@@ -256,10 +256,12 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         if (!precipChance.equals("0")) {
             String precipValue = precipChance + "%";
             holder.txtPrecipChance.setText(precipValue);
-            holder.rainDrop.setVisibility(View.VISIBLE);
+
+            setPrecipitationIcon(holder, position);
+            holder.precipIcon.setVisibility(View.VISIBLE);
         } else {
             holder.txtPrecipChance.setText("");
-            holder.rainDrop.setVisibility(View.GONE);
+            holder.precipIcon.setVisibility(View.GONE);
         }
 
         // Show precipitation value if applicable
@@ -531,6 +533,14 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         return color;
     }
 
+    private void setPrecipitationIcon(ViewHolder holder, int position) {
+        if (dailyWeather.get(position).getIcon().contains("13")) {
+            holder.precipIcon.setImageResource(R.drawable.ic_snowflake);
+        } else {
+            holder.precipIcon.setImageResource(R.drawable.ic_rain_drop);
+        }
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView txtDate;
@@ -540,7 +550,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         private TextView txtWindScale;
         private TextView txtViewDirection;
         private TextView txtPrecipChance;
-        private ImageView rainDrop;
+        private ImageView precipIcon;
         private LineChart lineChart;
 
         public ViewHolder(@NonNull View itemView) {
@@ -553,7 +563,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
             txtWindScale = itemView.findViewById(R.id.wind_scale);
             txtViewDirection = itemView.findViewById(R.id.wind_direction);
             txtPrecipChance = itemView.findViewById(R.id.precip_chance);
-            rainDrop = itemView.findViewById(R.id.rain_drop);
+            precipIcon = itemView.findViewById(R.id.precip_icon);
             lineChart = itemView.findViewById(R.id.line_Chart);
         }
     }

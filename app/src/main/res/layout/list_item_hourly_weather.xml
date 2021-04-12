@@ -101,7 +101,7 @@
             android:layout_centerHorizontal="true">
 
             <ImageView
-                android:id="@+id/rain_drop"
+                android:id="@+id/precip_icon"
                 android:layout_width="25dp"
                 android:layout_height="20dp"
                 android:layout_marginTop="2dp"
@@ -113,7 +113,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:layout_marginStart="2dp"
-                android:layout_toEndOf="@+id/rain_drop"
+                android:layout_toEndOf="@+id/precip_icon"
                 android:text="10%"
                 android:textColor="@color/rain_blue"
                 android:textSize="16sp" />

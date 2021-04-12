@@ -120,7 +120,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onGlobalLayout() {
                 resetScrollView();
-                // Troubleshoot this
                 mainLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
         });
