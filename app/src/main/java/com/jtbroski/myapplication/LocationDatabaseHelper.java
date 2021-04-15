@@ -15,7 +15,6 @@ import java.io.OutputStream;
 public class LocationDatabaseHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "locations.db";
     private File DB_FILE;
-    private Context context;
 
     private static final String CITIES_A_TABLE = "CITIES_A_TABLE";
     private static final String CITIES_B_TABLE = "CITIES_B_TABLE";
@@ -49,9 +48,8 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
     public LocationDatabaseHelper(Context context) {
         super(context, DB_NAME, null, 1);
         DB_FILE = context.getDatabasePath(DB_NAME);
-        this.context = context;
 
-        populateDatabase();
+        populateDatabase(context);
     }
 
     @Override
@@ -93,7 +91,7 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Copy the contents within the locations database in assets to the actual locations database used by the program
-    private void copyDatabase() {
+    private void copyDatabase(Context context) {
 
         InputStream inputStream = null;
         OutputStream outputStream = null;
@@ -206,14 +204,14 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Populate the locations database, if applicable
-    private void populateDatabase() {
+    private void populateDatabase(Context context) {
         SQLiteDatabase db = getWritableDatabase();
 
         String query = "SELECT name FROM sqlite_master WHERE type='table' AND name='" + CITIES_A_TABLE + "'";
         Cursor dbCursor = db.rawQuery(query, null);
 
         if (!dbCursor.moveToFirst()) {
-            copyDatabase();
+            copyDatabase(context);
         }
         db.close();
         dbCursor.close();

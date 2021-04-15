@@ -1,6 +1,8 @@
 package com.jtbroski.myapplication;
 
 import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.widget.Toast;
 
@@ -9,6 +11,7 @@ import org.json.JSONObject;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
@@ -16,7 +19,8 @@ import java.util.TimeZone;
 public class Utils {
 
     private static Utils instance;
-    private static Context mContext;
+    private static Context mContext;        // we need this for the sake of recreating the MainActivity from another activity when necessary (using fragments instead should make this unnecessary)
+    private static Geocoder geocoder;
 
     public static boolean startUp = true;
     public static Calendar currentDate;
@@ -27,8 +31,7 @@ public class Utils {
     public static String timeZone;
 
     private Utils(Context context) {
-        locationDbHelper = new LocationDatabaseHelper(context);
-        preferenceDbHelper = new PreferenceDatabaseHelper(context);
+        updateContext(context);
         lastQueriedLocation = new Location("");
         locationName = null;
     }
@@ -36,10 +39,32 @@ public class Utils {
     public static Utils getInstance(Context context) {
         if (instance == null) {
             instance = new Utils(context);
-            mContext = context;
+        } else {
+            updateContext(context);
         }
 
         return instance;
+    }
+
+    // Check whether the geocoder can find a location matching the string parameter
+    // If the geocoder can find a location return true, else return false
+    public static boolean checkLocationValidity(String location) {
+        boolean isValid = false;
+        ArrayList<Address> addressList = new ArrayList<>();
+        try {
+            addressList = (ArrayList<Address>) geocoder.getFromLocationName(location, 10);
+        } catch (Exception e) {
+
+        }
+
+        if (addressList.size() > 0) {
+            Utils.locationName = location;
+            Utils.lastQueriedLocation.setLatitude(addressList.get(0).getLatitude());
+            Utils.lastQueriedLocation.setLongitude(addressList.get(0).getLongitude());
+            isValid = true;
+        }
+
+        return isValid;
     }
 
     public static Calendar convertUnixTimeToLocalCalendarDate(long unixTime) {
@@ -54,17 +79,17 @@ public class Utils {
 
         if (valueInt <= 22 || valueInt >= 338) {
             return "(N)";
-        } else if (valueInt > 22 && valueInt < 68) {
+        } else if (valueInt < 68) {
             return "(NE)";
-        } else if (valueInt >= 68 && valueInt <= 121) {
+        } else if (valueInt <= 121) {
             return "(E)";
-        } else if (valueInt > 121 && valueInt < 158) {
+        } else if (valueInt < 158) {
             return "(SE)";
-        } else if (valueInt >= 158 && valueInt <= 202) {
+        } else if (valueInt <= 202) {
             return "(S)";
-        } else if (valueInt > 202 && valueInt < 248) {
+        } else if (valueInt < 248) {
             return "(SW)";
-        } else if (valueInt >= 248 && valueInt <= 292) {
+        } else if (valueInt <= 292) {
             return "(W)";
         } else {
             return "(NW)";
@@ -94,11 +119,7 @@ public class Utils {
         return weekDayFormat.format(day.getTime());
     }
 
-    public static void forwardToWeatherApiCall(String query) {
-        ((MainActivity) mContext).callWeatherApi(query);
-    }
-
-    public static String getCurrentDayMidnight() {
+    public static String getCurrentDayMidnight(Context context) {
         String time = "";
 
         LocalDateTime now = LocalDateTime.now();
@@ -114,13 +135,13 @@ public class Utils {
             previousDayStart.setTime(formatter.parse(now.toString()));
             time = String.valueOf(previousDayStart.getTimeInMillis() / 1000L);
         } catch (Exception e) {
-            Toast.makeText(mContext, "Failed to parse local date time for current midnight calendar object.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Failed to parse local date time for current midnight calendar object.", Toast.LENGTH_SHORT).show();
         }
 
         return time;
     }
 
-    public static String getPreviousThreeHours() {
+    public static String getPreviousThreeHours(Context context) {
         String time = "";
 
         LocalDateTime now = LocalDateTime.now();
@@ -136,7 +157,7 @@ public class Utils {
             previousDayStart.setTime(formatter.parse(now.toString()));
             time = String.valueOf(previousDayStart.getTimeInMillis() / 1000L);
         } catch (Exception e) {
-            Toast.makeText(mContext, "Failed to parse local date time for previous three hour calendar object.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Failed to parse local date time for previous three hour calendar object.", Toast.LENGTH_SHORT).show();
         }
 
         return time;
@@ -150,7 +171,11 @@ public class Utils {
     }
 
     public static void refreshMainActivity() {
-        ((MainActivity) mContext).callWeatherApi(lastQueriedLocation);
+        ((MainActivity) mContext).recreate();
+    }
+
+    public static void removeContext() {
+        mContext = null;
     }
 
     public static String roundStringNumberValue(String value) {
@@ -165,13 +190,20 @@ public class Utils {
         weekDayDateFormat.setTimeZone(date.getTimeZone());
     }
 
-    public static void updateLastQueriedLocation(JSONObject data) {
+    public static void updateLastQueriedLocation(Context context, JSONObject data) {
         try {
             lastQueriedLocation.setLatitude(data.getDouble("lat"));
             lastQueriedLocation.setLongitude(data.getDouble("lon"));
         } catch (Exception e) {
-            Toast.makeText(mContext, "Unable to update last queried location.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Unable to update last queried location.", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private static void updateContext(Context context) {
+        geocoder = new Geocoder(context);
+        locationDbHelper = new LocationDatabaseHelper(context);
+        preferenceDbHelper = new PreferenceDatabaseHelper(context);
+        mContext = context;
     }
 
     private static DateFormat hourFormat = new SimpleDateFormat("h a");

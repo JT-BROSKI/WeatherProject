@@ -324,7 +324,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         // Create the actual sunrise limit line
         float sunriseTime = sunriseHour + (sunriseMinute / 60f) - 0.5f;     // the 0.5f value is an estimate correction due to how the line width is expanded
         LimitLine sunriseLine = new LimitLine(sunriseTime);
-        sunriseLine.setLineWidth(8);
+        sunriseLine.setLineWidth(12);
         sunriseLine.setLineColor(darkHoursColor);
         holder.lineChart.getXAxis().addLimitLine(sunriseLine);
 
@@ -349,7 +349,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         // Create the actual sunset limit line
         float sunsetTime = sunsetHour + (sunsetMinute / 60f) + 0.5f;    // the 0.5f value is an estimate correction due to how the line width is expanded
         LimitLine sunsetLine = new LimitLine(sunsetTime);
-        sunsetLine.setLineWidth(8);
+        sunsetLine.setLineWidth(12);
         sunsetLine.setLineColor(darkHoursColor);
         holder.lineChart.getXAxis().addLimitLine(sunsetLine);
     }

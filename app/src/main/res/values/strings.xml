@@ -24,4 +24,8 @@
     <string name="from">FROM:</string>
     <string name="to">TO:</string>
     <string name="sent_by">SENT BY:</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="warning_icon_description">Warning icon</string>
+    <string name="search_hint">Search by city or zip code</string>
 </resources>

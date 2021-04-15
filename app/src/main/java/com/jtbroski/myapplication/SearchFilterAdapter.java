@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.core.app.ComponentActivity;
 
@@ -53,9 +54,13 @@ public class SearchFilterAdapter extends CursorAdapter {
                 TextView textView = (TextView) ((ViewGroup) v).getChildAt(0);
                 String location = textView.getText().toString();
 
-                Utils.locationName = location;
-                Utils.forwardToWeatherApiCall(location);
-                ((ComponentActivity) context).onBackPressed();
+                // Ensure whether the geocoder can find a location matching the preloaded location string
+                if (Utils.checkLocationValidity(location)) {
+                    Utils.refreshMainActivity();
+                    ((ComponentActivity) context).onBackPressed();
+                } else {
+                    Toast.makeText(context, "Unable to find any locations matching with " + location, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

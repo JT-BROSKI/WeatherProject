@@ -35,12 +35,10 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
     private static final String IN_IMPERIAL = "IN_IMPERIAL";
     private static final String DARK_THEME = "DARK_THEME";
 
-    private Context context;
 
     public PreferenceDatabaseHelper(@Nullable Context context) {
         super(context, "preferences.db", null, 1);
-        this.context = context;
-        initializeDatabase();
+        initializeDatabase(context);
     }
 
     @Override
@@ -59,10 +57,10 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public void getCurrentLocation() {   // TODO Potential refactor this to correctly ask and handle location permission access/deny results
+    public void getCurrentLocation(Context context) {   // TODO Potential refactor this to correctly ask and handle location permission access/deny results
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            createAlertMessageNoGps();
+            createAlertMessageNoGps(context);
         } else {
             int permissionCheck = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
 
@@ -164,7 +162,7 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    private void createAlertMessageNoGps() {
+    private void createAlertMessageNoGps(Context context) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage("GPS location is disabled, would you like to enable it?")
                 .setCancelable(false)
@@ -208,9 +206,9 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Initializes the database and if applicable add the data to the tables
-    private void initializeDatabase() {
+    private void initializeDatabase(Context context) {
         if (!hasPreferredLocation()) {
-            getCurrentLocation();
+            getCurrentLocation(context);
         }
 
         if (!hasSettings()) {
@@ -251,7 +249,7 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
             this.location = location;
             ((MainActivity) context).callWeatherApi(location);
 
-            if (!Utils.getInstance(context).preferenceDbHelper.updatePreferredLocation(location)) {
+            if (!Utils.preferenceDbHelper.updatePreferredLocation(location)) {
                 Toast.makeText(context, "Unable to save preferred location.", Toast.LENGTH_SHORT).show();
             }
         }

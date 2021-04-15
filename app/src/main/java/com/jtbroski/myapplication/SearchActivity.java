@@ -1,6 +1,7 @@
 package com.jtbroski.myapplication;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Editable;
@@ -13,6 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -67,7 +69,7 @@ public class SearchActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                citiesFilteredCursor = s.length() > 2 ? Utils.locationDbHelper.getCitiesFilteredCursor(s.toString()) :
+                citiesFilteredCursor = s.length() > 3 ? Utils.locationDbHelper.getCitiesFilteredCursor(s.toString()) :
                         Utils.locationDbHelper.getCitiesFilteredCursor("");
                 searchFilterAdapter.changeCursor(citiesFilteredCursor);
             }
@@ -83,15 +85,19 @@ public class SearchActivity extends AppCompatActivity {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     String location = textView.getText().toString();
 
-                    Utils.locationName = location;
-                    Utils.forwardToWeatherApiCall(location);
-                    onBackPressed();
+                    // Check whether the geocoder can find a location matching the string within the EditText
+                    if (Utils.checkLocationValidity(location)) {
+                        Utils.refreshMainActivity();
+                        onBackPressed();
+                    }
+                    else {
+                        Toast.makeText(SearchActivity.this, "Unable to find any locations matching with " + location, Toast.LENGTH_SHORT).show();
+                    }
                 }
 
                 return false;
             }
         });
-
     }
 
     // Update the theme of the activity

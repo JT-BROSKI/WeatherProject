@@ -1,8 +1,12 @@
 package com.jtbroski.myapplication;
 
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -12,14 +16,12 @@ import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -88,10 +90,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private SwipeRefreshLayout swipeRefreshLayout;
 
-    private Geocoder geocoder;
-    private ArrayList<Address> addressList;
-
-    private RelativeLayout weatherAlertLayout;
+    private ConstraintLayout weatherAlertLayout;
     private ArrayList<WeatherAlert> weatherAlerts;
 
     private boolean isImperial;
@@ -99,14 +98,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 //        this.deleteDatabase("preferences.db");  // temporary database reset until full database has been created
-        Utils.getInstance(this);
+        Utils.getInstance(MainActivity.this);
         updateTheme(Utils.preferenceDbHelper.getDarkThemeFlag());
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        geocoder = new Geocoder(this);
-        addressList = new ArrayList<>();
 
         // Ensure the splash image is not displayed if it isn't a startup action
         splash = findViewById(R.id.splash);
@@ -114,8 +110,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             splash.setVisibility(View.GONE);
         }
 
+//        Toolbar toolbar = findViewById(R.id.tool_bar);
+////        setSupportActionBar(toolbar);
+//        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+//        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+//        toggle.syncState();
+//        drawerLayout.addDrawerListener(toggle);
+
         // Ensure the scrollview is scrolled to the top once all elements in the entire view have been loaded
-        RelativeLayout mainLayout = findViewById(R.id.main_layout);
+        ConstraintLayout mainLayout = findViewById(R.id.main_layout);
         mainLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -157,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View v) {
                 Utils.locationName = null;
-                Utils.preferenceDbHelper.getCurrentLocation();
+                Utils.preferenceDbHelper.getCurrentLocation(MainActivity.this);
             }
         });
         myLocationButton.setOnTouchListener(new View.OnTouchListener() {
@@ -287,29 +290,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         final String VERSION = "2.5";
         final String TEMP_MEASUREMENT = "&units=" + (isImperial ? "imperial" : "metric");
         String coordinates = "lat=" + location.getLatitude() + "&lon=" + location.getLongitude();
-        String currentMidnight = Utils.getCurrentDayMidnight();
+        String currentMidnight = Utils.getCurrentDayMidnight(this);
 
         queue.add(constructHistoricalStringRequest(currentMidnight, END_POINT, VERSION, coordinates, TEMP_MEASUREMENT, API_KEY));
     }
 
-    // Creates a Location object based on the string parameter passed in, then executes the callWeatherApi(Location location) function
-    public void callWeatherApi(String location) {
-        addressList.clear();
-
-        try {
-            addressList = (ArrayList<Address>) geocoder.getFromLocationName(location, 10);
-        } catch (Exception e) {
-            Toast.makeText(MainActivity.this, "Unable to get any locations matching with " + location, Toast.LENGTH_SHORT).show();
-        }
-
-        if (addressList.size() > 0) {
-            Location newLocation = new Location(LocationManager.GPS_PROVIDER);
-            newLocation.setLatitude(addressList.get(0).getLatitude());
-            newLocation.setLongitude(addressList.get(0).getLongitude());
-            callWeatherApi(newLocation);    // TODO potentially implement preferred location saving here
-        } else {
-            Toast.makeText(this, "Unable to get any geocoded location data for " + location, Toast.LENGTH_SHORT).show();
-        }
+    @Override
+    protected void onDestroy() {
+        Utils.removeContext();
+        super.onDestroy();
     }
 
     @Override
@@ -349,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                         parseCurrentTimeZone(result);
                         populateFinalFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
-                        Utils.updateLastQueriedLocation(result);
+                        Utils.updateLastQueriedLocation(MainActivity.this, result);
 
                         boolean minutelyAvailable = true;
                         JSONArray precipConditions = null;
@@ -405,7 +394,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     // Construct the backup string request for past hourly conditions just in case the normal historical string request missed a few hours
     private StringRequest constructHistoricalStringRequestBackup(String currentMidnight, String endPoint, String version, String coordinates, String measurement, String apiKey) {
         final String HISTORICAL_ONE_CALL = "onecall/timemachine?";
-        String timeThreeHours = "&dt=" + Utils.getPreviousThreeHours();
+        String timeThreeHours = "&dt=" + Utils.getPreviousThreeHours(this);
         String urlPreviousThreeHours = endPoint + "/" + version + "/" + HISTORICAL_ONE_CALL + coordinates + timeThreeHours + measurement + "&" + apiKey;
 
         return new StringRequest(Request.Method.GET, urlPreviousThreeHours,
@@ -609,7 +598,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Load weather icon image
         if (!icon.isEmpty())
-            Glide.with(this)
+            Glide.with(getApplicationContext())
                     .asBitmap()
                     .load(Utils.createWeatherIconUrl(icon))
                     .into(imgCurrentConditionsImage);
@@ -775,8 +764,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     // Update the weather alerts notification
     private void updateWeatherAlerts(JSONObject result) {
-        RelativeLayout weatherAlertLayout = findViewById(R.id.alert_layout);
-
         try {
             JSONArray alerts = result.getJSONArray("alerts");
 
