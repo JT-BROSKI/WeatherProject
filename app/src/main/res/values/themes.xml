@@ -26,6 +26,7 @@
         <item name="alertSecondaryTextColor">@color/light_gray3</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
     </style>
 
     <style name="Theme.UI.Light" parent="Theme.MaterialComponents.DayNight.NoActionBar">
@@ -38,6 +39,12 @@
         <item name="alertSecondaryTextColor">@color/light_gray3</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
+    </style>
+
+    <style name="DrawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">
+        <item name="spinBars">true</item>
+        <item name="color">@android:color/white</item>
     </style>
 
     <style name="LaunchTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
