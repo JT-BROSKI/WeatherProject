@@ -71,7 +71,7 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
             String table = getAlphabeticCityDatabase(firstLetter);
 
             if (table != null) {
-                SQLiteDatabase db = this.getWritableDatabase();
+                SQLiteDatabase db = this.getReadableDatabase();
                 String query = "SELECT * FROM " + table + " WHERE " + COLUMN_CITY + " LIKE '" + text + "%'";
                 Cursor dbCursor = db.rawQuery(query, null);
 

@@ -14,12 +14,11 @@ import android.widget.Toast;
 import androidx.core.app.ComponentActivity;
 
 public class SearchFilterAdapter extends CursorAdapter {
-    private Context context;
+    private Context mContext;
 
     public SearchFilterAdapter(Context context, Cursor c, boolean autoRequery) {
         super(context, c, autoRequery);
-
-        this.context = context;
+        this.mContext = context;
     }
 
     @Override
@@ -33,8 +32,8 @@ public class SearchFilterAdapter extends CursorAdapter {
     public void bindView(View view, Context context, Cursor cursor) {
         TextView txtSearchSuggestion = view.findViewById(R.id.txt_Search_Suggestion);
 
-        String city = cursor.getString(cursor.getColumnIndexOrThrow(LocationDatabaseHelper.COLUMN_CITY));
-        String country = cursor.getString(cursor.getColumnIndexOrThrow(LocationDatabaseHelper.COLUMN_COUNTRY));
+        String city = cursor.getString(cursor.getColumnIndex(LocationDatabaseHelper.COLUMN_CITY));
+        String country = cursor.getString(cursor.getColumnIndex(LocationDatabaseHelper.COLUMN_COUNTRY));
         String citySuggestion = city + ", " + country;
         txtSearchSuggestion.setText(citySuggestion);
 
@@ -57,9 +56,9 @@ public class SearchFilterAdapter extends CursorAdapter {
                 // Ensure whether the geocoder can find a location matching the preloaded location string
                 if (Utils.checkLocationValidity(location)) {
                     Utils.refreshMainActivity();
-                    ((ComponentActivity) context).onBackPressed();
+                    ((ComponentActivity) mContext).onBackPressed();
                 } else {
-                    Toast.makeText(context, "Unable to find any locations matching with " + location, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mContext, "Unable to find any locations matching with " + location, Toast.LENGTH_SHORT).show();
                 }
             }
         });

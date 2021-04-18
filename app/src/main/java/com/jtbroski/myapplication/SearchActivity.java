@@ -69,7 +69,7 @@ public class SearchActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                citiesFilteredCursor = s.length() > 3 ? Utils.locationDbHelper.getCitiesFilteredCursor(s.toString()) :
+                citiesFilteredCursor = s.length() > 2 ? Utils.locationDbHelper.getCitiesFilteredCursor(s.toString()) :
                         Utils.locationDbHelper.getCitiesFilteredCursor("");
                 searchFilterAdapter.changeCursor(citiesFilteredCursor);
             }

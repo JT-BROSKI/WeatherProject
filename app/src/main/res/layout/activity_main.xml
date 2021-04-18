@@ -150,7 +150,8 @@
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/pullDownRefresh"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/app_bar_layout">
@@ -164,13 +165,13 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?attr/bgColor">
+                    android:background="?attr/bgColor"
+                    android:padding="10dp">
 
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/current_conditions_card_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
                         app:cardBackgroundColor="?attr/surfaceColor"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -431,7 +432,7 @@
                         android:id="@+id/weather_map_card_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
+                        android:layout_marginTop="10dp"
                         app:cardBackgroundColor="?attr/surfaceColor"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -481,7 +482,7 @@
                         android:id="@+id/daily_conditions_card_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
+                        android:layout_marginTop="10dp"
                         app:cardBackgroundColor="?attr/surfaceColor"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -529,7 +530,7 @@
                         android:id="@+id/hourly_conditions_card_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
+                        android:layout_marginTop="10dp"
                         app:cardBackgroundColor="?attr/surfaceColor"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -581,17 +582,6 @@
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!--    <com.google.android.material.navigation.NavigationView-->
-    <!--        android:id="@+id/nav_view"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="match_parent"-->
-    <!--        android:layout_gravity="start">-->
-
-
-    <!--    </com.google.android.material.navigation.NavigationView>-->
-
         <ImageView
             android:id="@+id/splash"
             android:layout_width="match_parent"
@@ -600,6 +590,73 @@
             android:paddingTop="23dp"
             android:scaleType="centerInside"
             android:src="@drawable/ic_splash" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/surfaceColor">
+
+            <TextView
+                android:id="@+id/txt_favorite_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/favorites_title"
+                android:textColor="?attr/primaryTextColor"
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ListView
+                android:id="@+id/list_favorites"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/txt_favorite_title" />
+
+            <View
+                android:id="@+id/nav_layout_divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="20dp"
+                android:background="@color/light_gray1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/list_favorites" />
+
+            <TextView
+                android:id="@+id/txt_recent_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="20dp"
+                android:text="@string/recent_title"
+                android:textColor="?attr/primaryTextColor"
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/nav_layout_divider" />
+
+            <ListView
+                android:id="@+id/list_recent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/txt_recent_title" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.navigation.NavigationView>
 
 </androidx.drawerlayout.widget.DrawerLayout>
 

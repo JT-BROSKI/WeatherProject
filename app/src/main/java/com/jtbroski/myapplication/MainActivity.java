@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,6 +14,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.database.Cursor;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -22,6 +24,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,6 +43,7 @@ import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.android.gms.maps.model.TileProvider;
 import com.google.android.gms.maps.model.UrlTileProvider;
+import com.google.android.material.navigation.NavigationView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -80,6 +84,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private RequestQueue queue;
 
+    private DrawerLayout drawerLayout;
+
+    private Cursor favoriteLocationCursor;
+    private FavoriteLocationListAdapter favoriteLocationListAdapter;
+    private ListView favoriteLocationListView;
+
+    private Cursor recentLocationCursor;
+    private RecentLocationListAdapter recentLocationListAdapter;
+    private ListView recentLocationListView;
+
     private DailyConditionsRecViewAdapter dailyConditionsRecViewAdapter;
     private RecyclerView dailyConditionsRecView;
 
@@ -110,12 +124,31 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             splash.setVisibility(View.GONE);
         }
 
-//        Toolbar toolbar = findViewById(R.id.tool_bar);
-////        setSupportActionBar(toolbar);
-//        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
-//        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-//        toggle.syncState();
-//        drawerLayout.addDrawerListener(toggle);
+        Toolbar toolbar = findViewById(R.id.tool_bar);
+        drawerLayout = findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        toggle.syncState();
+        drawerLayout.addDrawerListener(toggle);
+
+        // Dynamically set navigation view width
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        DrawerLayout.LayoutParams params = (DrawerLayout.LayoutParams) navigationView.getLayoutParams();
+        params.width = (int) (getResources().getDisplayMetrics().widthPixels * 0.8);
+        navigationView.setLayoutParams(params);
+
+        // Populate favorite locations in the navigation drawer
+        favoriteLocationCursor = Utils.preferenceDbHelper.getFavoriteLocations();
+        favoriteLocationListAdapter = new FavoriteLocationListAdapter(this, favoriteLocationCursor, false);
+        favoriteLocationListAdapter.changeCursor(favoriteLocationCursor);
+        favoriteLocationListView = findViewById(R.id.list_favorites);
+        favoriteLocationListView.setAdapter(favoriteLocationListAdapter);
+
+        // Populate recent locations list in the navigation drawer
+        recentLocationCursor = Utils.preferenceDbHelper.getRecentLocations();
+        recentLocationListAdapter = new RecentLocationListAdapter(this, recentLocationCursor, false);
+        recentLocationListAdapter.changeCursor(recentLocationCursor);
+        recentLocationListView = findViewById(R.id.list_recent);
+        recentLocationListView.setAdapter(recentLocationListAdapter);
 
         // Ensure the scrollview is scrolled to the top once all elements in the entire view have been loaded
         ConstraintLayout mainLayout = findViewById(R.id.main_layout);
@@ -295,6 +328,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         queue.add(constructHistoricalStringRequest(currentMidnight, END_POINT, VERSION, coordinates, TEMP_MEASUREMENT, API_KEY));
     }
 
+    // Close the drawer layout
+    public void closeDrawerLayout() {
+        drawerLayout.closeDrawer(GravityCompat.START);
+    }
+
     @Override
     protected void onDestroy() {
         Utils.removeContext();
@@ -317,6 +355,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // We need to use "post" here to ensure that a runnable is added to the thread queue
         // This ensures that this task will execute after previously queued task have properly executed (i.e weather tile loading)
         scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_UP));
+    }
+
+    // Update the list views within the navigation drawer by update their cursors
+    public void updateNavigationListViews() {
+        favoriteLocationListAdapter.changeCursor(Utils.preferenceDbHelper.getFavoriteLocations());
+        recentLocationListAdapter.changeCursor(Utils.preferenceDbHelper.getRecentLocations());
     }
 
     // Construct the API string request for the current and future weather conditions
@@ -355,6 +399,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         updateHourlyConditions(hourlyConditions);
                         updateWeatherAlerts(result);
 
+                        Utils.preferenceDbHelper.updatePreferredLocation(Utils.lastQueriedLocation);
                     } catch (JSONException e) {
                         Toast.makeText(this, "Failed to parse current weather data.", Toast.LENGTH_SHORT).show();
                     } finally {

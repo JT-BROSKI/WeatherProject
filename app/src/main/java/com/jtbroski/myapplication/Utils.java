@@ -59,8 +59,15 @@ public class Utils {
 
         if (addressList.size() > 0) {
             Utils.locationName = location;
-            Utils.lastQueriedLocation.setLatitude(addressList.get(0).getLatitude());
-            Utils.lastQueriedLocation.setLongitude(addressList.get(0).getLongitude());
+
+            double latitude = addressList.get(0).getLatitude();
+            double longitude = addressList.get(0).getLongitude();
+
+            Utils.lastQueriedLocation.setLatitude(latitude);
+            Utils.lastQueriedLocation.setLongitude(longitude);
+
+            preferenceDbHelper.updateRecentLocations(location, latitude, longitude);
+
             isValid = true;
         }
 
