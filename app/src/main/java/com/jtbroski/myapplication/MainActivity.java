@@ -76,7 +76,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private TextView txtHumidity;
     private TextView txtWind;
 
-    private SupportMapFragment mapFragment;
     private GoogleMap map;
     private int mapZoom;
     private TileOverlay weatherTileOverlay;
@@ -86,13 +85,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private DrawerLayout drawerLayout;
 
-    private Cursor favoriteLocationCursor;
     private FavoriteLocationListAdapter favoriteLocationListAdapter;
-    private ListView favoriteLocationListView;
-
-    private Cursor recentLocationCursor;
     private RecentLocationListAdapter recentLocationListAdapter;
-    private ListView recentLocationListView;
 
     private DailyConditionsRecViewAdapter dailyConditionsRecViewAdapter;
     private RecyclerView dailyConditionsRecView;
@@ -112,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 //        this.deleteDatabase("preferences.db");  // temporary database reset until full database has been created
-        Utils.getInstance(MainActivity.this);
+        Utils.initialize(MainActivity.this);
         updateTheme(Utils.preferenceDbHelper.getDarkThemeFlag());
 
         super.onCreate(savedInstanceState);
@@ -137,17 +131,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         navigationView.setLayoutParams(params);
 
         // Populate favorite locations in the navigation drawer
-        favoriteLocationCursor = Utils.preferenceDbHelper.getFavoriteLocations();
+        ListView favoriteLocationListView = findViewById(R.id.list_favorites);
+        Cursor favoriteLocationCursor = Utils.preferenceDbHelper.getFavoriteLocations();
         favoriteLocationListAdapter = new FavoriteLocationListAdapter(this, favoriteLocationCursor, false);
         favoriteLocationListAdapter.changeCursor(favoriteLocationCursor);
-        favoriteLocationListView = findViewById(R.id.list_favorites);
         favoriteLocationListView.setAdapter(favoriteLocationListAdapter);
 
         // Populate recent locations list in the navigation drawer
-        recentLocationCursor = Utils.preferenceDbHelper.getRecentLocations();
+        ListView recentLocationListView = findViewById(R.id.list_recent);
+        Cursor recentLocationCursor = Utils.preferenceDbHelper.getRecentLocations();
         recentLocationListAdapter = new RecentLocationListAdapter(this, recentLocationCursor, false);
         recentLocationListAdapter.changeCursor(recentLocationCursor);
-        recentLocationListView = findViewById(R.id.list_recent);
         recentLocationListView.setAdapter(recentLocationListAdapter);
 
         // Ensure the scrollview is scrolled to the top once all elements in the entire view have been loaded
@@ -265,7 +259,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         txtWind = findViewById(R.id.wind_data);
 
         // Weather Map Material Card View
-        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.weather_map_fragment);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.weather_map_fragment);
         mapFragment.getMapAsync(this);
 
         // Hourly Conditions Material Card View
@@ -385,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         Utils.updateLastQueriedLocation(MainActivity.this, result);
 
                         boolean minutelyAvailable = true;
-                        JSONArray precipConditions = null;
+                        JSONArray precipConditions;
                         try {
                             precipConditions = result.getJSONArray("minutely");
                         } catch (JSONException e) {
@@ -748,8 +742,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 String icon = Utils.createWeatherIconUrl(dailyCondition.getJSONArray("weather").getJSONObject(0).getString("icon"));
 
                 // Create new weather object and add to the array list
-                Weather weather = new Weather(i, date, sunrise, sunset, "", temperatureMax, temperatureMin, "",
-                        precipChanceString, "", windSpeed, windDirection, windScale, "", icon);
+                Weather weather = new Weather(date, sunrise, sunset, "", temperatureMax, temperatureMin,
+                        precipChanceString, windSpeed, windDirection, windScale, icon);
                 dailyWeather.add(weather);
             }
 
@@ -794,8 +788,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 String icon = Utils.createWeatherIconUrl(hourlyCondition.getJSONArray("weather").getJSONObject(0).getString("icon"));
 
                 // Create new weather object and add to the array list
-                Weather weather = new Weather(i, date, null, null, temperatureCurrent, "", "", "",
-                        precipChanceString, "", windSpeed, windDirection, windScale, "", icon);
+                Weather weather = new Weather(date, null, null, temperatureCurrent, "", "",
+                        precipChanceString, windSpeed, windDirection, windScale, icon);
                 hourlyWeather.add(weather);
             }
 
@@ -816,7 +810,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             txtWeatherAlert.setText(firstAlert.getString("event"));
 
             weatherAlerts = new ArrayList<>();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mma z EEE, MMM d, yyyy");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mma z EEE, MMM d, yyyy", Locale.US);
             for (int i = 0; i < alerts.length(); i++) {
                 JSONObject alert = alerts.getJSONObject(i);
 

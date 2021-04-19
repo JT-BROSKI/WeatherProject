@@ -5,11 +5,11 @@ import android.os.Parcelable;
 
 public class WeatherAlert implements Parcelable {
 
-    private String sender;
-    private String event;
-    private String startDate;
-    private String endDate;
-    private String description;
+    private final String sender;
+    private final String event;
+    private final String startDate;
+    private final String endDate;
+    private final String description;
 
     public WeatherAlert(String sender, String event, String startDate, String endDate, String description) {
         this.sender = sender;

@@ -19,7 +19,7 @@ import java.util.Calendar;
 public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyConditionsRecViewAdapter.ViewHolder> {
     private static final String TAG = "HrlyCondRecViewAdapter";
 
-    private Context context;
+    private final Context context;
 
     private boolean showPrecipitation;
     private ArrayList<Weather> hourlyWeather = new ArrayList<>();
@@ -47,7 +47,7 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
 
         // Set week day
         if (Utils.isCurrentDay(date)) {
-            holder.txtDateDay.setText("TDY");
+            holder.txtDateDay.setText(context.getResources().getString(R.string.today_hourly_weather));
         } else {
             String formattedDay = Utils.formatDayHourlyCondition(date);
             holder.txtDateDay.setText(formattedDay);
@@ -116,16 +116,16 @@ public class HourlyConditionsRecViewAdapter extends RecyclerView.Adapter<HourlyC
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView txtDateDay;
-        private TextView txtDateNum;
-        private TextView txtHour;
-        private ImageView imgIcon;
-        private TextView txtHourlyTemp;
-        private TextView txtWindValue;
-        private TextView txtWindScale;
-        private TextView txtViewDirection;
-        private ImageView precipIcon;
-        private TextView txtPrecipChance;
+        private final TextView txtDateDay;
+        private final TextView txtDateNum;
+        private final TextView txtHour;
+        private final ImageView imgIcon;
+        private final TextView txtHourlyTemp;
+        private final TextView txtWindValue;
+        private final TextView txtWindScale;
+        private final TextView txtViewDirection;
+        private final ImageView precipIcon;
+        private final TextView txtPrecipChance;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);

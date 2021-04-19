@@ -1,59 +1,38 @@
 package com.jtbroski.myapplication;
 
 import java.util.Calendar;
-import java.util.Date;
 
 public class Weather {
 
-    private int id;
-    private Calendar date;
-    private Calendar sunrise;
-    private Calendar sunset;
-    private String temperatureCurrent;
-    private String temperatureMax;
-    private String temperatureMin;
-    private String feelsLike;
-    private String precipChance;
-    private String humidity;
-    private String windSpeed;
-    private String windDirection;
-    private String windScale;
-    private String description;
-    private String icon;
+    private final Calendar date;
+    private final Calendar sunrise;
+    private final Calendar sunset;
+    private final String temperatureCurrent;
+    private final String temperatureMax;
+    private final String temperatureMin;
+    private final String precipChance;
+    private final String windSpeed;
+    private final String windDirection;
+    private final String windScale;
+    private final String icon;
 
-    public Weather(int id, Calendar date, Calendar sunrise, Calendar sunset, String temperatureCurrent, String temperatureMax, String temperatureMin, String feelsLike,
-                   String precipChance, String humidity, String windSpeed, String windDirection, String windScale, String description, String icon) {
-        this.id = id;
+    public Weather(Calendar date, Calendar sunrise, Calendar sunset, String temperatureCurrent, String temperatureMax, String temperatureMin,
+                   String precipChance, String windSpeed, String windDirection, String windScale, String icon) {
         this.date = date;
         this.sunrise = sunrise;
         this.sunset = sunset;
         this.temperatureCurrent = temperatureCurrent;
         this.temperatureMax = temperatureMax;
         this.temperatureMin = temperatureMin;
-        this.feelsLike = feelsLike;
         this.precipChance = precipChance;
-        this.humidity = humidity;
         this.windSpeed = windSpeed;
         this.windDirection = windDirection;
         this.windScale = windScale;
-        this.description = description;
         this.icon = icon;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public Calendar getDate() {
         return date;
-    }
-
-    public void setDate(Calendar date) {
-        this.date = date;
     }
 
     public Calendar getSunrise() {
@@ -76,16 +55,8 @@ public class Weather {
         return temperatureMin;
     }
 
-    public String getFeelsLike() {
-        return feelsLike;
-    }
-
     public String getPrecipChance() {
         return precipChance;
-    }
-
-    public String getHumidity() {
-        return humidity;
     }
 
     public String getWindSpeed() {
@@ -98,10 +69,6 @@ public class Weather {
 
     public String getWindScale() {
         return windScale;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public String getIcon() {

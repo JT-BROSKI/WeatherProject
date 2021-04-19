@@ -9,8 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="lighter_gray">#F0F0F0</color>
     <color name="light_gray0">#E1E1E1</color>
-    <color name="dark_gray">#4B4B4B</color>
-    <color name="dark_gray_theme">#121212</color>
     <color name="red">#FF0000</color>
     <color name="rain_blue">#0096DC</color>
     <color name="light_blue">#32B4F0</color>

@@ -52,8 +52,8 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(createPreferredLocationTableStatement);
 
         // Create settings table
-        String createSettingsTableStatment = "CREATE TABLE IF NOT EXISTS " + SETTINGS_TABLE + " (" + COLUMN_SETTINGS + " TEXT, " + COLUMN_FLAG + " BOOL)";
-        db.execSQL(createSettingsTableStatment);
+        String createSettingsTableStatement = "CREATE TABLE IF NOT EXISTS " + SETTINGS_TABLE + " (" + COLUMN_SETTINGS + " TEXT, " + COLUMN_FLAG + " BOOL)";
+        db.execSQL(createSettingsTableStatement);
 
         // Create favorite location table
         String createFavoriteLocationTableStatement = "CREATE TABLE IF NOT EXISTS " + FAVORITE_LOCATION_TABLE + " (" + COLUMN_LOCATION + " TEXT, " + COLUMN_LATITUDE + " REAL, " + COLUMN_LONGITUDE + " REAL)";
@@ -389,9 +389,7 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
     }
 
     private class MyConsumer implements Consumer<Location> {
-
-        public Location location;
-        private Context context;
+        private final Context context;
 
         public MyConsumer(Context context) {
             this.context = context;
@@ -399,7 +397,6 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
 
         @Override
         public void accept(Location location) {
-            this.location = location;
             ((MainActivity) context).callWeatherApi(location);
 
             if (!Utils.preferenceDbHelper.updatePreferredLocation(location)) {

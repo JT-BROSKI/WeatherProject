@@ -2,8 +2,6 @@
     <string name="app_name">Weather Project</string>
     <string name="current_conditions">CURRENT CONDITIONS</string>
     <string name="weather_icon">Weather Icon</string>
-    <string name="temperature_scale_fahrenheit">F</string>
-    <string name="temperature_scale_celsius">C</string>
     <string name="degree">&#xb0;</string>
     <string name="precipitation_short_text">PRECIP</string>
     <string name="humidity_short_text">HUMD</string>
@@ -30,4 +28,9 @@
     <string name="search_hint">Search by city or zip code</string>
     <string name="favorites_title">Favorites</string>
     <string name="recent_title">Recent</string>
+    <string name="daily_weather_icon_description">Daily weather icon</string>
+    <string name="hourly_weather_icon_description">Hourly weather icon</string>
+    <string name="precipitation_icon_description">Precipitation icon</string>
+    <string name="today_daily_weather">TODAY</string>
+    <string name="today_hourly_weather">TDY</string>
 </resources>

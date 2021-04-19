@@ -14,12 +14,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.TimeZone;
 
 public class Utils {
 
     private static Utils instance;
-    private static Context mContext;        // we need this for the sake of recreating the MainActivity from another activity when necessary (using fragments instead should make this unnecessary)
+    private static Context mContext;
     private static Geocoder geocoder;
 
     public static boolean startUp = true;
@@ -36,25 +37,24 @@ public class Utils {
         locationName = null;
     }
 
-    public static Utils getInstance(Context context) {
+    public static void initialize(Context context) {
         if (instance == null) {
             instance = new Utils(context);
         } else {
             updateContext(context);
         }
 
-        return instance;
     }
 
     // Check whether the geocoder can find a location matching the string parameter
     // If the geocoder can find a location return true, else return false
     public static boolean checkLocationValidity(String location) {
         boolean isValid = false;
-        ArrayList<Address> addressList = new ArrayList<>();
+        ArrayList<Address> addressList;
         try {
             addressList = (ArrayList<Address>) geocoder.getFromLocationName(location, 10);
         } catch (Exception e) {
-
+            return isValid;
         }
 
         if (addressList.size() > 0) {
@@ -136,7 +136,7 @@ public class Utils {
         now = now.minusNanos(now.getNano());
 
         String format = "yyyy-MM-dd'T'HH:mm";
-        SimpleDateFormat formatter = new SimpleDateFormat(format);
+        SimpleDateFormat formatter = new SimpleDateFormat(format, Locale.US);
         try {
             Calendar previousDayStart = Calendar.getInstance();
             previousDayStart.setTime(formatter.parse(now.toString()));
@@ -158,7 +158,7 @@ public class Utils {
         now = now.minusNanos(now.getNano());
 
         String format = "yyyy-MM-dd'T'HH:mm";
-        SimpleDateFormat formatter = new SimpleDateFormat(format);
+        SimpleDateFormat formatter = new SimpleDateFormat(format, Locale.US);
         try {
             Calendar previousDayStart = Calendar.getInstance();
             previousDayStart.setTime(formatter.parse(now.toString()));
@@ -213,8 +213,8 @@ public class Utils {
         mContext = context;
     }
 
-    private static DateFormat hourFormat = new SimpleDateFormat("h a");
-    private static DateFormat dateFormat = new SimpleDateFormat("M/dd");
-    private static DateFormat weekDayFormat = new SimpleDateFormat("EEE");
-    private static DateFormat weekDayDateFormat = new SimpleDateFormat("EEE dd");
+    private static final DateFormat hourFormat = new SimpleDateFormat("h a", Locale.US);
+    private static final DateFormat dateFormat = new SimpleDateFormat("M/dd", Locale.US);
+    private static final DateFormat weekDayFormat = new SimpleDateFormat("EEE", Locale.US);
+    private static final DateFormat weekDayDateFormat = new SimpleDateFormat("EEE dd", Locale.US);
 }

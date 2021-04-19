@@ -1,7 +1,6 @@
 package com.jtbroski.myapplication;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Editable;

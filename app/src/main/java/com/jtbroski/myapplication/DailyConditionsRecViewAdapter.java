@@ -38,7 +38,7 @@ import java.util.HashMap;
 public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyConditionsRecViewAdapter.ViewHolder> {
     private static final String TAG = "DailyCondRecViewAdapter";
 
-    private Context context;
+    private final Context context;
     private boolean showPrecipitation;
     private ArrayList<Weather> dailyWeather = new ArrayList<>();
 
@@ -48,7 +48,6 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
 
     private ArrayList<Integer> dailyHighs;
     private ArrayList<Integer> dailyLows;
-    private ArrayList<Integer> hoursRecorded;
 
     private HashMap<Integer, ArrayList> fullDayHourlyConditions;
     private HashMap<Integer, ArrayList> fullDayHourlyRainChance;
@@ -62,9 +61,9 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
     }
 
     public void sortFullDayHourConditions(JSONArray hourlyConditions, int currentMidnight) {
+        ArrayList<Integer> hoursRecorded = new ArrayList<>();
         dailyHighs = new ArrayList<>();
         dailyLows = new ArrayList<>();
-        hoursRecorded = new ArrayList<>();
         fullDayHourlyConditions = new HashMap<>();
         fullDayHourlyRainChance = new HashMap<>();
 
@@ -84,8 +83,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         int thirdDayHigh = 0;
         int thirdDayLow = 0;
 
-        int firstDayFirstHour = currentMidnight;
-        int firstDayLastHour = firstDayFirstHour + (23 * 3600);
+        int firstDayLastHour = currentMidnight + (23 * 3600);
         int secondDayFirstHour = firstDayLastHour + 3600;
         int secondDayLastHour = secondDayFirstHour + (23 * 3600);
 
@@ -124,7 +122,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
                 }
 
                 // Store the hourly temperature to be within its respective 24-hour window
-                if (firstDayFirstHour <= time && time <= firstDayLastHour) {
+                if (currentMidnight <= time && time <= firstDayLastHour) {
                     if (firstDayStart) {
                         firstDayHigh = temperature;
                         firstDayLow = temperature;
@@ -219,7 +217,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
 
         // Set date
         if (Utils.isCurrentDay(date)) {
-            holder.txtDate.setText("TODAY");
+            holder.txtDate.setText(context.getResources().getString(R.string.today_daily_weather));
         } else {
             String formattedDay = Utils.formatDayDailyCondition(date);
             holder.txtDate.setText(formattedDay);
@@ -443,12 +441,12 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         boolean highFound = false;
         boolean lowFound = false;
 
-        float maxTempurature = Float.parseFloat(hourlyHigh);
+        float maxTemperature = Float.parseFloat(hourlyHigh);
         float minTemperature = Float.parseFloat(hourlyLow);
 
         ArrayList<Entry> nonPeakEntries = new ArrayList<>();
         for (int i = 0; i < entries.size(); i++) {
-            if (entries.get(i).getY() == maxTempurature && !highFound) {
+            if (entries.get(i).getY() == maxTemperature && !highFound) {
                 ArrayList<Entry> highPeakEntry = new ArrayList<>();
                 highPeakEntry.add(entries.get(i));
 
@@ -543,15 +541,15 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView txtDate;
-        private ImageView imgIcon;
-        private TextView txtTempMaxMin;
-        private TextView txtWindValue;
-        private TextView txtWindScale;
-        private TextView txtViewDirection;
-        private TextView txtPrecipChance;
-        private ImageView precipIcon;
-        private LineChart lineChart;
+        private final TextView txtDate;
+        private final ImageView imgIcon;
+        private final TextView txtTempMaxMin;
+        private final TextView txtWindValue;
+        private final TextView txtWindScale;
+        private final TextView txtViewDirection;
+        private final TextView txtPrecipChance;
+        private final ImageView precipIcon;
+        private final LineChart lineChart;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);

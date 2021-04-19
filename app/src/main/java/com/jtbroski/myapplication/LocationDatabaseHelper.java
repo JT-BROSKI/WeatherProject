@@ -14,7 +14,7 @@ import java.io.OutputStream;
 
 public class LocationDatabaseHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "locations.db";
-    private File DB_FILE;
+    private final File DB_FILE;
 
     private static final String CITIES_A_TABLE = "CITIES_A_TABLE";
     private static final String CITIES_B_TABLE = "CITIES_B_TABLE";

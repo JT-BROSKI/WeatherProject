@@ -12,7 +12,7 @@ import android.widget.ToggleButton;
 import androidx.core.content.ContextCompat;
 
 public class RecentLocationListAdapter extends CursorAdapter {
-    private Context mContext;
+    private final Context mContext;
 
     public RecentLocationListAdapter(Context context, Cursor c, boolean autoRequery) {
         super(context, c, autoRequery);
@@ -21,8 +21,7 @@ public class RecentLocationListAdapter extends CursorAdapter {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        View view = LayoutInflater.from(context).inflate(R.layout.list_item_nav_location, parent, false);
-        return view;
+        return LayoutInflater.from(context).inflate(R.layout.list_item_nav_location, parent, false);
     }
 
     @Override

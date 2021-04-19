@@ -14,7 +14,7 @@ import android.widget.Toast;
 import androidx.core.app.ComponentActivity;
 
 public class SearchFilterAdapter extends CursorAdapter {
-    private Context mContext;
+    private final Context mContext;
 
     public SearchFilterAdapter(Context context, Cursor c, boolean autoRequery) {
         super(context, c, autoRequery);
@@ -23,8 +23,7 @@ public class SearchFilterAdapter extends CursorAdapter {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        View view = LayoutInflater.from(context).inflate(R.layout.list_item_search_suggestion, parent, false);
-        return view;
+        return LayoutInflater.from(context).inflate(R.layout.list_item_search_suggestion, parent, false);
     }
 
     @SuppressLint("ResourceType")

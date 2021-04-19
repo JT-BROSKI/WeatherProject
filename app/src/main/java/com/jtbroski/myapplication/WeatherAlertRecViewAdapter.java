@@ -16,8 +16,8 @@ import java.util.ArrayList;
 public class WeatherAlertRecViewAdapter extends RecyclerView.Adapter<WeatherAlertRecViewAdapter.ViewHolder> {
     private static final String TAG = "AlertRecViewAdapter";
 
-    private Context context;
-    private ArrayList<WeatherAlert> weatherAlerts;
+    private final Context context;
+    private final ArrayList<WeatherAlert> weatherAlerts;
 
     public WeatherAlertRecViewAdapter(Context context, ArrayList<WeatherAlert> weatherAlerts) {
         this.context = context;
@@ -56,11 +56,11 @@ public class WeatherAlertRecViewAdapter extends RecyclerView.Adapter<WeatherAler
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView txtAlertTitle;
-        private TextView txtSender;
-        private TextView txtFromDate;
-        private TextView txtToDate;
-        private TextView txtAlertDescription;
+        private final TextView txtAlertTitle;
+        private final TextView txtSender;
+        private final TextView txtFromDate;
+        private final TextView txtToDate;
+        private final TextView txtAlertDescription;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);

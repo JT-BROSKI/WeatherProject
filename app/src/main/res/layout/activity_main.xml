@@ -463,7 +463,7 @@
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toBottomOf="@id/weather_map_title" />
 
-                            <fragment
+                            <androidx.fragment.app.FragmentContainerView
                                 android:id="@+id/weather_map_fragment"
                                 android:name="com.google.android.gms.maps.SupportMapFragment"
                                 android:layout_width="match_parent"
