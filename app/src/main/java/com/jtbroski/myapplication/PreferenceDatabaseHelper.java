@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat;
 import java.util.function.Consumer;
 
 public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
+    public static final int REQUEST_LOCATION_PERMISSION = 1;
 
     private static final String PREFERRED_LOCATION_TABLE = "PREFERRED_LOCATION_TABLE";
     private static final String COLUMN_LATITUDE = "LATITUDE";
@@ -71,7 +72,7 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
 
     public void deleteFavoriteLocation(String name) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(FAVORITE_LOCATION_TABLE, COLUMN_LOCATION + "=?", new String[] {name});
+        db.delete(FAVORITE_LOCATION_TABLE, COLUMN_LOCATION + "=?", new String[]{name});
         db.close();
     }
 
@@ -84,11 +85,11 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
 
             if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
                 // ask permissions here using below code
-                ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
+            } else {
+                Consumer<Location> myConsumer = new PreferenceDatabaseHelper.MyConsumer(context);
+                locationManager.getCurrentLocation(LocationManager.GPS_PROVIDER, null, context.getMainExecutor(), myConsumer);
             }
-
-            Consumer<Location> myConsumer = new PreferenceDatabaseHelper.MyConsumer(context);
-            locationManager.getCurrentLocation(LocationManager.GPS_PROVIDER, null, context.getMainExecutor(), myConsumer);
         }
     }
 
@@ -210,6 +211,15 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
         return matrixCursor;
     }
 
+    public void requestCurrentLocation(Context context) {
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        Consumer<Location> myConsumer = new PreferenceDatabaseHelper.MyConsumer(context);
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.getCurrentLocation(LocationManager.GPS_PROVIDER, null, context.getMainExecutor(), myConsumer);
+        }
+    }
+
     public boolean updatePreferredLocation(Location location) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -261,7 +271,7 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
         double recentLocationLatitude = recentCursor.getDouble(1);
         double recentLocationLongitude = recentCursor.getDouble(2);
 
-        db.delete(RECENT_LOCATION_TABLE, COLUMN_LOCATION + "=?", new String[] {name});
+        db.delete(RECENT_LOCATION_TABLE, COLUMN_LOCATION + "=?", new String[]{name});
         recentCursor.close();
 
         // Add the a need entry to the favorite locations table
@@ -292,7 +302,7 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
                 return;
             } else if (cursor.getCount() == 5) {            // If the table currently has 5 entries, delete the first entry
                 String firstLocation = cursor.getString(0);
-                db.delete(RECENT_LOCATION_TABLE, COLUMN_LOCATION + "=?", new String[] {firstLocation});
+                db.delete(RECENT_LOCATION_TABLE, COLUMN_LOCATION + "=?", new String[]{firstLocation});
             }
         }
         db.insert(RECENT_LOCATION_TABLE, null, cv);

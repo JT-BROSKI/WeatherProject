@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
@@ -35,6 +36,33 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
         backArrowButton.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("ResourceType")
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        v.setBackgroundColor(Utils.preferenceDbHelper.getDarkThemeFlag() ? ContextCompat.getColor(SettingsActivity.this, R.color.black)
+                                : ContextCompat.getColor(SettingsActivity.this, R.color.purple_700));
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        v.setBackgroundColor(ContextCompat.getColor(SettingsActivity.this, R.color.transparent));
+                        break;
+                }
+                return false;
+            }
+        });
+
+        // About Image Button
+        ImageButton aboutButton = findViewById(R.id.btn_about);
+        aboutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent aboutIntent = new Intent(SettingsActivity.this, AboutActivity.class);
+                startActivity(aboutIntent);
+            }
+        });
+        aboutButton.setOnTouchListener(new View.OnTouchListener() {
             @SuppressLint("ResourceType")
             @Override
             public boolean onTouch(View v, MotionEvent event) {

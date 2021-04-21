@@ -1,5 +1,6 @@
 package com.jtbroski.myapplication;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -14,6 +15,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Address;
 import android.location.Geocoder;
@@ -345,6 +347,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         updateWeatherTileOverlay();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PreferenceDatabaseHelper.REQUEST_LOCATION_PERMISSION:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Utils.preferenceDbHelper.requestCurrentLocation(this);
+                } else {
+                    Toast.makeText(this, "My location permissions denied. Go to system settings to update location sharing permissions for My Location functionality.", Toast.LENGTH_LONG).show();
+                }
+                break;
+
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+    // Reset the scroll view by scrolling to the top
     public void resetScrollView() {
         // We need to use "post" here to ensure that a runnable is added to the thread queue
         // This ensures that this task will execute after previously queued task have properly executed (i.e weather tile loading)

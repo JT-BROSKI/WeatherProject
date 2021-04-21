@@ -14,6 +14,7 @@
     <string name="settings_title">Settings</string>
     <string name="units_title">Units</string>
     <string name="theme_title">Theme</string>
+    <string name="about_title">About</string>
     <string name="imperial">Imperial</string>
     <string name="metric">Metric</string>
     <string name="light">Light</string>
@@ -33,4 +34,17 @@
     <string name="precipitation_icon_description">Precipitation icon</string>
     <string name="today_daily_weather">TODAY</string>
     <string name="today_hourly_weather">TDY</string>
+    <string name="back_arrow_description">Back arrow</string>
+    <string name="weather_project_splash_description">Weather Project Splash</string>
+    <string name="api_used_title">APIs Used</string>
+    <string name="open_weather">OpenWeather</string>
+    <string name="google_maps_platform">Google Maps Platform</string>
+    <string name="libraries_used">Libraries Used</string>
+    <string name="material_components">Material Components</string>
+    <string name="volley">Volley</string>
+    <string name="glide">Glide</string>
+    <string name="mpandroid_chart">MPAndroid Chart</string>
+    <string name="json_data_used">JSON Data Used</string>
+    <string name="us_states_and_cities">ahmu83/US_States_and_Cities.json</string>
+    <string name="all_countries_and_cities">russ666/all-countries-and-cities-json</string>
 </resources>

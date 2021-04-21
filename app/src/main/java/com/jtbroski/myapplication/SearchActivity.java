@@ -1,6 +1,7 @@
 package com.jtbroski.myapplication;
 
 import android.annotation.SuppressLint;
+import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Editable;
@@ -88,8 +89,7 @@ public class SearchActivity extends AppCompatActivity {
                     if (Utils.checkLocationValidity(location)) {
                         Utils.refreshMainActivity();
                         onBackPressed();
-                    }
-                    else {
+                    } else {
                         Toast.makeText(SearchActivity.this, "Unable to find any locations matching with " + location, Toast.LENGTH_SHORT).show();
                     }
                 }
