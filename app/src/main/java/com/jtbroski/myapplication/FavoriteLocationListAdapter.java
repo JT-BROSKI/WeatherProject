@@ -29,7 +29,9 @@ public class FavoriteLocationListAdapter extends CursorAdapter {
         TextView txtLocation = view.findViewById(R.id.txt_location);
         txtLocation.setText(cursor.getString(cursor.getColumnIndex(PreferenceDatabaseHelper.COLUMN_LOCATION)));
         txtLocation.setOnClickListener(v -> {
-            ((MainActivity) mContext).callWeatherApi(Utils.preferenceDbHelper.getFavoriteLocation(((TextView) v).getText().toString()));
+            String favoriteLocationName = ((TextView) v).getText().toString();
+            Utils.locationName = favoriteLocationName;
+            ((MainActivity) mContext).callWeatherApi(Utils.preferenceDbHelper.getFavoriteLocation((favoriteLocationName)));
             ((MainActivity) mContext).closeDrawerLayout();
         });
 

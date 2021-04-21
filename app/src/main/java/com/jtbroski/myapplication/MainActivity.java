@@ -62,6 +62,7 @@ import static com.jtbroski.myapplication.WeatherAlertActivity.ALERT_DATA_ID;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
     private ImageView splash;
+    private ScrollView navScrollView;
     private ScrollView scrollView;
 
     private TextView txtCurrentLocation;
@@ -151,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mainLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                resetScrollView();
+                resetScrollViews();
                 mainLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
         });
@@ -247,6 +248,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             startActivity(intent);
         });
 
+        navScrollView = findViewById(R.id.nav_scrollView);
         scrollView = findViewById(R.id.scrollView);
 
         // Current Conditions Material Card View
@@ -339,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
         map.getUiSettings().setAllGesturesEnabled(false);
-        map.setOnMapLoadedCallback(() -> resetScrollView());    // Make sure the scroll view is scrolled to the top on the map finishes loading (this is generally only useful on startup_
+        map.setOnMapLoadedCallback(() -> resetScrollViews());    // Make sure the scroll view is scrolled to the top on the map finishes loading (this is generally only useful on startup_
 
         mapZoom = 8;
         weatherTiles = new ArrayList<>();
@@ -364,10 +366,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     // Reset the scroll view by scrolling to the top
-    public void resetScrollView() {
+    public void resetScrollViews() {
         // We need to use "post" here to ensure that a runnable is added to the thread queue
         // This ensures that this task will execute after previously queued task have properly executed (i.e weather tile loading)
         scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_UP));
+        navScrollView.post(() -> navScrollView.fullScroll(ScrollView.FOCUS_UP));
     }
 
     // Update the list views within the navigation drawer by update their cursors
@@ -416,7 +419,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     } catch (JSONException e) {
                         Toast.makeText(this, "Failed to parse current weather data.", Toast.LENGTH_SHORT).show();
                     } finally {
-                        resetScrollView();
+                        resetScrollViews();
 
                         // Hide the splash image when the data has been loaded
                         if (splash.getVisibility() != View.GONE) {
@@ -848,7 +851,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
 
             weatherAlertLayout.setVisibility(View.VISIBLE);
-            resetScrollView();
+            resetScrollViews();
         } catch (Exception e) {
             weatherAlertLayout.setVisibility(View.GONE);
         }

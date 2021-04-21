@@ -29,7 +29,9 @@ public class RecentLocationListAdapter extends CursorAdapter {
         TextView txtLocation = view.findViewById(R.id.txt_location);
         txtLocation.setText(cursor.getString(cursor.getColumnIndex(PreferenceDatabaseHelper.COLUMN_LOCATION)));
         txtLocation.setOnClickListener(v -> {
-            ((MainActivity) mContext).callWeatherApi(Utils.preferenceDbHelper.getRecentLocation(((TextView) v).getText().toString()));
+            String recentLocationName = ((TextView) v).getText().toString();
+            Utils.locationName = recentLocationName;
+            ((MainActivity) mContext).callWeatherApi(Utils.preferenceDbHelper.getFavoriteLocation(recentLocationName));
             ((MainActivity) mContext).closeDrawerLayout();
         });
 
