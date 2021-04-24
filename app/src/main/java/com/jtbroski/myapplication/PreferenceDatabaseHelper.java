@@ -436,6 +436,8 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
 
             if (!Utils.preferenceDbHelper.updatePreferredLocation(location)) {
                 Toast.makeText(context, "Unable to save preferred location.", Toast.LENGTH_SHORT).show();
+            } else {
+                Utils.addMyLocationToRecentLocations(context, location);
             }
         }
 

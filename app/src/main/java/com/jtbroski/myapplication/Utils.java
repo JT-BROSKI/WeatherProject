@@ -45,6 +45,26 @@ public class Utils {
         }
     }
 
+    public static void addMyLocationToRecentLocations(Context context, Location currentLocation) {
+        ArrayList<Address> addressList;
+        try {
+            addressList = (ArrayList<Address>) geocoder.getFromLocation(currentLocation.getLatitude(), currentLocation.getLongitude(), 1);
+        } catch (Exception e) {
+            Toast.makeText(context, "Failed to geocode current location.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (addressList.size() > 0) {
+            Address currentAddress = addressList.get(0);
+
+            double latitude = currentAddress.getLatitude();
+            double longitude = currentAddress.getLongitude();
+
+            preferenceDbHelper.updateRecentLocations(parseAddressName(currentAddress), latitude, longitude);
+            ((MainActivity) context).updateNavigationListViews();
+        }
+    }
+
     // Check whether the geocoder can find a location matching the string parameter
     // If the geocoder can find a location return true, else return false
     public static boolean checkLocationValidity(String location) {
