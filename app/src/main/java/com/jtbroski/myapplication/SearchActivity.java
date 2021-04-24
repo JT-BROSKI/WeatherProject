@@ -84,6 +84,7 @@ public class SearchActivity extends AppCompatActivity {
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     String location = textView.getText().toString();
+                    searchFilterAdapter.closeCursor();
 
                     // Check whether the geocoder can find a location matching the string within the EditText
                     if (Utils.checkLocationValidity(location)) {

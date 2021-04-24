@@ -15,10 +15,22 @@ import androidx.core.app.ComponentActivity;
 
 public class SearchFilterAdapter extends CursorAdapter {
     private final Context mContext;
+    private Cursor cursor;
 
     public SearchFilterAdapter(Context context, Cursor c, boolean autoRequery) {
         super(context, c, autoRequery);
         this.mContext = context;
+        this.cursor = c;
+    }
+
+    public void closeCursor() {
+        cursor.close();
+    }
+
+    @Override
+    public void changeCursor(Cursor cursor) {
+        super.changeCursor(cursor);
+        this.cursor = cursor;
     }
 
     @Override
@@ -51,6 +63,7 @@ public class SearchFilterAdapter extends CursorAdapter {
             public void onClick(View v) {
                 TextView textView = (TextView) ((ViewGroup) v).getChildAt(0);
                 String location = textView.getText().toString();
+                closeCursor();
 
                 // Ensure whether the geocoder can find a location matching the preloaded location string
                 if (Utils.checkLocationValidity(location)) {

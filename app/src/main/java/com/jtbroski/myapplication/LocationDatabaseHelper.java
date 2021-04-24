@@ -13,7 +13,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class LocationDatabaseHelper extends SQLiteOpenHelper {
-    private static final String DB_NAME = "locations.db";
+    public static final String DB_NAME = "locations.db";
     private final File DB_FILE;
 
     private static final String CITIES_A_TABLE = "CITIES_A_TABLE";
@@ -92,7 +92,6 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
 
     // Copy the contents within the locations database in assets to the actual locations database used by the program
     private void copyDatabase(Context context) {
-
         InputStream inputStream = null;
         OutputStream outputStream = null;
 

@@ -21,9 +21,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
+    public static final String DB_NAME = "preferences.db";
     public static final int REQUEST_LOCATION_PERMISSION = 1;
 
     private static final String PREFERRED_LOCATION_TABLE = "PREFERRED_LOCATION_TABLE";
@@ -42,7 +44,7 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_LOCATION = "LOCATION";
 
     public PreferenceDatabaseHelper(@Nullable Context context) {
-        super(context, "preferences.db", null, 1);
+        super(context, DB_NAME, null, 1);
         initializeDatabase(context);
     }
 
@@ -76,7 +78,7 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void getCurrentLocation(Context context) {   // TODO Potential refactor this to correctly ask and handle location permission access/deny results
+    public void getCurrentLocation(Context context) {
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             createAlertMessageNoGps(context);
@@ -182,12 +184,12 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
 
-        Location favoriteLocation = new Location(LocationManager.GPS_PROVIDER);
-        favoriteLocation.setLatitude(cursor.getDouble(1));
-        favoriteLocation.setLongitude(cursor.getDouble(2));
+        Location recentLocation = new Location(LocationManager.GPS_PROVIDER);
+        recentLocation.setLatitude(cursor.getDouble(1));
+        recentLocation.setLongitude(cursor.getDouble(2));
         cursor.close();
 
-        return favoriteLocation;
+        return recentLocation;
     }
 
     public Cursor getRecentLocations() {
@@ -222,16 +224,16 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
 
     public boolean updatePreferredLocation(Location location) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
+        ContentValues preferredLocation = new ContentValues();
 
-        cv.put(COLUMN_LATITUDE, location.getLatitude());
-        cv.put(COLUMN_LONGITUDE, location.getLongitude());
+        preferredLocation.put(COLUMN_LATITUDE, location.getLatitude());
+        preferredLocation.put(COLUMN_LONGITUDE, location.getLongitude());
 
         long insert;
         if (hasPreferredLocation()) {
-            insert = db.update(PREFERRED_LOCATION_TABLE, cv, null, null);
+            insert = db.update(PREFERRED_LOCATION_TABLE, preferredLocation, null, null);
         } else {
-            insert = db.insert(PREFERRED_LOCATION_TABLE, null, cv);
+            insert = db.insert(PREFERRED_LOCATION_TABLE, null, preferredLocation);
         }
 
         db.close();
@@ -240,22 +242,22 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
 
     public void updateImperialFlag(boolean flag) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
+        ContentValues imperialUnitsPreference = new ContentValues();
 
-        cv.put(COLUMN_SETTINGS, IN_IMPERIAL);
-        cv.put(COLUMN_FLAG, flag);
-        db.update(SETTINGS_TABLE, cv, COLUMN_SETTINGS + " = ?", new String[]{IN_IMPERIAL});
+        imperialUnitsPreference.put(COLUMN_SETTINGS, IN_IMPERIAL);
+        imperialUnitsPreference.put(COLUMN_FLAG, flag);
+        db.update(SETTINGS_TABLE, imperialUnitsPreference, COLUMN_SETTINGS + " = ?", new String[]{IN_IMPERIAL});
 
         db.close();
     }
 
     public void updateDarkThemeFlag(boolean flag) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
+        ContentValues darkThemePreference = new ContentValues();
 
-        cv.put(COLUMN_SETTINGS, DARK_THEME);
-        cv.put(COLUMN_FLAG, flag);
-        db.update(SETTINGS_TABLE, cv, COLUMN_SETTINGS + " = ?", new String[]{DARK_THEME});
+        darkThemePreference.put(COLUMN_SETTINGS, DARK_THEME);
+        darkThemePreference.put(COLUMN_FLAG, flag);
+        db.update(SETTINGS_TABLE, darkThemePreference, COLUMN_SETTINGS + " = ?", new String[]{DARK_THEME});
 
         db.close();
     }
@@ -275,11 +277,11 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
         recentCursor.close();
 
         // Add the a need entry to the favorite locations table
-        ContentValues cv = new ContentValues();
-        cv.put(COLUMN_LOCATION, name);
-        cv.put(COLUMN_LATITUDE, recentLocationLatitude);
-        cv.put(COLUMN_LONGITUDE, recentLocationLongitude);
-        db.insert(FAVORITE_LOCATION_TABLE, null, cv);
+        ContentValues newFavoriteLocation = new ContentValues();
+        newFavoriteLocation.put(COLUMN_LOCATION, name);
+        newFavoriteLocation.put(COLUMN_LATITUDE, recentLocationLatitude);
+        newFavoriteLocation.put(COLUMN_LONGITUDE, recentLocationLongitude);
+        db.insert(FAVORITE_LOCATION_TABLE, null, newFavoriteLocation);
 
         db.close();
     }
@@ -289,10 +291,10 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
         String query = "SELECT * FROM " + RECENT_LOCATION_TABLE;
         Cursor cursor = db.rawQuery(query, null);
 
-        ContentValues cv = new ContentValues();
-        cv.put(COLUMN_LOCATION, name);
-        cv.put(COLUMN_LATITUDE, latitude);
-        cv.put(COLUMN_LONGITUDE, longitude);
+        ContentValues newRecentLocation = new ContentValues();
+        newRecentLocation.put(COLUMN_LOCATION, name);
+        newRecentLocation.put(COLUMN_LATITUDE, latitude);
+        newRecentLocation.put(COLUMN_LONGITUDE, longitude);
 
         boolean hasResults = cursor.moveToFirst();
         if (hasResults) {
@@ -300,12 +302,35 @@ public class PreferenceDatabaseHelper extends SQLiteOpenHelper {
                 cursor.close();
                 db.close();
                 return;
-            } else if (cursor.getCount() == 5) {            // If the table currently has 5 entries, delete the first entry
-                String firstLocation = cursor.getString(0);
-                db.delete(RECENT_LOCATION_TABLE, COLUMN_LOCATION + "=?", new String[]{firstLocation});
             }
+            else {
+                // Get the original entries within the recent locations table
+                ArrayList<ContentValues> recentLocations = new ArrayList<>();
+                do {
+                    ContentValues recentLocationValues = new ContentValues();
+                    recentLocationValues.put(COLUMN_LOCATION, cursor.getString(0));
+                    recentLocationValues.put(COLUMN_LATITUDE, cursor.getDouble(1));
+                    recentLocationValues.put(COLUMN_LONGITUDE, cursor.getDouble(2));
+                    recentLocations.add(recentLocationValues);
+                } while (cursor.moveToNext());
+
+                // If there are currently 5 recent locations, then delete the last one
+                if (recentLocations.size() == 5) {
+                    recentLocations.remove(recentLocations.size() - 1);
+                }
+
+                // Delete all the rows within the recent location table
+                db.delete(RECENT_LOCATION_TABLE,null,null);
+
+                // Insert the new recent location at the top of the table, then insert the rest of the original recent locations in the table
+                db.insert(RECENT_LOCATION_TABLE, null, newRecentLocation);
+                for (ContentValues recentLocation : recentLocations) {
+                    db.insert(RECENT_LOCATION_TABLE, null, recentLocation);
+                }
+            }
+        } else {
+            db.insert(RECENT_LOCATION_TABLE, null, newRecentLocation);
         }
-        db.insert(RECENT_LOCATION_TABLE, null, cv);
 
         cursor.close();
         db.close();

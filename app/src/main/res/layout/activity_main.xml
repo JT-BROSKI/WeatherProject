@@ -609,7 +609,8 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/surfaceColor">
+                android:background="?attr/surfaceColor"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/txt_favorite_title"
@@ -623,7 +624,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <ListView
+                <com.jtbroski.myapplication.NonScrollableListView
                     android:id="@+id/list_favorites"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -653,7 +654,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/nav_layout_divider" />
 
-                <ListView
+                <com.jtbroski.myapplication.NonScrollableListView
                     android:id="@+id/list_recent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

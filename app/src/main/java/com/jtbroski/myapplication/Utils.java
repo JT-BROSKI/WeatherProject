@@ -43,7 +43,6 @@ public class Utils {
         } else {
             updateContext(context);
         }
-
     }
 
     // Check whether the geocoder can find a location matching the string parameter
@@ -58,7 +57,7 @@ public class Utils {
         }
 
         if (addressList.size() > 0) {
-            Utils.locationName = location;
+            Utils.locationName = parseAddressName(addressList.get(0));
 
             double latitude = addressList.get(0).getLatitude();
             double longitude = addressList.get(0).getLongitude();
@@ -66,7 +65,7 @@ public class Utils {
             Utils.lastQueriedLocation.setLatitude(latitude);
             Utils.lastQueriedLocation.setLongitude(longitude);
 
-            preferenceDbHelper.updateRecentLocations(location, latitude, longitude);
+            preferenceDbHelper.updateRecentLocations(locationName, latitude, longitude);
 
             isValid = true;
         }
@@ -175,6 +174,34 @@ public class Utils {
         String compareDay = formatDate(date);
 
         return currentDay.equals(compareDay);
+    }
+
+    public static String parseAddressName(Address address) {
+        String[] addressTokens = address.getAddressLine(0).split(",");
+
+        String city;
+        String admin;
+        if (addressTokens.length == 4) {
+            city = addressTokens[1].trim();
+            admin = addressTokens[2].replace(address.getPostalCode(), "").trim();
+        } else {
+            city = address.getLocality();
+            if (city == null) {
+                city = address.getSubAdminArea();
+            }
+
+            admin = address.getAdminArea();
+            if (admin == null) {
+                admin = address.getCountryName();
+            }
+
+            if (city == null && admin != null) {
+                city = address.getAdminArea();
+                admin = address.getCountryName();
+            }
+        }
+
+        return city + ", " + admin;
     }
 
     public static void refreshMainActivity() {

@@ -26,7 +26,6 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,7 +61,6 @@ import static com.jtbroski.myapplication.WeatherAlertActivity.ALERT_DATA_ID;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
     private ImageView splash;
-    private ScrollView navScrollView;
     private ScrollView scrollView;
 
     private TextView txtCurrentLocation;
@@ -88,6 +86,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private DrawerLayout drawerLayout;
 
+    private NonScrollableListView favoriteLocationListView;
+    private NonScrollableListView recentLocationListView;
     private FavoriteLocationListAdapter favoriteLocationListAdapter;
     private RecentLocationListAdapter recentLocationListAdapter;
 
@@ -108,7 +108,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-//        this.deleteDatabase("preferences.db");  // temporary database reset until full database has been created
+//        this.deleteDatabase(PreferenceDatabaseHelper.DB_NAME);  // Kept for debugging purposes
+//        this.deleteDatabase(LocationDatabaseHelper.DB_NAME);    // Kept for debugging purposes
         Utils.initialize(MainActivity.this);
         updateTheme(Utils.preferenceDbHelper.getDarkThemeFlag());
 
@@ -134,14 +135,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         navigationView.setLayoutParams(params);
 
         // Populate favorite locations in the navigation drawer
-        ListView favoriteLocationListView = findViewById(R.id.list_favorites);
+        favoriteLocationListView = findViewById(R.id.list_favorites);
         Cursor favoriteLocationCursor = Utils.preferenceDbHelper.getFavoriteLocations();
         favoriteLocationListAdapter = new FavoriteLocationListAdapter(this, favoriteLocationCursor, false);
         favoriteLocationListAdapter.changeCursor(favoriteLocationCursor);
         favoriteLocationListView.setAdapter(favoriteLocationListAdapter);
 
         // Populate recent locations list in the navigation drawer
-        ListView recentLocationListView = findViewById(R.id.list_recent);
+        recentLocationListView = findViewById(R.id.list_recent);
         Cursor recentLocationCursor = Utils.preferenceDbHelper.getRecentLocations();
         recentLocationListAdapter = new RecentLocationListAdapter(this, recentLocationCursor, false);
         recentLocationListAdapter.changeCursor(recentLocationCursor);
@@ -248,7 +249,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             startActivity(intent);
         });
 
-        navScrollView = findViewById(R.id.nav_scrollView);
         scrollView = findViewById(R.id.scrollView);
 
         // Current Conditions Material Card View
@@ -334,6 +334,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onDestroy() {
         Utils.removeContext();
+        favoriteLocationListAdapter.closeCursor();
+        recentLocationListAdapter.closeCursor();
         super.onDestroy();
     }
 
@@ -370,7 +372,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // We need to use "post" here to ensure that a runnable is added to the thread queue
         // This ensures that this task will execute after previously queued task have properly executed (i.e weather tile loading)
         scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_UP));
-        navScrollView.post(() -> navScrollView.fullScroll(ScrollView.FOCUS_UP));
     }
 
     // Update the list views within the navigation drawer by update their cursors
@@ -439,7 +440,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         return new StringRequest(Request.Method.GET, urlHistorical,
                 response -> {
                     try {
-
                         JSONObject result = new JSONObject(response);
                         JSONArray hourlyConditions = result.getJSONArray("hourly");
                         populateInitialFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
@@ -461,7 +461,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         return new StringRequest(Request.Method.GET, urlPreviousThreeHours,
                 response -> {
                     try {
-
                         JSONObject result = new JSONObject(response);
                         JSONArray hourlyConditions = result.getJSONArray("hourly");
                         populateInitialFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
@@ -686,33 +685,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             List<Address> addressList = Utils.locationName == null ? geocoder.getFromLocation(latitude, longitude, 1) :
                     geocoder.getFromLocationName(Utils.locationName, 1);
 
-            Address address = addressList.get(0);
-            String[] addressTokens = address.getAddressLine(0).split(",");
-
-            String city;
-            String admin;
-            if (addressTokens.length == 4) {
-                city = addressTokens[1].trim();
-                admin = addressTokens[2].replace(address.getPostalCode(), "").trim();
-            } else {
-                city = address.getLocality();
-                if (city == null) {
-                    city = address.getSubAdminArea();
-                }
-
-                admin = address.getAdminArea();
-                if (admin == null) {
-                    admin = address.getCountryName();
-                }
-
-                if (city == null && admin != null) {
-                    city = address.getAdminArea();
-                    admin = address.getCountryName();
-                }
-            }
-
-            String currentLocation = city + ", " + admin;
-            txtCurrentLocation.setText(currentLocation);
+            txtCurrentLocation.setText(Utils.parseAddressName(addressList.get(0)));
         } catch (Exception e) {
             Toast.makeText(MainActivity.this, "Failed to parse location data", Toast.LENGTH_SHORT).show();
         }
@@ -733,7 +706,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         try {
             for (int i = 0; i < dailyConditions.length(); i++) {
-
                 JSONObject dailyCondition = dailyConditions.getJSONObject(i);
 
                 // Parse current date
@@ -785,7 +757,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         try {
             for (int i = 0; i < hourlyConditions.length(); i++) {
-
                 JSONObject hourlyCondition = hourlyConditions.getJSONObject(i);
 
                 // Parse current date

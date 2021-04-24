@@ -13,10 +13,22 @@ import androidx.core.content.ContextCompat;
 
 public class FavoriteLocationListAdapter extends CursorAdapter {
     private final Context mContext;
+    private Cursor cursor;
 
     public FavoriteLocationListAdapter(Context context, Cursor c, boolean autoRequery) {
         super(context, c, autoRequery);
         mContext = context;
+        this.cursor = c;
+    }
+
+    public void closeCursor() {
+        cursor.close();
+    }
+
+    @Override
+    public void changeCursor(Cursor cursor) {
+        super.changeCursor(cursor);
+        this.cursor = cursor;
     }
 
     @Override
@@ -29,15 +41,18 @@ public class FavoriteLocationListAdapter extends CursorAdapter {
         TextView txtLocation = view.findViewById(R.id.txt_location);
         txtLocation.setText(cursor.getString(cursor.getColumnIndex(PreferenceDatabaseHelper.COLUMN_LOCATION)));
         txtLocation.setOnClickListener(v -> {
+            closeCursor();
             String favoriteLocationName = ((TextView) v).getText().toString();
             Utils.locationName = favoriteLocationName;
             ((MainActivity) mContext).callWeatherApi(Utils.preferenceDbHelper.getFavoriteLocation((favoriteLocationName)));
+            ((MainActivity) mContext).updateNavigationListViews();
             ((MainActivity) mContext).closeDrawerLayout();
         });
 
         ToggleButton toggleButton = view.findViewById(R.id.btn_favorite);
         toggleButton.setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.ic_favorite_on));
         toggleButton.setOnClickListener(v -> {
+            closeCursor();
             TextView txtLocation1 = (TextView) ((ViewGroup) v.getParent()).getChildAt(0);
             String location = txtLocation1.getText().toString();
             Utils.preferenceDbHelper.deleteFavoriteLocation(location);
