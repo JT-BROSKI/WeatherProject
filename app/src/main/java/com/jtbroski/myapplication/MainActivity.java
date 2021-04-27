@@ -86,8 +86,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private DrawerLayout drawerLayout;
 
-    private NonScrollableListView favoriteLocationListView;
-    private NonScrollableListView recentLocationListView;
     private FavoriteLocationListAdapter favoriteLocationListAdapter;
     private RecentLocationListAdapter recentLocationListAdapter;
 
@@ -135,14 +133,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         navigationView.setLayoutParams(params);
 
         // Populate favorite locations in the navigation drawer
-        favoriteLocationListView = findViewById(R.id.list_favorites);
+        NonScrollableListView favoriteLocationListView = findViewById(R.id.list_favorites);
         Cursor favoriteLocationCursor = Utils.preferenceDbHelper.getFavoriteLocations();
         favoriteLocationListAdapter = new FavoriteLocationListAdapter(this, favoriteLocationCursor, false);
         favoriteLocationListAdapter.changeCursor(favoriteLocationCursor);
         favoriteLocationListView.setAdapter(favoriteLocationListAdapter);
 
         // Populate recent locations list in the navigation drawer
-        recentLocationListView = findViewById(R.id.list_recent);
+        NonScrollableListView recentLocationListView = findViewById(R.id.list_recent);
         Cursor recentLocationCursor = Utils.preferenceDbHelper.getRecentLocations();
         recentLocationListAdapter = new RecentLocationListAdapter(this, recentLocationCursor, false);
         recentLocationListAdapter.changeCursor(recentLocationCursor);
@@ -353,17 +351,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case PreferenceDatabaseHelper.REQUEST_LOCATION_PERMISSION:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Utils.preferenceDbHelper.requestCurrentLocation(this);
-                } else {
-                    Toast.makeText(this, "My location permissions denied. Go to system settings to update location sharing permissions for My Location functionality.", Toast.LENGTH_LONG).show();
-                }
-                break;
-
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PreferenceDatabaseHelper.REQUEST_LOCATION_PERMISSION) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Utils.preferenceDbHelper.requestCurrentLocation(this);
+            } else {
+                Toast.makeText(this, "My location permissions denied. Go to system settings to update location sharing permissions for My Location functionality.", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
