@@ -186,12 +186,12 @@
                         app:layout_constraintTop_toBottomOf="@id/libraries_used_divider" />
 
                     <TextView
-                        android:id="@+id/txt_volley"
+                        android:id="@+id/txt_retrofit"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_marginStart="20dp"
                         android:layout_marginEnd="20dp"
-                        android:text="@string/volley"
+                        android:text="@string/retrofit"
                         android:textColor="?attr/secondaryTextColor"
                         android:textSize="16sp"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -209,7 +209,7 @@
                         android:textSize="16sp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/txt_volley" />
+                        app:layout_constraintTop_toBottomOf="@id/txt_retrofit" />
 
                     <TextView
                         android:id="@+id/txt_mpandroid_chart"

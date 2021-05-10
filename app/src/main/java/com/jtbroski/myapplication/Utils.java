@@ -100,22 +100,20 @@ public class Utils {
         return localDate;
     }
 
-    public static String convertWindDirection(String value) {
-        int valueInt = Integer.parseInt(value);
-
-        if (valueInt <= 22 || valueInt >= 338) {
+    public static String convertWindDirection(int value) {
+        if (value <= 22 || value >= 338) {
             return "(N)";
-        } else if (valueInt < 68) {
+        } else if (value < 68) {
             return "(NE)";
-        } else if (valueInt <= 121) {
+        } else if (value <= 121) {
             return "(E)";
-        } else if (valueInt < 158) {
+        } else if (value < 158) {
             return "(SE)";
-        } else if (valueInt <= 202) {
+        } else if (value <= 202) {
             return "(S)";
-        } else if (valueInt < 248) {
+        } else if (value < 248) {
             return "(SW)";
-        } else if (valueInt <= 292) {
+        } else if (value <= 292) {
             return "(W)";
         } else {
             return "(NW)";
@@ -145,8 +143,8 @@ public class Utils {
         return weekDayFormat.format(day.getTime());
     }
 
-    public static String getCurrentDayMidnight(Context context) {
-        String time = "";
+    public static String getCurrentDayMidnight() {
+        String time;
 
         LocalDateTime now = LocalDateTime.now();
         now = now.minusHours(now.getHour());
@@ -161,14 +159,14 @@ public class Utils {
             previousDayStart.setTime(formatter.parse(now.toString()));
             time = String.valueOf(previousDayStart.getTimeInMillis() / 1000L);
         } catch (Exception e) {
-            Toast.makeText(context, "Failed to parse local date time for current midnight calendar object.", Toast.LENGTH_SHORT).show();
+            time = "0";
         }
 
         return time;
     }
 
-    public static String getPreviousThreeHours(Context context) {
-        String time = "";
+    public static String getPreviousThreeHours() {
+        String time;
 
         LocalDateTime now = LocalDateTime.now();
         now = now.minusHours(1);
@@ -183,7 +181,7 @@ public class Utils {
             previousDayStart.setTime(formatter.parse(now.toString()));
             time = String.valueOf(previousDayStart.getTimeInMillis() / 1000L);
         } catch (Exception e) {
-            Toast.makeText(context, "Failed to parse local date time for previous three hour calendar object.", Toast.LENGTH_SHORT).show();
+            time = "0";
         }
 
         return time;
@@ -232,11 +230,6 @@ public class Utils {
         mContext = null;
     }
 
-    public static String roundStringNumberValue(String value) {
-        int roundedValue = (int) Math.round(Double.parseDouble(value));
-        return String.valueOf(roundedValue);
-    }
-
     public static void setTimeZone(Calendar date) {
         hourFormat.setTimeZone(date.getTimeZone());
         dateFormat.setTimeZone(date.getTimeZone());
@@ -244,13 +237,9 @@ public class Utils {
         weekDayDateFormat.setTimeZone(date.getTimeZone());
     }
 
-    public static void updateLastQueriedLocation(Context context, JSONObject data) {
-        try {
-            lastQueriedLocation.setLatitude(data.getDouble("lat"));
-            lastQueriedLocation.setLongitude(data.getDouble("lon"));
-        } catch (Exception e) {
-            Toast.makeText(context, "Unable to update last queried location.", Toast.LENGTH_SHORT).show();
-        }
+    public static void updateLastQueriedLocation(ApiInfoConditions forecast) {
+        lastQueriedLocation.setLatitude(forecast.getLat());
+        lastQueriedLocation.setLongitude(forecast.getLon());
     }
 
     private static void updateContext(Context context) {

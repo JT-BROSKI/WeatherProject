@@ -30,10 +30,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -46,10 +42,6 @@ import com.google.android.gms.maps.model.TileProvider;
 import com.google.android.gms.maps.model.UrlTileProvider;
 import com.google.android.material.navigation.NavigationView;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -57,9 +49,18 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 import static com.jtbroski.myapplication.WeatherAlertActivity.ALERT_DATA_ID;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+    private final String OPEN_WEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5/";
+    private final Integer OPEN_WEATHER_API_KEY = R.string.open_weather_map_key;
+
     private ImageView splash;
     private ScrollView scrollView;
 
@@ -82,8 +83,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private TileOverlay weatherTileOverlay;
     private ArrayList<Triplet<Integer, Integer, Integer>> weatherTiles;
 
-    private RequestQueue queue;
-
     private DrawerLayout drawerLayout;
 
     private FavoriteLocationListAdapter favoriteLocationListAdapter;
@@ -94,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private HourlyConditionsRecViewAdapter hourlyConditionsRecViewAdapter;
     private RecyclerView hourlyConditionsRecView;
-    private JSONArray fullyDayHourlyConditions;
+    private List<ApiInfoHourlyConditions> fullDayHourlyConditions;
     private ArrayList<Integer> hoursRecorded;
 
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -282,8 +281,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         swipeRefreshLayout = findViewById(R.id.pullDownRefresh);
         swipeRefreshLayout.setOnRefreshListener(() -> callWeatherApi(Utils.lastQueriedLocation));
 
-        queue = Volley.newRequestQueue(this);
-
         // If the program is starting up, then get the weather for the preferred location
         // Else, then this is being called due to a theme change and we want to get the weather for the last queried location
         if (Utils.startUp) {
@@ -299,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     // Calls the OpenWeather API and updates all weather conditions
     public void callWeatherApi(Location location) {
-        fullyDayHourlyConditions = new JSONArray();
+        fullDayHourlyConditions = new ArrayList<>();
         hoursRecorded = new ArrayList<>();
         isImperial = Utils.preferenceDbHelper.getImperialFlag();
 
@@ -314,14 +311,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             updateWeatherTileOverlay();
         }
 
-        final String API_KEY = "appid=" + getResources().getString(R.string.open_weather_map_key);
-        final String END_POINT = "https://api.openweathermap.org/data";
-        final String VERSION = "2.5";
-        final String TEMP_MEASUREMENT = "&units=" + (isImperial ? "imperial" : "metric");
-        String coordinates = "lat=" + location.getLatitude() + "&lon=" + location.getLongitude();
-        String currentMidnight = Utils.getCurrentDayMidnight(this);
-
-        queue.add(constructHistoricalStringRequest(currentMidnight, END_POINT, VERSION, coordinates, TEMP_MEASUREMENT, API_KEY));
+        String measurement = isImperial ? "imperial" : "metric";
+        getHistoricalWeather(location, measurement);
     }
 
     // Close the drawer layout
@@ -375,99 +366,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         recentLocationListAdapter.changeCursor(Utils.preferenceDbHelper.getRecentLocations());
     }
 
-    // Construct the API string request for the current and future weather conditions
-    private StringRequest constructForecastStringRequest(String currentMidnight, String endPoint, String version, String coordinates, String measurement, String apiKey) {
-        final String ONE_CALL = "onecall?";
-        String urlCurrent = endPoint + "/" + version + "/" + ONE_CALL + coordinates + measurement + "&" + apiKey;
-
-        return new StringRequest(Request.Method.GET, urlCurrent,
-                response -> {
-                    try {
-                        if (swipeRefreshLayout.isRefreshing()) {
-                            swipeRefreshLayout.setRefreshing(false);
-                        }
-
-                        JSONObject result = new JSONObject(response);
-                        JSONObject currentConditions = result.getJSONObject("current");
-                        JSONArray hourlyConditions = result.getJSONArray("hourly");
-                        JSONArray dailyConditions = result.getJSONArray("daily");
-
-                        parseCurrentTimeZone(result);
-                        populateFinalFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
-                        Utils.updateLastQueriedLocation(MainActivity.this, result);
-
-                        boolean minutelyAvailable = true;
-                        JSONArray precipConditions;
-                        try {
-                            precipConditions = result.getJSONArray("minutely");
-                        } catch (JSONException e) {
-                            precipConditions = hourlyConditions;
-                            minutelyAvailable = false;
-                        }
-
-                        updateCurrentConditions(currentConditions, precipConditions, dailyConditions, minutelyAvailable);
-                        updateCurrentLocation(result);
-                        updateDailyConditions(dailyConditions);
-                        updateHourlyConditions(hourlyConditions);
-                        updateWeatherAlerts(result);
-
-                        Utils.preferenceDbHelper.updatePreferredLocation(Utils.lastQueriedLocation);
-                    } catch (JSONException e) {
-                        Toast.makeText(this, "Failed to parse current weather data.", Toast.LENGTH_SHORT).show();
-                    } finally {
-                        resetScrollViews();
-
-                        // Hide the splash image when the data has been loaded
-                        if (splash.getVisibility() != View.GONE) {
-                            splash.setVisibility(View.GONE);
-                        }
-                    }
-                },
-                error -> Toast.makeText(this, "Forecast API call failed", Toast.LENGTH_SHORT).show());
-    }
-
-    // Construct the string request for past hourly conditions
-    private StringRequest constructHistoricalStringRequest(String currentMidnight, String endPoint, String version, String coordinates, String measurement, String apiKey) {
-        final String HISTORICAL_ONE_CALL = "onecall/timemachine?";
-        String time = "&dt=" + currentMidnight;
-        String urlHistorical = endPoint + "/" + version + "/" + HISTORICAL_ONE_CALL + coordinates + time + measurement + "&" + apiKey;
-
-        return new StringRequest(Request.Method.GET, urlHistorical,
-                response -> {
-                    try {
-                        JSONObject result = new JSONObject(response);
-                        JSONArray hourlyConditions = result.getJSONArray("hourly");
-                        populateInitialFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
-
-                        queue.add(constructHistoricalStringRequestBackup(currentMidnight, endPoint, version, coordinates, measurement, apiKey));
-                    } catch (Exception e) {
-                        Toast.makeText(this, "Failed to parse historic weather data.", Toast.LENGTH_SHORT).show();
-                    }
-                },
-                error -> Toast.makeText(this, "Historical API call failed", Toast.LENGTH_SHORT).show());
-    }
-
-    // Construct the backup string request for past hourly conditions just in case the normal historical string request missed a few hours
-    private StringRequest constructHistoricalStringRequestBackup(String currentMidnight, String endPoint, String version, String coordinates, String measurement, String apiKey) {
-        final String HISTORICAL_ONE_CALL = "onecall/timemachine?";
-        String timeThreeHours = "&dt=" + Utils.getPreviousThreeHours(this);
-        String urlPreviousThreeHours = endPoint + "/" + version + "/" + HISTORICAL_ONE_CALL + coordinates + timeThreeHours + measurement + "&" + apiKey;
-
-        return new StringRequest(Request.Method.GET, urlPreviousThreeHours,
-                response -> {
-                    try {
-                        JSONObject result = new JSONObject(response);
-                        JSONArray hourlyConditions = result.getJSONArray("hourly");
-                        populateInitialFullDayHourlyConditionsJsonArray(hourlyConditions, currentMidnight);
-
-                        queue.add(constructForecastStringRequest(currentMidnight, endPoint, version, coordinates, measurement, apiKey));
-                    } catch (Exception e) {
-                        Toast.makeText(this, "Failed to parse weather data three hours in the past.", Toast.LENGTH_SHORT).show();
-                    }
-                },
-                error -> Toast.makeText(this, "Historical Backup API call failed", Toast.LENGTH_SHORT).show());
-    }
-
     // Create the tile provider for the weather maps
     private TileProvider createTileProvider() {
         return new UrlTileProvider(256, 256) {
@@ -489,6 +387,128 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         };
     }
 
+    // Get the forecasted weather conditions
+    private void getForecastedWeather(Location location, String measurement) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(OPEN_WEATHER_BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        OpenWeatherService openWeatherService = retrofit.create(OpenWeatherService.class);
+        Call<ApiInfoConditions> call = openWeatherService.getOneCallWeatherData(
+                Double.toString(location.getLatitude()),
+                Double.toString(location.getLongitude()),
+                measurement,
+                getApplicationContext().getResources().getString(OPEN_WEATHER_API_KEY));
+        call.enqueue(new Callback<ApiInfoConditions>() {
+            @Override
+            public void onResponse(Call<ApiInfoConditions> call, Response<ApiInfoConditions> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    if (swipeRefreshLayout.isRefreshing()) {
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+
+                    ApiInfoConditions forecast = response.body();
+
+                    Utils.timeZone = forecast.getTimezone();
+                    populateFinalFullDayHourlyConditionsJsonArray(forecast.getHourly());
+                    Utils.updateLastQueriedLocation(forecast);
+
+                    updateCurrentConditions(forecast);
+                    updateCurrentLocation(forecast);
+                    updateDailyConditions(forecast.getDaily());
+                    updateHourlyConditions(forecast.getHourly());
+                    updateWeatherAlerts(forecast.getAlerts());
+
+                    Utils.preferenceDbHelper.updatePreferredLocation(Utils.lastQueriedLocation);
+
+                    resetScrollViews();
+
+                    // Hide the splash image when the data has been loaded
+                    if (splash.getVisibility() != View.GONE) {
+                        splash.setVisibility(View.GONE);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiInfoConditions> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Failed to get forecast weather data through retrofit.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // Get the past hourly conditions based on the current day's midnight
+    private void getHistoricalWeather(Location location, String measurement) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(OPEN_WEATHER_BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        OpenWeatherService openWeatherService = retrofit.create(OpenWeatherService.class);
+        Call<ApiInfoConditions> call = openWeatherService.getOneCallHistoricalWeatherData(
+                Double.toString(location.getLatitude()),
+                Double.toString(location.getLongitude()),
+                Utils.getCurrentDayMidnight(),
+                measurement,
+                getApplicationContext().getResources().getString(OPEN_WEATHER_API_KEY));
+        call.enqueue(new Callback<ApiInfoConditions>() {
+            @Override
+            public void onResponse(Call<ApiInfoConditions> call, Response<ApiInfoConditions> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<ApiInfoHourlyConditions> hourlyConditions = response.body().getHourly();
+
+                    if (hourlyConditions != null) {
+                        populateInitialFullDayHourlyConditionsJsonArray(hourlyConditions);
+                    }
+
+                    getHistoricalWeatherBackup(location, measurement);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiInfoConditions> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Failed to get historical weather data through retrofit.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // Get the past hourly conditions based on an hour before the current day's midnight just in case the normal historical request missed a few hours
+    private void getHistoricalWeatherBackup(Location location, String measurement) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(OPEN_WEATHER_BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        OpenWeatherService openWeatherService = retrofit.create(OpenWeatherService.class);
+        Call<ApiInfoConditions> call = openWeatherService.getOneCallHistoricalWeatherData(
+                Double.toString(location.getLatitude()),
+                Double.toString(location.getLongitude()),
+                Utils.getPreviousThreeHours(),
+                measurement,
+                getApplicationContext().getResources().getString(OPEN_WEATHER_API_KEY));
+
+        call.enqueue(new Callback<ApiInfoConditions>() {
+            @Override
+            public void onResponse(Call<ApiInfoConditions> call, Response<ApiInfoConditions> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<ApiInfoHourlyConditions> hourlyConditions = response.body().getHourly();
+
+                    if (hourlyConditions != null) {
+                        populateInitialFullDayHourlyConditionsJsonArray(hourlyConditions);
+                    }
+
+                    getForecastedWeather(location, measurement);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiInfoConditions> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Failed to get historical weather backup data through retrofit.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     // Check if the map tile values have already been requested before
     // NOTE: This may be unnecessary now that we have the correct weather map URL, the tile overlay options may already be checking if it contains certain tiles
     // If it is a new tile return true, else return false
@@ -507,149 +527,96 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         return true;
     }
 
-    // Parse the current time zone of the weather data
-    private void parseCurrentTimeZone(JSONObject data) {
-        try {
-            Utils.timeZone = data.getString("timezone");
-        } catch (Exception e) {
-            Toast.makeText(this, "Unable to parse the current time zone.", Toast.LENGTH_SHORT).show();
-        }
-    }
+    // Populates an array list with the current and future hourly conditions
+    private void populateFinalFullDayHourlyConditionsJsonArray(List<ApiInfoHourlyConditions> hourlyConditions) {
+        int currentMidnightTime = Integer.parseInt(Utils.getCurrentDayMidnight());
 
-    // Populates a JSON array with the current and future hourly conditions
-    private void populateFinalFullDayHourlyConditionsJsonArray(JSONArray hourlyConditions, String currentMidnight) {
-        int currentMidnightTime = Integer.parseInt(currentMidnight);
+        for (ApiInfoHourlyConditions hourlyCondition : hourlyConditions) {
+            int time = hourlyCondition.getDt();
 
-        try {
-            for (int i = 0; i < hourlyConditions.length(); i++) {
-                JSONObject hourlyCondition = hourlyConditions.getJSONObject(i);
-                int time = hourlyCondition.getInt("dt");
-
-                fullyDayHourlyConditions.put(hourlyCondition);
+            if (time >= currentMidnightTime && !hoursRecorded.contains(time)) {
+                fullDayHourlyConditions.add(hourlyCondition);
                 hoursRecorded.add(time);
             }
-            dailyConditionsRecViewAdapter.sortFullDayHourConditions(fullyDayHourlyConditions, currentMidnightTime);
-        } catch (Exception e) {
-            Toast.makeText(MainActivity.this, "Failed to construct final fully day hourly conditions json array.", Toast.LENGTH_SHORT).show();
         }
+        dailyConditionsRecViewAdapter.sortFullDayHourConditions(fullDayHourlyConditions, currentMidnightTime);
     }
 
-    // Populates a JSON array with the past hourly conditions within the current day
-    private void populateInitialFullDayHourlyConditionsJsonArray(JSONArray hourlyConditions, String currentMidnight) {
-        int currentMidnightTime = Integer.parseInt(currentMidnight);
+    // Populates an array list with the past hourly conditions within the current day
+    private void populateInitialFullDayHourlyConditionsJsonArray(List<ApiInfoHourlyConditions> hourlyConditions) {
+        int currentMidnightTime = Integer.parseInt(Utils.getCurrentDayMidnight());
 
-        try {
-            for (int i = 0; i < hourlyConditions.length(); i++) {
-                JSONObject hourlyCondition = hourlyConditions.getJSONObject(i);
-                int time = hourlyCondition.getInt("dt");
+        for (ApiInfoHourlyConditions hourlyCondition : hourlyConditions) {
+            int time = hourlyCondition.getDt();
 
-                if (time >= currentMidnightTime && !hoursRecorded.contains(time)) {
-                    fullyDayHourlyConditions.put(hourlyCondition);
-                    hoursRecorded.add(time);
-                }
+            if (time >= currentMidnightTime && !hoursRecorded.contains(time)) {
+                fullDayHourlyConditions.add(hourlyCondition);
+                hoursRecorded.add(time);
             }
-        } catch (Exception e) {
-            Toast.makeText(MainActivity.this, "Failed to construct initial fully day hourly conditions json array.", Toast.LENGTH_SHORT).show();
         }
     }
 
     // Updates the data within the Current Conditions Material Card View
-    private void updateCurrentConditions(JSONObject currentConditions, JSONArray precipConditions, JSONArray dailyConditions, boolean minutelyAvailable) {
+    private void updateCurrentConditions(ApiInfoConditions forecast) {
         String icon;
         String temp;
         String tempHighLow;
         String description;
         String feelsLike;
-        String precip;
+        String precipitation;
         String humidity;
         String wind;
 
+        ApiInfoCurrentConditions currentConditions = forecast.getCurrent();
+
         // Parse current date and set current time zone
-        try {
-            Utils.currentDate = Utils.convertUnixTimeToLocalCalendarDate(currentConditions.getInt("dt") * 1000L);
-            Utils.setTimeZone(Utils.currentDate);
-        } catch (Exception e) {
-            Toast.makeText(this, "Unable to parse date.", Toast.LENGTH_SHORT).show();
-        }
+        Utils.currentDate = Utils.convertUnixTimeToLocalCalendarDate(currentConditions.getDt() * 1000L);
+        Utils.setTimeZone(Utils.currentDate);
 
         // Parse icon data
-        try {
-            icon = currentConditions.getJSONArray("weather").getJSONObject(0).getString("icon");
-        } catch (Exception e) {
-            icon = "";
-        }
+        icon = currentConditions.getWeather().get(0).getIcon();
 
         // Parse current temperature
-        try {
-            temp = currentConditions.getString("temp");
-            temp = Utils.roundStringNumberValue(temp);
-        } catch (Exception e) {
-            temp = "N/A";
-        }
+        temp = String.valueOf((int) Math.round(currentConditions.getTemp()));
 
         // Parse high and low temperature for today
-        try {
-            JSONObject today = dailyConditions.getJSONObject(0).getJSONObject("temp");
-            String high = Utils.roundStringNumberValue(today.getString("max")) + "\u00B0";
-            String low = Utils.roundStringNumberValue(today.getString("min")) + "\u00B0";
-
-            tempHighLow = high + " | " + low;
-        } catch (Exception e) {
-            tempHighLow = "N/A";
-        }
+        ApiInfoTemp today = forecast.getDaily().get(0).getTemp();
+        String high = (int) Math.round(today.getMax()) + "\u00B0";
+        String low = (int) Math.round(today.getMin()) + "\u00B0";
+        tempHighLow = high + " | " + low;
 
         // Parse current weather description
-        try {
-            description = currentConditions.getJSONArray("weather").getJSONObject(0).getString("description").toUpperCase();
-        } catch (Exception e) {
-            description = "N/A";
-        }
+        description = currentConditions.getWeather().get(0).getDescription().toUpperCase();
 
         // Parse current feels like temperature
-        try {
-            feelsLike = currentConditions.getString("feels_like");
-            feelsLike = "Feels like " + Utils.roundStringNumberValue(feelsLike) + "\u00B0";
-        } catch (Exception e) {
-            feelsLike = "N/A";
-        }
+        feelsLike = "Feels like " + (int) Math.round(currentConditions.getFeelsLike()) + "\u00B0";
 
         // Parse current precipitation chance
-        int precipChance;
-        try {
-            if (minutelyAvailable) {
-                int chance = 0;
-                for (int i = 0; i < 30; i++) {
-                    double precipitation = precipConditions.getJSONObject(i).getDouble("precipitation");
-                    if (precipitation > 0)
-                        chance++;
-                }
-                precipChance = (int) Math.round(chance / 30.0 * 100);
-            } else {
-                precipChance = (int) (precipConditions.getJSONObject(0).getDouble("pop") * 100);
+        double precipitationAverage;
+        if (forecast.getMinutely() != null) {
+            List<ApiInfoMinutelyConditions> minutelyConditions = forecast.getMinutely();
+
+            // Calculate the precipitation chance based on the conditions within the next 30 minutes
+            int chance = 0;
+            for (int i = 0; i < 30; i++) {
+                double precipitationChance = minutelyConditions.get(i).getPrecipitation();
+                if (precipitationChance > 0)
+                    chance++;
             }
-            precip = String.valueOf(precipChance);
-            precip = Utils.roundStringNumberValue(precip) + "%";
-        } catch (Exception e) {
-            precip = "N/A";
+            precipitationAverage = chance / 30.0 * 100;
+        } else {
+            precipitationAverage = forecast.getHourly().get(0).getPop() * 100;
         }
+        precipitation = (int) Math.round(precipitationAverage) + "%";
 
         // Parse current humidity
-        try {
-            humidity = currentConditions.getString("humidity") + "%";
-        } catch (Exception e) {
-            humidity = "N/A";
-        }
+        humidity = currentConditions.getHumidity() + "%";
 
         // Parse wind data
-        try {
-            String windSpeed = Utils.roundStringNumberValue(currentConditions.getString("wind_speed"));
-            String windDirection = Utils.convertWindDirection(currentConditions.getString("wind_deg"));
-            String units = isImperial ? "mph" : "kph";
-
-            wind = windSpeed + " " + units + " " + windDirection;
-        } catch (Exception e) {
-            wind = "N/A";
-        }
+        double windSpeed = (int) Math.round(currentConditions.getWindSpeed());
+        String windDirection = Utils.convertWindDirection(currentConditions.getWindDeg());
+        String units = isImperial ? "mph" : "kph";
+        wind = windSpeed + " " + units + " " + windDirection;
 
         // Load weather icon image
         if (!icon.isEmpty())
@@ -664,16 +631,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         txtCurrentTemperatureHighLow.setText(tempHighLow);
         txtCurrentConditionsDescription.setText(description);
         txtFeelsLike.setText(feelsLike);
-        txtPrecipitation.setText(precip);
+        txtPrecipitation.setText(precipitation);
         txtHumidity.setText(humidity);
         txtWind.setText(wind);
     }
 
     // Updates the location string within the App Bar
-    private void updateCurrentLocation(JSONObject result) {
+    private void updateCurrentLocation(ApiInfoConditions forecast) {
         try {
-            double latitude = result.getDouble("lat");
-            double longitude = result.getDouble("lon");
+            double latitude = forecast.getLat();
+            double longitude = forecast.getLon();
             updateCurrentLocationOnWeatherMap(latitude, longitude);
 
             Geocoder geocoder = new Geocoder(this, Locale.getDefault());
@@ -682,7 +649,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             txtCurrentLocation.setText(Utils.parseAddressName(addressList.get(0)));
         } catch (Exception e) {
-            Toast.makeText(MainActivity.this, "Failed to parse location data", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Failed to parse current location data", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -693,132 +660,115 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+
     // Updates the data within the Daily Conditions Material Card View
-    private void updateDailyConditions(JSONArray dailyConditions) {
+    private void updateDailyConditions(List<ApiInfoDailyConditions> dailyConditions) {
         ArrayList<Weather> dailyWeather = new ArrayList<>();
 
         boolean hasPrecipitation = false;
 
-        try {
-            for (int i = 0; i < dailyConditions.length(); i++) {
-                JSONObject dailyCondition = dailyConditions.getJSONObject(i);
+        for (ApiInfoDailyConditions dailyCondition : dailyConditions) {
+            // Parse current date
+            Calendar date = Utils.convertUnixTimeToLocalCalendarDate(dailyCondition.getDt() * 1000L);
 
-                // Parse current date
-                Calendar date = Utils.convertUnixTimeToLocalCalendarDate(dailyCondition.getInt("dt") * 1000L);
+            // Parse sunrise and sunset date
+            Calendar sunrise = Utils.convertUnixTimeToLocalCalendarDate(dailyCondition.getSunrise() * 1000L);
+            Calendar sunset = Utils.convertUnixTimeToLocalCalendarDate(dailyCondition.getSunset() * 1000L);
 
-                // Parse sunrise and sunset date
-                Calendar sunrise = Utils.convertUnixTimeToLocalCalendarDate(dailyCondition.getInt("sunrise") * 1000L);
-                Calendar sunset = Utils.convertUnixTimeToLocalCalendarDate(dailyCondition.getInt("sunset") * 1000L);
+            // Parse high and low temperature
+            ApiInfoTemp temperature = dailyCondition.getTemp();
+            String temperatureMax = String.valueOf((int) Math.round(temperature.getMax()));
+            String temperatureMin = String.valueOf((int) Math.round(temperature.getMin()));
 
-                // Parse high and low temperature
-                JSONObject temperature = dailyCondition.getJSONObject("temp");
-                String temperatureMax = Utils.roundStringNumberValue(temperature.getString("max"));
-                String temperatureMin = Utils.roundStringNumberValue(temperature.getString("min"));
-
-                // Parse precipitation chance
-                int precipChance = (int) (dailyCondition.getDouble("pop") * 100);
-                String precipChanceString = String.valueOf(precipChance);
-                if (!precipChanceString.equals("0")) {
-                    hasPrecipitation = true;
-                }
-
-                // Parse wind data
-                String windSpeed = Utils.roundStringNumberValue(dailyCondition.getString("wind_speed"));
-                String windDirection = Utils.convertWindDirection(dailyCondition.getString("wind_deg"));
-                String windScale = isImperial ? "mph" : "kph";
-
-                // Parse icon data
-                String icon = Utils.createWeatherIconUrl(dailyCondition.getJSONArray("weather").getJSONObject(0).getString("icon"));
-
-                // Create new weather object and add to the array list
-                Weather weather = new Weather(date, sunrise, sunset, "", temperatureMax, temperatureMin,
-                        precipChanceString, windSpeed, windDirection, windScale, icon);
-                dailyWeather.add(weather);
+            // Parse precipitation chance
+            String precipitationChance = String.valueOf((int) (dailyCondition.getPop() * 100));
+            if (!precipitationChance.equals("0")) {
+                hasPrecipitation = true;
             }
 
-            dailyConditionsRecViewAdapter.setShowPrecipitation(hasPrecipitation);
-            dailyConditionsRecViewAdapter.setDailyWeather(dailyWeather);
-            dailyConditionsRecView.post(() -> dailyConditionsRecView.smoothScrollToPosition(0));
-        } catch (Exception e) {
-            Toast.makeText(this, "Failed to parse daily conditions.", Toast.LENGTH_SHORT).show();
+            // Parse wind data
+            String windSpeed = String.valueOf((int) Math.round(dailyCondition.getWindSpeed()));
+            String windDirection = Utils.convertWindDirection(dailyCondition.getWindDeg());
+            String windScale = isImperial ? "mph" : "kph";
+
+            // Parse icon data
+            String icon = Utils.createWeatherIconUrl(dailyCondition.getWeather().get(0).getIcon());
+
+            // Create new weather object and add to the array list
+            Weather weather = new Weather(date, sunrise, sunset, "", temperatureMax, temperatureMin,
+                    precipitationChance, windSpeed, windDirection, windScale, icon);
+            dailyWeather.add(weather);
         }
+
+        dailyConditionsRecViewAdapter.setShowPrecipitation(hasPrecipitation);
+        dailyConditionsRecViewAdapter.setDailyWeather(dailyWeather);
+        dailyConditionsRecView.post(() -> dailyConditionsRecView.smoothScrollToPosition(0));
     }
 
-    // Updates the data within the Hour Conditions Material Card View
-    private void updateHourlyConditions(JSONArray hourlyConditions) {
+    // Updates the data within the Hourly Conditions Material Card View
+    private void updateHourlyConditions(List<ApiInfoHourlyConditions> hourlyConditions) {
         ArrayList<Weather> hourlyWeather = new ArrayList<>();
 
         boolean hasPrecipitation = false;
 
-        try {
-            for (int i = 0; i < hourlyConditions.length(); i++) {
-                JSONObject hourlyCondition = hourlyConditions.getJSONObject(i);
+        for (ApiInfoHourlyConditions hourlyCondition : hourlyConditions) {
+            // Parse current date
+            Calendar date = Utils.convertUnixTimeToLocalCalendarDate(hourlyCondition.getDt() * 1000L);
 
-                // Parse current date
-                Calendar date = Utils.convertUnixTimeToLocalCalendarDate(hourlyCondition.getInt("dt") * 1000L);
+            // Parse current temperature
+            String temperatureCurrent = String.valueOf((int) Math.round(hourlyCondition.getTemp()));
 
-                // Parse current temperature
-                String temperatureCurrent = Utils.roundStringNumberValue(hourlyCondition.getString("temp"));
-
-                // Parse precipitation chance
-                int precipChance = (int) (hourlyCondition.getDouble("pop") * 100);
-                String precipChanceString = String.valueOf(precipChance);
-                if (!precipChanceString.equals("0")) {
-                    hasPrecipitation = true;
-                }
-
-                // Parse wind data
-                String windSpeed = Utils.roundStringNumberValue(hourlyCondition.getString("wind_speed"));
-                String windDirection = Utils.convertWindDirection(hourlyCondition.getString("wind_deg"));
-                String windScale = isImperial ? "mph" : "kph";
-
-                // Parse icon data
-                String icon = Utils.createWeatherIconUrl(hourlyCondition.getJSONArray("weather").getJSONObject(0).getString("icon"));
-
-                // Create new weather object and add to the array list
-                Weather weather = new Weather(date, null, null, temperatureCurrent, "", "",
-                        precipChanceString, windSpeed, windDirection, windScale, icon);
-                hourlyWeather.add(weather);
+            // Parse precipitation chance
+            String precipitationChance = String.valueOf((int) (hourlyCondition.getPop() * 100));
+            if (!precipitationChance.equals("0")) {
+                hasPrecipitation = true;
             }
 
-            hourlyConditionsRecViewAdapter.setShowPrecipitation(hasPrecipitation);
-            hourlyConditionsRecViewAdapter.setHourlyWeather(hourlyWeather);
-            hourlyConditionsRecView.post(() -> hourlyConditionsRecView.smoothScrollToPosition(0));
-        } catch (Exception e) {
-            Toast.makeText(this, "Failed to parse hourly conditions.", Toast.LENGTH_SHORT).show();
+            // Parse wind data
+            String windSpeed = String.valueOf((int) Math.round(hourlyCondition.getWindSpeed()));
+            String windDirection = Utils.convertWindDirection(hourlyCondition.getWindDeg());
+            String windScale = isImperial ? "mph" : "kph";
+
+            // Parse icon data
+            String icon = Utils.createWeatherIconUrl(hourlyCondition.getWeather().get(0).getIcon());
+
+            // Create new weather object and add to the array list
+            Weather weather = new Weather(date, null, null, temperatureCurrent, "", "",
+                    precipitationChance, windSpeed, windDirection, windScale, icon);
+            hourlyWeather.add(weather);
         }
+
+        hourlyConditionsRecViewAdapter.setShowPrecipitation(hasPrecipitation);
+        hourlyConditionsRecViewAdapter.setHourlyWeather(hourlyWeather);
+        hourlyConditionsRecView.post(() -> hourlyConditionsRecView.smoothScrollToPosition(0));
     }
 
     // Update the weather alerts notification
-    private void updateWeatherAlerts(JSONObject result) {
-        try {
-            JSONArray alerts = result.getJSONArray("alerts");
-
-            JSONObject firstAlert = alerts.getJSONObject(0);
-            txtWeatherAlert.setText(firstAlert.getString("event"));
+    private void updateWeatherAlerts(List<ApiInfoAlerts> alerts) {
+        if (alerts != null) {
+            ApiInfoAlerts firstAlert = alerts.get(0);
+            txtWeatherAlert.setText(firstAlert.getEvent());
 
             weatherAlerts = new ArrayList<>();
             SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mma z EEE, MMM d, yyyy", Locale.US);
-            for (int i = 0; i < alerts.length(); i++) {
-                JSONObject alert = alerts.getJSONObject(i);
+            for (ApiInfoAlerts alert : alerts) {
+                String sender = alert.getSenderName();
+                String title = alert.getEvent();
 
-                String sender = alert.getString("sender_name");
-                String title = alert.getString("event");
-
-                Calendar startDate = Utils.convertUnixTimeToLocalCalendarDate(alert.getInt("start") * 1000L);
+                Calendar startDate = Utils.convertUnixTimeToLocalCalendarDate(alert.getStart() * 1000L);
                 String startString = dateFormat.format(startDate.getTime());
 
-                Calendar endDate = Utils.convertUnixTimeToLocalCalendarDate(alert.getInt("end") * 1000L);
+                Calendar endDate = Utils.convertUnixTimeToLocalCalendarDate(alert.getEnd() * 1000L);
                 String endString = dateFormat.format(endDate.getTime());
 
-                String description = alert.getString("description");
+                String description = alert.getDescription();
 
                 weatherAlerts.add(new WeatherAlert(sender, title, startString, endString, description));
             }
 
             weatherAlertLayout.setVisibility(View.VISIBLE);
             resetScrollViews();
-        } catch (Exception e) {
+        } else {
             weatherAlertLayout.setVisibility(View.GONE);
         }
     }

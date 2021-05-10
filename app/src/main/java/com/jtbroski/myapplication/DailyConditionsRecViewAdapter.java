@@ -27,13 +27,11 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 
 public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyConditionsRecViewAdapter.ViewHolder> {
     private static final String TAG = "DailyCondRecViewAdapter";
@@ -60,7 +58,7 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         this.showPrecipitation = showPrecipitation;
     }
 
-    public void sortFullDayHourConditions(JSONArray hourlyConditions, int currentMidnight) {
+    public void sortFullDayHourConditions(List<ApiInfoHourlyConditions> hourlyConditions, int currentMidnight) {
         ArrayList<Integer> hoursRecorded = new ArrayList<>();
         dailyHighs = new ArrayList<>();
         dailyLows = new ArrayList<>();
@@ -98,107 +96,103 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         ArrayList<Entry> secondDayHourlyRainChance = new ArrayList<>();
         ArrayList<Entry> thirdDayHourlyRainChance = new ArrayList<>();
 
-        try {
-            for (int i = 0; i < hourlyConditions.length(); i++) {
-                JSONObject hourlyCondition = hourlyConditions.getJSONObject(i);
-                int time = hourlyCondition.getInt("dt");
-                int temperature = (int) Math.round(hourlyCondition.getDouble("temp"));
+        for (int i = 0; i < hourlyConditions.size(); i++) {
+            ApiInfoHourlyConditions hourlyCondition = hourlyConditions.get(i);
+            int time = hourlyCondition.getDt();
+            int temperature = (int) Math.round(hourlyCondition.getTemp());
 
-                float rainChance;
-                try {
-                    rainChance = (float) hourlyCondition.getDouble("pop") * 100;
-                } catch (Exception e) {
-                    rainChance = 0;
-                }
-
-                // Determine the highest and lowest temperatures within the fullDayHourlyConditions
-                if (i == 0) {
-                    yAxisMax = temperature;
-                    yAxisMin = temperature;
-                } else if (yAxisMax < temperature) {
-                    yAxisMax = temperature;
-                } else if (yAxisMin > temperature) {
-                    yAxisMin = temperature;
-                }
-
-                // Store the hourly temperature to be within its respective 24-hour window
-                if (currentMidnight <= time && time <= firstDayLastHour) {
-                    if (firstDayStart) {
-                        firstDayHigh = temperature;
-                        firstDayLow = temperature;
-                        firstDayStart = false;
-                    } else if (firstDayHigh < temperature) {
-                        firstDayHigh = temperature;
-                    } else if (firstDayLow > temperature) {
-                        firstDayLow = temperature;
-                    }
-
-                    if (!hoursRecorded.contains(time)) {
-                        firstDayHourlyTemperatures.add(new Entry(firstDayIndex, temperature));
-                        firstDayHourlyRainChance.add(new Entry(firstDayIndex, rainChance));
-                        firstDayIndex++;
-                    }
-                } else if (secondDayFirstHour <= time && time <= secondDayLastHour) {
-                    if (secondDayStart) {
-                        secondDayHigh = temperature;
-                        secondDayLow = temperature;
-                        secondDayStart = false;
-                    } else if (secondDayHigh < temperature) {
-                        secondDayHigh = temperature;
-                    } else if (secondDayLow > temperature) {
-                        secondDayLow = temperature;
-                    }
-
-                    if (!hoursRecorded.contains(time)) {
-                        secondDayHourlyTemperatures.add(new Entry(secondDayIndex, temperature));
-                        secondDayHourlyRainChance.add(new Entry(secondDayIndex, rainChance));
-                        secondDayIndex++;
-                    }
-                } else {
-                    if (thirdDayStart) {
-                        thirdDayHigh = temperature;
-                        thirdDayLow = temperature;
-                        thirdDayStart = false;
-                    } else if (thirdDayHigh < temperature) {
-                        thirdDayHigh = temperature;
-                    } else if (thirdDayLow > temperature) {
-                        thirdDayLow = temperature;
-                    }
-
-                    if (!hoursRecorded.contains(time)) {
-                        thirdDayHourlyTemperatures.add(new Entry(thirdDayIndex, temperature));
-                        thirdDayHourlyRainChance.add(new Entry(thirdDayIndex, rainChance));
-                        thirdDayIndex++;
-                    }
-                }
-                hoursRecorded.add(time);
+            float rainChance;
+            try {
+                rainChance = (float) (hourlyCondition.getPop() * 100);
+            } catch (Exception e) {
+                rainChance = 0;
             }
 
-            // Increase the y-axis maximum value and decrease the y-axis minimum value for chart
-            int remainder = yAxisMax % 10;
-            yAxisMax += (20 - remainder);
-            remainder = yAxisMin % 10;
-            yAxisMin -= (10 + remainder);
-
-            dailyHighs.add(firstDayHigh);
-            dailyHighs.add(secondDayHigh);
-            dailyLows.add(firstDayLow);
-            dailyLows.add(secondDayLow);
-
-            fullDayHourlyConditions.put(0, firstDayHourlyTemperatures);
-            fullDayHourlyConditions.put(1, secondDayHourlyTemperatures);
-
-            fullDayHourlyRainChance.put(0, firstDayHourlyRainChance);
-            fullDayHourlyRainChance.put(1, secondDayHourlyRainChance);
-
-            if (thirdDayHourlyTemperatures.size() != 0) {
-                dailyHighs.add(thirdDayHigh);
-                dailyLows.add(thirdDayLow);
-                fullDayHourlyConditions.put(2, thirdDayHourlyTemperatures);
-                fullDayHourlyRainChance.put(2, thirdDayHourlyRainChance);
+            // Determine the highest and lowest temperatures within the fullDayHourlyConditions
+            if (i == 0) {
+                yAxisMax = temperature;
+                yAxisMin = temperature;
+            } else if (yAxisMax < temperature) {
+                yAxisMax = temperature;
+            } else if (yAxisMin > temperature) {
+                yAxisMin = temperature;
             }
-        } catch (Exception e) {
-            Toast.makeText(context, "Failed to sort hourly conditions for DailyConditionsRevViewAdapter.", Toast.LENGTH_SHORT).show();
+
+            // Store the hourly temperature to be within its respective 24-hour window
+            if (currentMidnight <= time && time <= firstDayLastHour) {
+                if (firstDayStart) {
+                    firstDayHigh = temperature;
+                    firstDayLow = temperature;
+                    firstDayStart = false;
+                } else if (firstDayHigh < temperature) {
+                    firstDayHigh = temperature;
+                } else if (firstDayLow > temperature) {
+                    firstDayLow = temperature;
+                }
+
+                if (!hoursRecorded.contains(time)) {
+                    firstDayHourlyTemperatures.add(new Entry(firstDayIndex, temperature));
+                    firstDayHourlyRainChance.add(new Entry(firstDayIndex, rainChance));
+                    firstDayIndex++;
+                }
+            } else if (secondDayFirstHour <= time && time <= secondDayLastHour) {
+                if (secondDayStart) {
+                    secondDayHigh = temperature;
+                    secondDayLow = temperature;
+                    secondDayStart = false;
+                } else if (secondDayHigh < temperature) {
+                    secondDayHigh = temperature;
+                } else if (secondDayLow > temperature) {
+                    secondDayLow = temperature;
+                }
+
+                if (!hoursRecorded.contains(time)) {
+                    secondDayHourlyTemperatures.add(new Entry(secondDayIndex, temperature));
+                    secondDayHourlyRainChance.add(new Entry(secondDayIndex, rainChance));
+                    secondDayIndex++;
+                }
+            } else {
+                if (thirdDayStart) {
+                    thirdDayHigh = temperature;
+                    thirdDayLow = temperature;
+                    thirdDayStart = false;
+                } else if (thirdDayHigh < temperature) {
+                    thirdDayHigh = temperature;
+                } else if (thirdDayLow > temperature) {
+                    thirdDayLow = temperature;
+                }
+
+                if (!hoursRecorded.contains(time)) {
+                    thirdDayHourlyTemperatures.add(new Entry(thirdDayIndex, temperature));
+                    thirdDayHourlyRainChance.add(new Entry(thirdDayIndex, rainChance));
+                    thirdDayIndex++;
+                }
+            }
+            hoursRecorded.add(time);
+        }
+
+        // Increase the y-axis maximum value and decrease the y-axis minimum value for chart
+        int remainder = yAxisMax % 10;
+        yAxisMax += (20 - remainder);
+        remainder = yAxisMin % 10;
+        yAxisMin -= (10 + remainder);
+
+        dailyHighs.add(firstDayHigh);
+        dailyHighs.add(secondDayHigh);
+        dailyLows.add(firstDayLow);
+        dailyLows.add(secondDayLow);
+
+        fullDayHourlyConditions.put(0, firstDayHourlyTemperatures);
+        fullDayHourlyConditions.put(1, secondDayHourlyTemperatures);
+
+        fullDayHourlyRainChance.put(0, firstDayHourlyRainChance);
+        fullDayHourlyRainChance.put(1, secondDayHourlyRainChance);
+
+        if (thirdDayHourlyTemperatures.size() != 0) {
+            dailyHighs.add(thirdDayHigh);
+            dailyLows.add(thirdDayLow);
+            fullDayHourlyConditions.put(2, thirdDayHourlyTemperatures);
+            fullDayHourlyRainChance.put(2, thirdDayHourlyRainChance);
         }
     }
 

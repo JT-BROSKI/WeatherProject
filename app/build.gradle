@@ -33,8 +33,10 @@ dependencies {
     // For material designs
     implementation 'com.google.android.material:material:1.3.0'
 
-    // For API calling
-    implementation 'com.android.volley:volley:1.2.0'
+    // For API Java schema conversion and API request
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
 
     // For loading an image from the internet
     implementation 'com.github.bumptech.glide:glide:4.12.0'
@@ -47,7 +49,7 @@ dependencies {
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 
     // For google maps
-    implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation 'com.google.android.gms:play-services-maps:17.0.1'
 
     // For fragment container view
     implementation 'androidx.fragment:fragment:1.3.3'

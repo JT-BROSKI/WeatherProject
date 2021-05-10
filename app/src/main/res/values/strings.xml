@@ -41,7 +41,7 @@
     <string name="google_maps_platform">Google Maps Platform</string>
     <string name="libraries_used">Libraries Used</string>
     <string name="material_components">Material Components</string>
-    <string name="volley">Volley</string>
+    <string name="retrofit">Retrofit</string>
     <string name="glide">Glide</string>
     <string name="mpandroid_chart">MPAndroid Chart</string>
     <string name="json_data_used">JSON Data Used</string>
