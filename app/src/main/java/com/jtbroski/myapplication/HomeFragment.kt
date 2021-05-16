@@ -164,7 +164,6 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         map.uiSettings.setAllGesturesEnabled(false)
-        map.setOnMapLoadedCallback { resetScrollView() }    // Make sure the scroll view is scrolled to the top on the map finishes loading (this is generally only useful on startup_
 
         updateWeatherTileOverlay()
         updateCurrentLocationOnWeatherMap(viewModel.forecastedWeather.value)    // We call this here just in case forecastedWeather has already been retrieved, but the map was not ready yet
