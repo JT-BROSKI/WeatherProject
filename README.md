@@ -12,4 +12,5 @@ Android Weather Project
             <string name="open_weather_map_key" templateMergeStrategy="preserve" translatable="false">{insert open weather map api key here}</string>
         </resources>
 4. Put the api_keys.xml within the values resource folder of the project.
+5. Wait between 10 minutes to 2 hours for the Open Weather Map API key to activate upon succesful registration before running the app.
 </Setup>
