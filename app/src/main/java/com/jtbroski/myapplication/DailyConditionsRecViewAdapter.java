@@ -2,18 +2,14 @@ package com.jtbroski.myapplication;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -374,9 +370,13 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         holder.lineChart.getAxisLeft().setAxisLineWidth(0.75f);
         holder.lineChart.getAxisLeft().setLabelCount(((yAxisMax - yAxisMin) / 10) + 1, true);
         holder.lineChart.getAxisLeft().setTextSize(14f);
-        holder.lineChart.getAxisLeft().setTextColor(getThemeTextColor());
         holder.lineChart.getAxisLeft().setGridLineWidth(0.75f);
         holder.lineChart.getAxisLeft().setDrawGridLinesBehindData(false);
+
+        int leftAxisTextColor = Utils.preferenceDbHelper.getDarkThemeFlag()
+                                ? Color.parseColor(context.getResources().getString(R.color.light_gray1))
+                                : Color.parseColor(context.getResources().getString(R.color.black));
+        holder.lineChart.getAxisLeft().setTextColor(leftAxisTextColor);
 
         holder.lineChart.getLegend().setEnabled(false);
     }
@@ -515,14 +515,6 @@ public class DailyConditionsRecViewAdapter extends RecyclerView.Adapter<DailyCon
         dataSets.add(lineDataSetFuture);
 
         return dataSets;
-    }
-
-    private int getThemeTextColor() {
-        TypedValue typedValue = new TypedValue();
-        Resources.Theme theme = context.getTheme();
-        theme.resolveAttribute(R.attr.primaryTextColor, typedValue, true);
-        @ColorInt int color = typedValue.data;
-        return color;
     }
 
     private void setPrecipitationIcon(ViewHolder holder, int position) {

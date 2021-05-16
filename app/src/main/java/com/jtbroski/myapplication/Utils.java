@@ -6,8 +6,6 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.widget.Toast;
 
-import org.json.JSONObject;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -20,10 +18,8 @@ import java.util.TimeZone;
 public class Utils {
 
     private static Utils instance;
-    private static Context mContext;
     private static Geocoder geocoder;
 
-    public static boolean startUp = true;
     public static Calendar currentDate;
     public static LocationDatabaseHelper locationDbHelper;
     public static PreferenceDatabaseHelper preferenceDbHelper;
@@ -222,14 +218,6 @@ public class Utils {
         return city + ", " + admin;
     }
 
-    public static void refreshMainActivity() {
-        ((MainActivity) mContext).recreate();
-    }
-
-    public static void removeContext() {
-        mContext = null;
-    }
-
     public static void setTimeZone(Calendar date) {
         hourFormat.setTimeZone(date.getTimeZone());
         dateFormat.setTimeZone(date.getTimeZone());
@@ -246,7 +234,6 @@ public class Utils {
         geocoder = new Geocoder(context);
         locationDbHelper = new LocationDatabaseHelper(context);
         preferenceDbHelper = new PreferenceDatabaseHelper(context);
-        mContext = context;
     }
 
     private static final DateFormat hourFormat = new SimpleDateFormat("h a", Locale.US);

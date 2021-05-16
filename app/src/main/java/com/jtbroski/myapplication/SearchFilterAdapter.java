@@ -11,20 +11,25 @@ import android.widget.CursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.core.app.ComponentActivity;
+import androidx.lifecycle.MutableLiveData;
 
 public class SearchFilterAdapter extends CursorAdapter {
     private final Context mContext;
     private Cursor cursor;
 
+    public MutableLiveData<Boolean> refreshHomeFragment;
+
     public SearchFilterAdapter(Context context, Cursor c, boolean autoRequery) {
         super(context, c, autoRequery);
         this.mContext = context;
         this.cursor = c;
+
+        refreshHomeFragment = new MutableLiveData<>(false);
     }
 
     public void closeCursor() {
-        cursor.close();
+        if (cursor != null && !cursor.isClosed())
+            cursor.close();
     }
 
     @Override
@@ -67,8 +72,8 @@ public class SearchFilterAdapter extends CursorAdapter {
 
                 // Ensure whether the geocoder can find a location matching the preloaded location string
                 if (Utils.checkLocationValidity(location)) {
-                    Utils.refreshMainActivity();
-                    ((ComponentActivity) mContext).onBackPressed();
+                    refreshHomeFragment.setValue(true);
+                    refreshHomeFragment.postValue(false);   // Reset the refresh flag to avoid a circular navigation bug where if you try to navigate to the search fragment, it will navigate you back to the home fragment
                 } else {
                     Toast.makeText(mContext, "Unable to find any locations matching with " + location, Toast.LENGTH_SHORT).show();
                 }
