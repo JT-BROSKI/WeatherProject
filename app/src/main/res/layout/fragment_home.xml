@@ -649,7 +649,8 @@
                         android:layout_height="wrap_content"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/txt_favorite_title" />
+                        app:layout_constraintTop_toBottomOf="@id/txt_favorite_title"
+                        app:setAdapter="@{homeViewModel.favoriteLocationListAdapter}" />
 
                     <View
                         android:id="@+id/nav_layout_divider"
@@ -679,7 +680,8 @@
                         android:layout_height="wrap_content"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/txt_recent_title" />
+                        app:layout_constraintTop_toBottomOf="@id/txt_recent_title"
+                        app:setAdapter="@{homeViewModel.recentLocationListAdapter}" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 

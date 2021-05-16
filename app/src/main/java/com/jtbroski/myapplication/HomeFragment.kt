@@ -148,8 +148,6 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         params.width = (resources.displayMetrics.widthPixels * 0.8).roundToInt()
         binding.navView.layoutParams = params
 
-        binding.listFavorites.adapter = viewModel.favoriteLocationListAdapter
-        binding.listRecent.adapter = viewModel.recentLocationListAdapter
         viewModel.updateDrawerCursors()
 
         setupRecyclerViews()
