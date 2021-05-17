@@ -12,17 +12,23 @@
             android:id="@+id/action_homeFragment_to_searchFragment"
             app:destination="@id/searchFragment"
             app:enterAnim="@anim/slide_from_left_enter"
-            app:exitAnim="@anim/slide_from_left_exit" />
+            app:exitAnim="@anim/slide_from_left_exit"
+            app:popEnterAnim="@anim/slide_from_right_enter"
+            app:popExitAnim="@anim/slide_from_right_exit" />
         <action
             android:id="@+id/action_homeFragment_to_settingsFragment"
             app:destination="@id/settingsFragment"
             app:enterAnim="@anim/slide_from_right_enter"
-            app:exitAnim="@anim/slide_from_right_exit" />
+            app:exitAnim="@anim/slide_from_right_exit"
+            app:popEnterAnim="@anim/slide_from_left_enter"
+            app:popExitAnim="@anim/slide_from_left_exit" />
         <action
             android:id="@+id/action_homeFragment_to_weatherAlertFragment"
             app:destination="@id/weatherAlertFragment"
             app:enterAnim="@anim/slide_from_right_enter"
-            app:exitAnim="@anim/slide_from_right_exit" />
+            app:exitAnim="@anim/slide_from_right_exit"
+            app:popEnterAnim="@anim/slide_from_left_enter"
+            app:popExitAnim="@anim/slide_from_left_exit" />
     </fragment>
     <fragment
         android:id="@+id/searchFragment"
@@ -37,7 +43,9 @@
             android:id="@+id/action_settingsFragment_to_aboutFragment"
             app:destination="@id/aboutFragment"
             app:enterAnim="@anim/slide_from_right_enter"
-            app:exitAnim="@anim/slide_from_right_exit" />
+            app:exitAnim="@anim/slide_from_right_exit"
+            app:popEnterAnim="@anim/slide_from_left_enter"
+            app:popExitAnim="@anim/slide_from_left_exit" />
     </fragment>
     <fragment
         android:id="@+id/aboutFragment"
