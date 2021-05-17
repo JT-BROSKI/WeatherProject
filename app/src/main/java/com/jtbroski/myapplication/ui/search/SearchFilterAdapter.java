@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication;
+package com.jtbroski.myapplication.ui.search;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -12,6 +12,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.lifecycle.MutableLiveData;
+
+import com.jtbroski.myapplication.LocationDatabaseHelper;
+import com.jtbroski.myapplication.R;
+import com.jtbroski.myapplication.Utils;
 
 public class SearchFilterAdapter extends CursorAdapter {
     private final Context mContext;

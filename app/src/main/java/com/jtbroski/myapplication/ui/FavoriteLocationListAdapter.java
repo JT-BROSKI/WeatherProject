@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication;
+package com.jtbroski.myapplication.ui;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -13,11 +13,16 @@ import android.widget.ToggleButton;
 
 import androidx.core.content.ContextCompat;
 
-public class RecentLocationListAdapter extends CursorAdapter {
+import com.jtbroski.myapplication.PreferenceDatabaseHelper;
+import com.jtbroski.myapplication.R;
+import com.jtbroski.myapplication.Utils;
+import com.jtbroski.myapplication.ui.home.HomeViewModel;
+
+public class FavoriteLocationListAdapter extends CursorAdapter {
     private Cursor cursor;
     private HomeViewModel viewModel;
 
-    public RecentLocationListAdapter(Context context, Cursor c, boolean autoRequery) {
+    public FavoriteLocationListAdapter(Context context, Cursor c, boolean autoRequery) {
         super(context, c, autoRequery);
         this.cursor = c;
     }
@@ -55,20 +60,20 @@ public class RecentLocationListAdapter extends CursorAdapter {
 
         txtLocation.setOnClickListener(v -> {
             closeCursor();
-            String recentLocationName = ((TextView) v).getText().toString();
-            Utils.locationName = recentLocationName;
-            viewModel.callWeatherApi(Utils.preferenceDbHelper.getRecentLocation(recentLocationName));
+            String favoriteLocationName = ((TextView) v).getText().toString();
+            Utils.locationName = favoriteLocationName;
+            viewModel.callWeatherApi(Utils.preferenceDbHelper.getFavoriteLocation((favoriteLocationName)));
             viewModel.updateDrawerCursors();
             viewModel.closeDrawer();
         });
 
         ToggleButton toggleButton = view.findViewById(R.id.btn_favorite);
-        toggleButton.setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.ic_favorite_off));
+        toggleButton.setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.ic_favorite_on));
         toggleButton.setOnClickListener(v -> {
             closeCursor();
             TextView txtLocation1 = (TextView) ((ViewGroup) v.getParent()).getChildAt(0);
             String location = txtLocation1.getText().toString();
-            Utils.preferenceDbHelper.updateFavoriteLocations(location);
+            Utils.preferenceDbHelper.deleteFavoriteLocation(location);
             viewModel.updateDrawerCursors();
         });
     }

@@ -1,9 +1,10 @@
-package com.jtbroski.myapplication
+package com.jtbroski.myapplication.ui.settings
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.jtbroski.myapplication.Utils
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 

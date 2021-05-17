@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication;
+package com.jtbroski.myapplication.retrofit;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

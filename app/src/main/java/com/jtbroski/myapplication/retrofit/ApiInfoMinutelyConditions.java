@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication;
+package com.jtbroski.myapplication.retrofit;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

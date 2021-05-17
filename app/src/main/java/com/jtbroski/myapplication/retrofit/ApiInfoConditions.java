@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication;
+package com.jtbroski.myapplication.retrofit;
 
 import java.util.List;
 import com.google.gson.annotations.Expose;

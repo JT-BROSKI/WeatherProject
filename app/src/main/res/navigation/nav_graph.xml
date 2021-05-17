@@ -6,7 +6,7 @@
     app:startDestination="@id/homeFragment">
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.jtbroski.myapplication.HomeFragment"
+        android:name="com.jtbroski.myapplication.ui.home.HomeFragment"
         android:label="HomeFragment" >
         <action
             android:id="@+id/action_homeFragment_to_searchFragment"
@@ -32,11 +32,11 @@
     </fragment>
     <fragment
         android:id="@+id/searchFragment"
-        android:name="com.jtbroski.myapplication.SearchFragment"
+        android:name="com.jtbroski.myapplication.ui.search.SearchFragment"
         android:label="SearchFragment" />
     <fragment
         android:id="@+id/settingsFragment"
-        android:name="com.jtbroski.myapplication.SettingsFragment"
+        android:name="com.jtbroski.myapplication.ui.settings.SettingsFragment"
         android:label="fragment_settings"
         tools:layout="@layout/fragment_settings" >
         <action
@@ -49,10 +49,10 @@
     </fragment>
     <fragment
         android:id="@+id/aboutFragment"
-        android:name="com.jtbroski.myapplication.AboutFragment"
+        android:name="com.jtbroski.myapplication.ui.about.AboutFragment"
         android:label="AboutFragment" />
     <fragment
         android:id="@+id/weatherAlertFragment"
-        android:name="com.jtbroski.myapplication.WeatherAlertFragment"
+        android:name="com.jtbroski.myapplication.ui.weatheralerts.WeatherAlertFragment"
         android:label="WeatherAlertFragment" />
 </navigation>

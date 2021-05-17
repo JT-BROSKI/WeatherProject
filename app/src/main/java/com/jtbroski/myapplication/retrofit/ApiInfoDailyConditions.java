@@ -1,11 +1,11 @@
-package com.jtbroski.myapplication;
+package com.jtbroski.myapplication.retrofit;
 
 import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 // Generated using jsonschema2pojo
-public class ApiInfoCurrentConditions {
+public class ApiInfoDailyConditions {
     @SerializedName("dt")
     @Expose
     private Integer dt;
@@ -15,12 +15,21 @@ public class ApiInfoCurrentConditions {
     @SerializedName("sunset")
     @Expose
     private Integer sunset;
+    @SerializedName("moonrise")
+    @Expose
+    private Integer moonrise;
+    @SerializedName("moonset")
+    @Expose
+    private Integer moonset;
+    @SerializedName("moon_phase")
+    @Expose
+    private Double moonPhase;
     @SerializedName("temp")
     @Expose
-    private Double temp;
+    private ApiInfoTemp temp;
     @SerializedName("feels_like")
     @Expose
-    private Double feelsLike;
+    private ApiInfoFeelsLike feelsLike;
     @SerializedName("pressure")
     @Expose
     private Integer pressure;
@@ -30,15 +39,6 @@ public class ApiInfoCurrentConditions {
     @SerializedName("dew_point")
     @Expose
     private Double dewPoint;
-    @SerializedName("uvi")
-    @Expose
-    private Double uvi;
-    @SerializedName("clouds")
-    @Expose
-    private Integer clouds;
-    @SerializedName("visibility")
-    @Expose
-    private Integer visibility;
     @SerializedName("wind_speed")
     @Expose
     private Double windSpeed;
@@ -48,6 +48,15 @@ public class ApiInfoCurrentConditions {
     @SerializedName("weather")
     @Expose
     private List<ApiInfoWeather> weather = null;
+    @SerializedName("clouds")
+    @Expose
+    private Integer clouds;
+    @SerializedName("pop")
+    @Expose
+    private Double pop;
+    @SerializedName("uvi")
+    @Expose
+    private Double uvi;
 
     public Integer getDt() {
         return dt;
@@ -73,19 +82,43 @@ public class ApiInfoCurrentConditions {
         this.sunset = sunset;
     }
 
-    public Double getTemp() {
+    public Integer getMoonrise() {
+        return moonrise;
+    }
+
+    public void setMoonrise(Integer moonrise) {
+        this.moonrise = moonrise;
+    }
+
+    public Integer getMoonset() {
+        return moonset;
+    }
+
+    public void setMoonset(Integer moonset) {
+        this.moonset = moonset;
+    }
+
+    public Double getMoonPhase() {
+        return moonPhase;
+    }
+
+    public void setMoonPhase(Double moonPhase) {
+        this.moonPhase = moonPhase;
+    }
+
+    public ApiInfoTemp getTemp() {
         return temp;
     }
 
-    public void setTemp(Double temp) {
+    public void setTemp(ApiInfoTemp temp) {
         this.temp = temp;
     }
 
-    public Double getFeelsLike() {
+    public ApiInfoFeelsLike getFeelsLike() {
         return feelsLike;
     }
 
-    public void setFeelsLike(Double feelsLike) {
+    public void setFeelsLike(ApiInfoFeelsLike feelsLike) {
         this.feelsLike = feelsLike;
     }
 
@@ -113,30 +146,6 @@ public class ApiInfoCurrentConditions {
         this.dewPoint = dewPoint;
     }
 
-    public Double getUvi() {
-        return uvi;
-    }
-
-    public void setUvi(Double uvi) {
-        this.uvi = uvi;
-    }
-
-    public Integer getClouds() {
-        return clouds;
-    }
-
-    public void setClouds(Integer clouds) {
-        this.clouds = clouds;
-    }
-
-    public Integer getVisibility() {
-        return visibility;
-    }
-
-    public void setVisibility(Integer visibility) {
-        this.visibility = visibility;
-    }
-
     public Double getWindSpeed() {
         return windSpeed;
     }
@@ -159,5 +168,29 @@ public class ApiInfoCurrentConditions {
 
     public void setWeather(List<ApiInfoWeather> weather) {
         this.weather = weather;
+    }
+
+    public Integer getClouds() {
+        return clouds;
+    }
+
+    public void setClouds(Integer clouds) {
+        this.clouds = clouds;
+    }
+
+    public Double getPop() {
+        return pop;
+    }
+
+    public void setPop(Double pop) {
+        this.pop = pop;
+    }
+
+    public Double getUvi() {
+        return uvi;
+    }
+
+    public void setUvi(Double uvi) {
+        this.uvi = uvi;
     }
 }

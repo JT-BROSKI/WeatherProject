@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication
+package com.jtbroski.myapplication.ui.about
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -10,6 +10,8 @@ import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
+import com.jtbroski.myapplication.R
+import com.jtbroski.myapplication.Utils
 import com.jtbroski.myapplication.databinding.FragmentAboutBinding
 
 class AboutFragment : Fragment() {
@@ -30,10 +32,14 @@ class AboutFragment : Fragment() {
         binding.btnBackArrow.setOnTouchListener { v, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> v.setBackgroundColor(
-                    if (Utils.preferenceDbHelper.darkThemeFlag) ContextCompat.getColor(requireActivity(), R.color.black)
+                    if (Utils.preferenceDbHelper.darkThemeFlag) ContextCompat.getColor(requireActivity(),
+                        R.color.black
+                    )
                     else ContextCompat.getColor(requireActivity(), R.color.purple_700)
                 )
-                MotionEvent.ACTION_UP -> v.setBackgroundColor(ContextCompat.getColor(requireActivity(), R.color.transparent))
+                MotionEvent.ACTION_UP -> v.setBackgroundColor(ContextCompat.getColor(requireActivity(),
+                    R.color.transparent
+                ))
             }
             false
         }

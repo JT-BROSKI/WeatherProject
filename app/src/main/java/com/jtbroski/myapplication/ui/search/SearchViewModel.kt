@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication
+package com.jtbroski.myapplication.ui.search
 
 import android.app.Application
 import android.database.Cursor
@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.jtbroski.myapplication.Utils
 
 class SearchViewModel(application: Application) : AndroidViewModel(application) {
     private var _refreshHomeFragment = MutableLiveData<Boolean>()

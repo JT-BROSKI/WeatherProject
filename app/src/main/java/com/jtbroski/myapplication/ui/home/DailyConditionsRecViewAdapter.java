@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication;
+package com.jtbroski.myapplication.ui.home;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -22,6 +22,10 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.jtbroski.myapplication.R;
+import com.jtbroski.myapplication.Utils;
+import com.jtbroski.myapplication.Weather;
+import com.jtbroski.myapplication.retrofit.ApiInfoHourlyConditions;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

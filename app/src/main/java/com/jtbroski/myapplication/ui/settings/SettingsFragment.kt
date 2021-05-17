@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication
+package com.jtbroski.myapplication.ui.settings
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,6 +12,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
+import com.jtbroski.myapplication.R
+import com.jtbroski.myapplication.Utils
 import com.jtbroski.myapplication.databinding.FragmentSettingsBinding
 
 

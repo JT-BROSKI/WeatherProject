@@ -6,7 +6,7 @@
 
         <variable
             name="homeViewModel"
-            type="com.jtbroski.myapplication.HomeViewModel" />
+            type="com.jtbroski.myapplication.ui.home.HomeViewModel" />
     </data>
 
     <androidx.drawerlayout.widget.DrawerLayout
@@ -643,7 +643,7 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <com.jtbroski.myapplication.NonScrollableListView
+                    <com.jtbroski.myapplication.ui.NonScrollableListView
                         android:id="@+id/list_favorites"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -674,7 +674,7 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/nav_layout_divider" />
 
-                    <com.jtbroski.myapplication.NonScrollableListView
+                    <com.jtbroski.myapplication.ui.NonScrollableListView
                         android:id="@+id/list_recent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

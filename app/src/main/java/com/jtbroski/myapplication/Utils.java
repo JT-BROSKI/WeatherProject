@@ -6,6 +6,9 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.widget.Toast;
 
+import com.jtbroski.myapplication.retrofit.ApiInfoConditions;
+import com.jtbroski.myapplication.ui.MainActivity;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication
+package com.jtbroski.myapplication.ui.weatheralerts
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,6 +11,9 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.jtbroski.myapplication.R
+import com.jtbroski.myapplication.Utils
+import com.jtbroski.myapplication.WeatherAlert
 import com.jtbroski.myapplication.databinding.FragmentWeatherAlertBinding
 
 class WeatherAlertFragment : Fragment() {
@@ -56,7 +59,10 @@ class WeatherAlertFragment : Fragment() {
         if (bundle != null) {
             val weatherAlerts = bundle.getParcelableArrayList<WeatherAlert>(ALERT_DATA_ID)
             val weatherAlertRecViewAdapter =
-                WeatherAlertRecViewAdapter(requireActivity(), weatherAlerts)
+                WeatherAlertRecViewAdapter(
+                    requireActivity(),
+                    weatherAlerts
+                )
             binding.weatherAlertRecyclerView.adapter = weatherAlertRecViewAdapter
             binding.weatherAlertRecyclerView.layoutManager =
                 LinearLayoutManager(requireActivity(), LinearLayoutManager.VERTICAL, false)

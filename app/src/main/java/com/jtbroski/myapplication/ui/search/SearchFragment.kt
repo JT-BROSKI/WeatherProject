@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication
+package com.jtbroski.myapplication.ui.search
 
 import android.content.Context
 import android.os.Bundle
@@ -15,6 +15,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
+import com.jtbroski.myapplication.R
+import com.jtbroski.myapplication.Utils
 import com.jtbroski.myapplication.databinding.FragmentSearchBinding
 
 

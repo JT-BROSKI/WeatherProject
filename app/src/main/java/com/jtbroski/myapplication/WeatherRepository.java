@@ -5,6 +5,10 @@ import android.location.Location;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.jtbroski.myapplication.retrofit.ApiInfoConditions;
+import com.jtbroski.myapplication.retrofit.ApiInfoHourlyConditions;
+import com.jtbroski.myapplication.retrofit.OpenWeatherService;
+
 import java.util.List;
 
 import retrofit2.Call;

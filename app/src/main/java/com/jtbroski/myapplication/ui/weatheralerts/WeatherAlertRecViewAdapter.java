@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication;
+package com.jtbroski.myapplication.ui.weatheralerts;
 
 import android.content.Context;
 import android.util.Log;
@@ -10,6 +10,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.jtbroski.myapplication.R;
+import com.jtbroski.myapplication.WeatherAlert;
 
 import java.util.ArrayList;
 

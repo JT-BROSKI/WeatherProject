@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication
+package com.jtbroski.myapplication.ui.home
 
 import android.app.Application
 import android.database.Cursor
@@ -9,6 +9,13 @@ import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.jtbroski.myapplication.*
+import com.jtbroski.myapplication.retrofit.ApiInfoAlerts
+import com.jtbroski.myapplication.retrofit.ApiInfoConditions
+import com.jtbroski.myapplication.retrofit.ApiInfoDailyConditions
+import com.jtbroski.myapplication.retrofit.ApiInfoHourlyConditions
+import com.jtbroski.myapplication.ui.FavoriteLocationListAdapter
+import com.jtbroski.myapplication.ui.RecentLocationListAdapter
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -131,20 +138,24 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         _dailyConditionsRecViewAdapter =
             DailyConditionsRecViewAdapter(getApplication<Application>().applicationContext)
         _hourlyConditionsRecViewAdapter =
-            HourlyConditionsRecViewAdapter(getApplication<Application>().applicationContext)
+            HourlyConditionsRecViewAdapter(
+                getApplication<Application>().applicationContext
+            )
 
-        _favoriteLocationListAdapter = FavoriteLocationListAdapter(
-            getApplication<Application>().applicationContext,
-            null,
-            false
-        )
+        _favoriteLocationListAdapter =
+            FavoriteLocationListAdapter(
+                getApplication<Application>().applicationContext,
+                null,
+                false
+            )
         _favoriteLocationListAdapter.setViewModel(this)
 
-        _recentLocationListAdapter = RecentLocationListAdapter(
-            getApplication<Application>().applicationContext,
-            null,
-            false
-        )
+        _recentLocationListAdapter =
+            RecentLocationListAdapter(
+                getApplication<Application>().applicationContext,
+                null,
+                false
+            )
         _recentLocationListAdapter.setViewModel(this)
 
         val preferredLocation = Utils.preferenceDbHelper.preferredLocation

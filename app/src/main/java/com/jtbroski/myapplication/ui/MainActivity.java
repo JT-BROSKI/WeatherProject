@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication;
+package com.jtbroski.myapplication.ui;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,6 +10,14 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.widget.Toast;
+
+import com.jtbroski.myapplication.PreferenceDatabaseHelper;
+import com.jtbroski.myapplication.R;
+import com.jtbroski.myapplication.Utils;
+import com.jtbroski.myapplication.ui.home.HomeViewModel;
+import com.jtbroski.myapplication.ui.search.SearchViewModel;
+import com.jtbroski.myapplication.ui.settings.SettingsFragment;
+import com.jtbroski.myapplication.ui.settings.SettingsViewModel;
 
 import java.util.List;
 

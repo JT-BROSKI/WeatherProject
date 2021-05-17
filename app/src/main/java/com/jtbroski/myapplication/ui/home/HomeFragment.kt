@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication
+package com.jtbroski.myapplication.ui.home
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -18,7 +18,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
+import com.jtbroski.myapplication.R
+import com.jtbroski.myapplication.Utils
 import com.jtbroski.myapplication.databinding.FragmentHomeBinding
+import com.jtbroski.myapplication.retrofit.ApiInfoConditions
+import com.jtbroski.myapplication.ui.weatheralerts.WeatherAlertFragment
 import java.net.URL
 import java.util.*
 import kotlin.math.roundToInt

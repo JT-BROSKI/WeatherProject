@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication;
+package com.jtbroski.myapplication.ui.home;
 
 import android.content.Context;
 import android.util.Log;
@@ -12,6 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.jtbroski.myapplication.R;
+import com.jtbroski.myapplication.Utils;
+import com.jtbroski.myapplication.Weather;
 
 import java.util.ArrayList;
 import java.util.Calendar;

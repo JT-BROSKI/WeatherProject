@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication;
+package com.jtbroski.myapplication.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
