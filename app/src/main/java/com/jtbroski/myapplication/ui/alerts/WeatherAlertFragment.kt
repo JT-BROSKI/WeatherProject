@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication.ui.weatheralerts
+package com.jtbroski.myapplication.ui.alerts
 
 import android.os.Bundle
 import android.view.LayoutInflater
