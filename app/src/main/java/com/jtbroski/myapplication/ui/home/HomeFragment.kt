@@ -22,7 +22,7 @@ import com.jtbroski.myapplication.R
 import com.jtbroski.myapplication.Utils
 import com.jtbroski.myapplication.databinding.FragmentHomeBinding
 import com.jtbroski.myapplication.retrofit.ApiInfoConditions
-import com.jtbroski.myapplication.ui.alerts.WeatherAlertFragment
+import com.jtbroski.myapplication.ui.alert.WeatherAlertFragment
 import java.net.URL
 import java.util.*
 import kotlin.math.roundToInt

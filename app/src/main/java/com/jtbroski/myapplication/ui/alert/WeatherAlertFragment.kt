@@ -1,4 +1,4 @@
-package com.jtbroski.myapplication.ui.alerts
+package com.jtbroski.myapplication.ui.alert
 
 import android.os.Bundle
 import android.view.LayoutInflater

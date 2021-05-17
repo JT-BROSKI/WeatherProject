@@ -53,6 +53,6 @@
         android:label="AboutFragment" />
     <fragment
         android:id="@+id/weatherAlertFragment"
-        android:name="com.jtbroski.myapplication.ui.alerts.WeatherAlertFragment"
+        android:name="com.jtbroski.myapplication.ui.alert.WeatherAlertFragment"
         android:label="WeatherAlertFragment" />
 </navigation>
