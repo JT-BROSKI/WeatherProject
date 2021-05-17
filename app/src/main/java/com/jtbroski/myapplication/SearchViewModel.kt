@@ -41,6 +41,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             // Check whether the geocoder can find a location matching the string within the EditText
             if (Utils.checkLocationValidity(location)) {
                 _refreshHomeFragment.value = true
+                _refreshHomeFragment.postValue(false)
             } else {
                 Toast.makeText(
                     getApplication<Application>().applicationContext,

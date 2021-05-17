@@ -8,12 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.jtbroski.myapplication.databinding.FragmentAboutBinding
 
 class AboutFragment : Fragment() {
-
     private lateinit var binding: FragmentAboutBinding
+    private val navController: NavController by lazy { findNavController() }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -24,7 +25,7 @@ class AboutFragment : Fragment() {
 
         // Toolbar Back Arrow
         binding.btnBackArrow.setOnClickListener {
-            findNavController().navigate(R.id.action_aboutFragment_to_settingsFragment)
+            navController.popBackStack()
         }
         binding.btnBackArrow.setOnTouchListener { v, event ->
             when (event.action) {

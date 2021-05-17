@@ -10,14 +10,15 @@ import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.jtbroski.myapplication.databinding.FragmentSettingsBinding
 
 
 class SettingsFragment : Fragment() {
-
     private lateinit var viewModel: SettingsViewModel
     private lateinit var binding: FragmentSettingsBinding
+    private val navController: NavController by lazy { findNavController() }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,7 +55,7 @@ class SettingsFragment : Fragment() {
         // Toolbar Back Arrow
         binding.btnBackArrow.setOnClickListener {
             viewModel.checkForChange()
-            findNavController().navigate(R.id.action_settingsFragment_to_homeFragment)
+            navController.popBackStack()
         }
         binding.btnBackArrow.setOnTouchListener { v, event ->
             when (event.action) {
@@ -77,7 +78,7 @@ class SettingsFragment : Fragment() {
 
         // About Image Button
         binding.btnAbout.setOnClickListener {
-            findNavController().navigate(R.id.action_settingsFragment_to_aboutFragment)
+            navController.navigate(R.id.action_settingsFragment_to_aboutFragment)
         }
         binding.btnAbout.setOnTouchListener { v, event ->
             when (event.action) {

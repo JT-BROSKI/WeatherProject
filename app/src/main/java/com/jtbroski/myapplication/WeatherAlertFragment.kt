@@ -8,13 +8,14 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jtbroski.myapplication.databinding.FragmentWeatherAlertBinding
 
 class WeatherAlertFragment : Fragment() {
-
     private lateinit var binding: FragmentWeatherAlertBinding
+    private val navController: NavController by lazy { findNavController() }
 
     companion object {
         const val ALERT_DATA_ID = "ALERT_DATA"
@@ -30,7 +31,7 @@ class WeatherAlertFragment : Fragment() {
 
         // Toolbar Back Arrow
         binding.btnBackArrow.setOnClickListener {
-            findNavController().navigate(R.id.action_weatherAlertFragment_to_homeFragment)
+            navController.popBackStack()
         }
         binding.btnBackArrow.setOnTouchListener { v, event ->
             when (event.action) {

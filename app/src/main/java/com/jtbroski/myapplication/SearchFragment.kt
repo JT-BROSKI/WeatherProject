@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.jtbroski.myapplication.databinding.FragmentSearchBinding
 
@@ -20,6 +21,7 @@ import com.jtbroski.myapplication.databinding.FragmentSearchBinding
 class SearchFragment : Fragment() {
     private lateinit var binding: FragmentSearchBinding
     private lateinit var viewModel: SearchViewModel
+    private val navController: NavController by lazy { findNavController() }
 
     private lateinit var inputMethodManger: InputMethodManager
 
@@ -37,7 +39,7 @@ class SearchFragment : Fragment() {
         viewModel.refreshHomeFragment.observe(viewLifecycleOwner, { refreshHomeFragment ->
             if (refreshHomeFragment) {
                 inputMethodManger.hideSoftInputFromWindow(view?.windowToken, 0)
-                findNavController().navigate(R.id.action_searchFragment_to_homeFragment)
+                navController.popBackStack()
             }
         })
         viewModel.refreshHomeFragmentFromAdapter.observe(
@@ -45,14 +47,14 @@ class SearchFragment : Fragment() {
             { refreshHomeFragment ->
                 if (refreshHomeFragment) {
                     inputMethodManger.hideSoftInputFromWindow(view?.windowToken, 0)
-                    findNavController().navigate(R.id.action_searchFragment_to_homeFragment)
+                    navController.popBackStack()
                 }
             })
 
         // Toolbar Back Arrow
         binding.btnBackArrow.setOnClickListener {
             inputMethodManger.hideSoftInputFromWindow(view?.windowToken, 0)
-            findNavController().navigate(R.id.action_searchFragment_to_homeFragment)
+            navController.popBackStack()
         }
         binding.btnBackArrow.setOnTouchListener { v, event ->
             when (event.action) {

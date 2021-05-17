@@ -27,27 +27,12 @@
     <fragment
         android:id="@+id/searchFragment"
         android:name="com.jtbroski.myapplication.SearchFragment"
-        android:label="SearchFragment" >
-        <action
-            android:id="@+id/action_searchFragment_to_homeFragment"
-            app:destination="@id/homeFragment"
-            app:enterAnim="@anim/slide_from_right_enter"
-            app:exitAnim="@anim/slide_from_right_exit"
-            app:popUpTo="@id/homeFragment"
-            app:popUpToInclusive="true" />
-    </fragment>
+        android:label="SearchFragment" />
     <fragment
         android:id="@+id/settingsFragment"
         android:name="com.jtbroski.myapplication.SettingsFragment"
         android:label="fragment_settings"
         tools:layout="@layout/fragment_settings" >
-        <action
-            android:id="@+id/action_settingsFragment_to_homeFragment"
-            app:destination="@id/homeFragment"
-            app:enterAnim="@anim/slide_from_left_enter"
-            app:exitAnim="@anim/slide_from_left_exit"
-            app:popUpTo="@id/homeFragment"
-            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_settingsFragment_to_aboutFragment"
             app:destination="@id/aboutFragment"
@@ -57,25 +42,9 @@
     <fragment
         android:id="@+id/aboutFragment"
         android:name="com.jtbroski.myapplication.AboutFragment"
-        android:label="AboutFragment" >
-        <action
-            android:id="@+id/action_aboutFragment_to_settingsFragment"
-            app:destination="@id/settingsFragment"
-            app:enterAnim="@anim/slide_from_left_enter"
-            app:exitAnim="@anim/slide_from_left_exit"
-            app:popUpTo="@id/settingsFragment"
-            app:popUpToInclusive="true" />
-    </fragment>
+        android:label="AboutFragment" />
     <fragment
         android:id="@+id/weatherAlertFragment"
         android:name="com.jtbroski.myapplication.WeatherAlertFragment"
-        android:label="WeatherAlertFragment" >
-        <action
-            android:id="@+id/action_weatherAlertFragment_to_homeFragment"
-            app:destination="@id/homeFragment"
-            app:enterAnim="@anim/slide_from_left_enter"
-            app:exitAnim="@anim/slide_from_left_exit"
-            app:popUpTo="@id/homeFragment"
-            app:popUpToInclusive="true" />
-    </fragment>
+        android:label="WeatherAlertFragment" />
 </navigation>
