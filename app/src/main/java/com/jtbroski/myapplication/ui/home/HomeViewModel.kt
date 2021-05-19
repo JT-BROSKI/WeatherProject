@@ -14,8 +14,6 @@ import com.jtbroski.myapplication.retrofit.ApiInfoAlerts
 import com.jtbroski.myapplication.retrofit.ApiInfoConditions
 import com.jtbroski.myapplication.retrofit.ApiInfoDailyConditions
 import com.jtbroski.myapplication.retrofit.ApiInfoHourlyConditions
-import com.jtbroski.myapplication.ui.FavoriteLocationListAdapter
-import com.jtbroski.myapplication.ui.RecentLocationListAdapter
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -27,9 +25,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private var fullDayHourlyConditions: ArrayList<ApiInfoHourlyConditions>
     private var hoursRecorded: ArrayList<Int>
 
-    private var _closeDrawer = MutableLiveData(false)
-    val closeDrawer: LiveData<Boolean>
-        get() = _closeDrawer
+    private var _closeCursors = MutableLiveData<Boolean>()
+    val closeCursors: LiveData<Boolean>
+        get() = _closeCursors
+
+    private var _homeReturned = MutableLiveData<Boolean>()
+    val homeReturned: LiveData<Boolean>
+        get() = _homeReturned
 
     private var _resetScrollView = MutableLiveData(false)
     val resetScrollView: LiveData<Boolean>
@@ -107,18 +109,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     val hourlyConditionsRecViewAdapter: HourlyConditionsRecViewAdapter
         get() = _hourlyConditionsRecViewAdapter
 
-    // Favorite Locations
-    private lateinit var favoriteLocationListCursor: Cursor
-    private var _favoriteLocationListAdapter: FavoriteLocationListAdapter
-    val favoriteLocationListAdapter: FavoriteLocationListAdapter
-        get() = _favoriteLocationListAdapter
-
-    // Recent Locations
-    private lateinit var recentLocationListCursor: Cursor
-    private var _recentLocationListAdapter: RecentLocationListAdapter
-    val recentLocationListAdapter: RecentLocationListAdapter
-        get() = _recentLocationListAdapter
-
     private var isImperial: Boolean = false
 
     var forecastedWeather: LiveData<ApiInfoConditions>
@@ -141,22 +131,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             HourlyConditionsRecViewAdapter(
                 getApplication<Application>().applicationContext
             )
-
-        _favoriteLocationListAdapter =
-            FavoriteLocationListAdapter(
-                getApplication<Application>().applicationContext,
-                null,
-                false
-            )
-        _favoriteLocationListAdapter.setViewModel(this)
-
-        _recentLocationListAdapter =
-            RecentLocationListAdapter(
-                getApplication<Application>().applicationContext,
-                null,
-                false
-            )
-        _recentLocationListAdapter.setViewModel(this)
 
         val preferredLocation = Utils.preferenceDbHelper.preferredLocation
         if (preferredLocation != null) {
@@ -187,21 +161,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun closeCursors() {
-        _favoriteLocationListAdapter.closeCursor()
-        _recentLocationListAdapter.closeCursor()
-    }
-
-    fun closeDrawer() {
-        _closeDrawer.value = true
+        _closeCursors.value = true
     }
 
     // Updates the list views within the navigation drawer by update their cursors
     fun updateDrawerCursors() {
-        favoriteLocationListCursor = Utils.preferenceDbHelper.favoriteLocations
-        _favoriteLocationListAdapter.changeCursor(favoriteLocationListCursor)
-
-        recentLocationListCursor = Utils.preferenceDbHelper.recentLocations
-        _recentLocationListAdapter.changeCursor(recentLocationListCursor)
+        _homeReturned.value = true
     }
 
     // Updates all weather conditions

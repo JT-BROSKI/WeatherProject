@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.jtbroski.myapplication.ui.MainActivity;
+import com.jtbroski.myapplication.ui.main.MainActivity;
 
 public class LauncherActivity extends AppCompatActivity {
 

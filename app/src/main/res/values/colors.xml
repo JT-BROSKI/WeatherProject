@@ -22,4 +22,5 @@
     <color name="light_gray3">#797979</color>
     <color name="dark_gray1">#1C1C1C</color>
     <color name="dark_gray2">#272727</color>
+    <color name="lighter_black">#141414</color>
 </resources>

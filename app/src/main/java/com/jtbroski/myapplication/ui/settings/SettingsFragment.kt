@@ -2,25 +2,21 @@ package com.jtbroski.myapplication.ui.settings
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioButton
-import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.NavController
-import androidx.navigation.fragment.findNavController
 import com.jtbroski.myapplication.R
 import com.jtbroski.myapplication.Utils
 import com.jtbroski.myapplication.databinding.FragmentSettingsBinding
+import com.jtbroski.myapplication.ui.main.MainActivity
 
 
 class SettingsFragment : Fragment() {
     private lateinit var viewModel: SettingsViewModel
     private lateinit var binding: FragmentSettingsBinding
-    private val navController: NavController by lazy { findNavController() }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,52 +50,7 @@ class SettingsFragment : Fragment() {
             }
         }
 
-        // Toolbar Back Arrow
-        binding.btnBackArrow.setOnClickListener {
-            viewModel.checkForChange()
-            navController.popBackStack()
-        }
-        binding.btnBackArrow.setOnTouchListener { v, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> v.setBackgroundColor(
-                    if (Utils.preferenceDbHelper.darkThemeFlag) ContextCompat.getColor(
-                        requireActivity(),
-                        R.color.black
-                    )
-                    else ContextCompat.getColor(requireActivity(), R.color.purple_700)
-                )
-                MotionEvent.ACTION_UP -> v.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireActivity(),
-                        R.color.transparent
-                    )
-                )
-            }
-            false
-        }
-
-        // About Image Button
-        binding.btnAbout.setOnClickListener {
-            navController.navigate(R.id.action_settingsFragment_to_aboutFragment)
-        }
-        binding.btnAbout.setOnTouchListener { v, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> v.setBackgroundColor(
-                    if (Utils.preferenceDbHelper.darkThemeFlag) ContextCompat.getColor(
-                        requireActivity(),
-                        R.color.black
-                    )
-                    else ContextCompat.getColor(requireActivity(), R.color.purple_700)
-                )
-                MotionEvent.ACTION_UP -> v.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireActivity(),
-                        R.color.transparent
-                    )
-                )
-            }
-            false
-        }
+        (requireActivity() as MainActivity).invalidateOptionsMenu()
 
         return binding.root
     }

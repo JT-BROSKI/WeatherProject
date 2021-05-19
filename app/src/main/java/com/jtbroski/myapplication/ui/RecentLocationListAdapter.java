@@ -16,11 +16,11 @@ import androidx.core.content.ContextCompat;
 import com.jtbroski.myapplication.PreferenceDatabaseHelper;
 import com.jtbroski.myapplication.R;
 import com.jtbroski.myapplication.Utils;
-import com.jtbroski.myapplication.ui.home.HomeViewModel;
+import com.jtbroski.myapplication.ui.main.MainViewModel;
 
 public class RecentLocationListAdapter extends CursorAdapter {
     private Cursor cursor;
-    private HomeViewModel viewModel;
+    private MainViewModel viewModel;
 
     public RecentLocationListAdapter(Context context, Cursor c, boolean autoRequery) {
         super(context, c, autoRequery);
@@ -32,7 +32,7 @@ public class RecentLocationListAdapter extends CursorAdapter {
             cursor.close();
     }
 
-    public void setViewModel(HomeViewModel viewModel) {
+    public void setViewModel(MainViewModel viewModel) {
         this.viewModel = viewModel;
     }
 

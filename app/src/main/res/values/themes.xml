@@ -17,7 +17,7 @@
     </style>
 
     <style name="Theme.UI.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="appbarColor">@color/dark_gray2</item>
+        <item name="appbarColor">@color/lighter_black</item>
         <item name="appbarTextColor">@color/light_gray1</item>
         <item name="bgColor">@color/light_gray3</item>
         <item name="surfaceColor">@color/dark_gray1</item>

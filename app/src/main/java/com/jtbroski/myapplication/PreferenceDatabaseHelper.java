@@ -21,7 +21,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.jtbroski.myapplication.ui.MainActivity;
+import com.jtbroski.myapplication.ui.main.MainActivity;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;

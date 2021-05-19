@@ -2,7 +2,6 @@ package com.jtbroski.myapplication.ui.search
 
 import android.app.Application
 import android.database.Cursor
-import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -28,28 +27,24 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         refreshHomeFragmentFromAdapter = _searchFilterAdapter.refreshHomeFragment
     }
 
-    fun updateFilterCursor(text: CharSequence) {
+    fun updateFilterCursor(text: String) {
         citiesFilteredCursor =
-            if (text.length > 2) Utils.locationDbHelper.getCitiesFilteredCursor(text.toString())
+            if (text.length > 2) Utils.locationDbHelper.getCitiesFilteredCursor(text)
             else Utils.locationDbHelper.getCitiesFilteredCursor("")
         searchFilterAdapter.changeCursor(citiesFilteredCursor)
     }
 
-    fun onEnterPressed(location: String, actionId: Int) {
-        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+    fun onEnterPressed(location: String) {
+        // Check whether the geocoder can find a location matching the string within the EditText
+        if (Utils.checkLocationValidity(location)) {
             searchFilterAdapter.closeCursor()
-
-            // Check whether the geocoder can find a location matching the string within the EditText
-            if (Utils.checkLocationValidity(location)) {
-                _refreshHomeFragment.value = true
-                _refreshHomeFragment.postValue(false)
-            } else {
-                Toast.makeText(
-                    getApplication<Application>().applicationContext,
-                    "Unable to find any locations matching with $location", Toast.LENGTH_SHORT
-                ).show()
-            }
+            _refreshHomeFragment.value = true
+            _refreshHomeFragment.postValue(false)
+        } else {
+            Toast.makeText(
+                getApplication<Application>().applicationContext,
+                "Unable to find any locations matching with $location", Toast.LENGTH_SHORT
+            ).show()
         }
-        false
     }
 }

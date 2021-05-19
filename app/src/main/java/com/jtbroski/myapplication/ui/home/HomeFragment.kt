@@ -2,14 +2,10 @@ package com.jtbroski.myapplication.ui.home
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ScrollView
 import android.widget.Toast
-import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.core.content.ContextCompat
-import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -23,10 +19,9 @@ import com.jtbroski.myapplication.Utils
 import com.jtbroski.myapplication.databinding.FragmentHomeBinding
 import com.jtbroski.myapplication.retrofit.ApiInfoConditions
 import com.jtbroski.myapplication.ui.alert.WeatherAlertFragment
+import com.jtbroski.myapplication.ui.main.MainActivity
 import java.net.URL
 import java.util.*
-import kotlin.math.roundToInt
-
 
 class HomeFragment : Fragment(), OnMapReadyCallback {
 
@@ -50,92 +45,11 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             childFragmentManager.findFragmentById(R.id.weather_map_fragment) as SupportMapFragment?
         mapFragment?.getMapAsync(this)
 
-        // Navigation Drawer
-        val toggle = ActionBarDrawerToggle(
-            requireActivity(),
-            binding.drawerLayout,
-            binding.toolBar,
-            R.string.navigation_drawer_open,
-            R.string.navigation_drawer_close
-        )
-        toggle.syncState()
-        binding.drawerLayout.addDrawerListener(toggle)
-
         viewModel = ViewModelProvider(requireActivity()).get(HomeViewModel::class.java)
         binding.homeViewModel = viewModel
 
         // Swipe Refresh Layout
         binding.pullDownRefresh.setOnRefreshListener { viewModel.callWeatherApi(Utils.lastQueriedLocation) }
-
-        // Search Image Button
-        binding.btnSearch.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_searchFragment)
-        }
-        binding.btnSearch.setOnTouchListener { v, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> v.setBackgroundColor(
-                    if (Utils.preferenceDbHelper.darkThemeFlag) ContextCompat.getColor(
-                        requireActivity(),
-                        R.color.black
-                    )
-                    else ContextCompat.getColor(requireActivity(), R.color.purple_700)
-                )
-                MotionEvent.ACTION_UP -> v.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireActivity(),
-                        R.color.transparent
-                    )
-                )
-            }
-            false
-        }
-
-        // My Location Image Button
-        binding.btnMyLocation.setOnClickListener {
-            Utils.locationName = null
-            Utils.preferenceDbHelper.getCurrentLocation(requireActivity())
-        }
-        binding.btnMyLocation.setOnTouchListener { v, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> v.setBackgroundColor(
-                    if (Utils.preferenceDbHelper.darkThemeFlag) ContextCompat.getColor(
-                        requireActivity(),
-                        R.color.black
-                    )
-                    else ContextCompat.getColor(requireActivity(), R.color.purple_700)
-                )
-                MotionEvent.ACTION_UP -> v.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireActivity(),
-                        R.color.transparent
-                    )
-                )
-            }
-            false
-        }
-
-        // Settings Image Button
-        binding.btnSettings.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_settingsFragment)
-        }
-        binding.btnSettings.setOnTouchListener { v, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> v.setBackgroundColor(
-                    if (Utils.preferenceDbHelper.darkThemeFlag) ContextCompat.getColor(
-                        requireActivity(),
-                        R.color.black
-                    )
-                    else ContextCompat.getColor(requireActivity(), R.color.purple_700)
-                )
-                MotionEvent.ACTION_UP -> v.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireActivity(),
-                        R.color.transparent
-                    )
-                )
-            }
-            false
-        }
 
         // Alert Layout
         binding.alertLayout.setOnClickListener {
@@ -147,17 +61,17 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             findNavController().navigate(R.id.action_homeFragment_to_weatherAlertFragment, bundle)
         }
 
-        // Dynamically set navigation view width
-        val params = binding.navView.layoutParams
-        params.width = (resources.displayMetrics.widthPixels * 0.8).roundToInt()
-        binding.navView.layoutParams = params
-
         viewModel.updateDrawerCursors()
 
         setupRecyclerViews()
         setupObservers()
 
         return binding.root
+    }
+
+    override fun onResume() {
+        (requireActivity() as MainActivity).invalidateOptionsMenu()
+        super.onResume()
     }
 
     override fun onDestroyView() {
@@ -220,13 +134,11 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     private fun setupRecyclerViews() {
         binding.dailyConditionsRecyclerView.layoutManager =
             LinearLayoutManager(requireActivity(), LinearLayoutManager.HORIZONTAL, false)
-        binding.dailyConditionsRecyclerView.isFocusable =
-            false     // this is set to false so that it does not mess with the scroll view's scroll position upon updating its data
+        binding.dailyConditionsRecyclerView.isFocusable = false     // this is set to false so that it does not mess with the scroll view's scroll position upon updating its data
 
         binding.hourlyConditionsRecyclerView.layoutManager =
             LinearLayoutManager(requireActivity(), LinearLayoutManager.HORIZONTAL, false)
-        binding.hourlyConditionsRecyclerView.isFocusable =
-            false    // this is set to false so that it does not mess with the scroll view's scroll position upon updating its data
+        binding.hourlyConditionsRecyclerView.isFocusable = false    // this is set to false so that it does not mess with the scroll view's scroll position upon updating its data
     }
 
     private fun setupObservers() {
@@ -237,10 +149,6 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         })
         binding.homeViewModel?.currentConditionsIcon?.observe(viewLifecycleOwner, {
             loadCurrentConditionsIcon()
-        })
-
-        binding.homeViewModel?.closeDrawer?.observe(viewLifecycleOwner, { close ->
-            if (close) binding.drawerLayout.closeDrawer(GravityCompat.START)
         })
         binding.homeViewModel?.resetScrollView?.observe(viewLifecycleOwner, { refresh ->
             if (refresh) resetScrollView()

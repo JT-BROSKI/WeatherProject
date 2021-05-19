@@ -7,7 +7,7 @@ import android.location.Location;
 import android.widget.Toast;
 
 import com.jtbroski.myapplication.retrofit.ApiInfoConditions;
-import com.jtbroski.myapplication.ui.MainActivity;
+import com.jtbroski.myapplication.ui.main.MainActivity;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
