@@ -1,7 +1,6 @@
 package com.jtbroski.myapplication.ui.home
 
 import android.app.Application
-import android.database.Cursor
 import android.location.Geocoder
 import android.location.Location
 import android.view.View
@@ -32,6 +31,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private var _homeReturned = MutableLiveData<Boolean>()
     val homeReturned: LiveData<Boolean>
         get() = _homeReturned
+
+    private var _displayLoadingCircle = MutableLiveData<Boolean>()
+    val displayLoadingCircle: LiveData<Boolean>
+        get() = _displayLoadingCircle
 
     private var _resetScrollView = MutableLiveData(false)
     val resetScrollView: LiveData<Boolean>
@@ -164,6 +167,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         _closeCursors.value = true
     }
 
+    // Manually display the swipe refresh layout's loading circle
+    fun displaySwipeRefreshAnimation() {
+        _displayLoadingCircle.value = true
+        _displayLoadingCircle.postValue(false)
+    }
+
     // Updates the list views within the navigation drawer by update their cursors
     fun updateDrawerCursors() {
         _homeReturned.value = true
@@ -171,8 +180,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     // Updates all weather conditions
     fun updateWeatherConditions() {
-        _stopSwipeLayoutRefresh.value = true
-
         populateFullDayHourlyConditions()
 
         val forecast = forecastedWeather.value
@@ -195,6 +202,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 _showSplash.value = false
             }
         }
+
+        _stopSwipeLayoutRefresh.value = true
     }
 
     // Populates an array list with the current and future hourly conditions

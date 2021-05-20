@@ -20,7 +20,7 @@
         <item name="appbarColor">@color/lighter_black</item>
         <item name="appbarTextColor">@color/light_gray1</item>
         <item name="bgColor">@color/light_gray3</item>
-        <item name="surfaceColor">@color/dark_gray1</item>
+        <item name="surfaceColor">@color/dark_gray</item>
         <item name="primaryTextColor">@color/light_gray1</item>
         <item name="secondaryTextColor">@color/light_gray2</item>
         <item name="alertSecondaryTextColor">@color/light_gray3</item>

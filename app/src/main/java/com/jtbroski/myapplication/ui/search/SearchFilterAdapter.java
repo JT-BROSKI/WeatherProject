@@ -60,7 +60,7 @@ public class SearchFilterAdapter extends CursorAdapter {
         // For some reason list_item_search_suggestion will not use its designated attribute values for its background and text color
         // So we have to manually set it here
         if (Utils.preferenceDbHelper.getDarkThemeFlag()) {
-            txtSearchSuggestion.setBackgroundColor(Color.parseColor(context.getResources().getString(R.color.dark_gray1)));
+            txtSearchSuggestion.setBackgroundColor(Color.parseColor(context.getResources().getString(R.color.dark_gray)));
             txtSearchSuggestion.setTextColor(Color.parseColor(context.getResources().getString(R.color.light_gray1)));
         } else {
             txtSearchSuggestion.setBackgroundColor(Color.parseColor(context.getResources().getString(R.color.white)));

@@ -20,7 +20,6 @@
     <color name="light_gray1">#B4B4B4</color>
     <color name="light_gray2">#BCBCBC</color>
     <color name="light_gray3">#797979</color>
-    <color name="dark_gray1">#1C1C1C</color>
-    <color name="dark_gray2">#272727</color>
+    <color name="dark_gray">#1C1C1C</color>
     <color name="lighter_black">#141414</color>
 </resources>

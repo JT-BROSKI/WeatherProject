@@ -81,6 +81,7 @@ class MainActivity : AppCompatActivity() {
         // Else, if the settings fragment is being hosted, set the toolbar title to "Settings"
         if (viewModel.startUp) {
             supportActionBar?.setDisplayShowTitleEnabled(false)
+            viewModel.startUp = false
         } else {
             val fragments = navHostFragment.childFragmentManager.fragments
             for (fragment in fragments)
@@ -91,6 +92,9 @@ class MainActivity : AppCompatActivity() {
         viewModel.closeDrawer.observe(this, { close -> if (close) binding.drawerLayout.closeDrawer(GravityCompat.START) })
         viewModel.locationSelected.observe(this, { selectedLocation ->
             callWeatherApi(selectedLocation)
+        })
+        viewModel.showLoadingCircle.observe(this, { loading ->
+            if (loading) homeViewModel.displaySwipeRefreshAnimation()
         })
 
         homeViewModel.closeCursors.observe(this, { close ->
@@ -106,6 +110,9 @@ class MainActivity : AppCompatActivity() {
         searchViewModel.refreshHomeFragmentFromAdapter.observe(this, { refreshHomeFragment ->
                 if (refreshHomeFragment) callWeatherApi(Utils.lastQueriedLocation)
         })
+        searchViewModel.showLoadingCircle.observe(this, { loading ->
+            if (loading) homeViewModel.displaySwipeRefreshAnimation()
+        })
 
         settingsViewModel.rbDarkIsChecked.observe(this, { isDark -> updateTheme(isDark) })
         settingsViewModel.refreshHomeFragment.observe(this, { refreshHomeFragment ->
@@ -114,6 +121,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        var isSettingsOrAlerts = false      // This boolean is to allow the settings/weather alerts title to disappear more seamlessly
         val fragments = navHostFragment.childFragmentManager.fragments
         for (fragment in fragments) {
             if (fragment.isVisible && fragment is AboutFragment) {
@@ -127,13 +135,18 @@ class MainActivity : AppCompatActivity() {
             if (fragment.isVisible && fragment is SettingsFragment)  {
                 settingsViewModel.checkForChange()
                 invalidateOptionsMenu()
+                isSettingsOrAlerts = true
             }
 
             if (fragment.isVisible && fragment is WeatherAlertFragment) {
                 invalidateOptionsMenu()
+                isSettingsOrAlerts = true
             }
         }
         super.onBackPressed()
+
+        if (isSettingsOrAlerts)
+            supportActionBar?.setDisplayShowTitleEnabled(false)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -182,7 +195,7 @@ class MainActivity : AppCompatActivity() {
             android.R.id.home ->  {
                 if (isDrawerLocked) {
                     // If the up button was hit in the settings fragment, check for changes
-                    var isSettingsOrAlerts = false      // This boolean is to allow the settings title to disappear more seamlessly
+                    var isSettingsOrAlerts = false      // This boolean is to allow the settings/weather alerts title to disappear more seamlessly
                     val fragments = navHostFragment.childFragmentManager.fragments
                     for (fragment in fragments) {
                         if (fragment.isVisible && fragment is SettingsFragment) {
@@ -213,6 +226,7 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.search -> navController.navigate(R.id.action_homeFragment_to_searchFragment)
             R.id.myLocation -> {
+                homeViewModel.displaySwipeRefreshAnimation()
                 Utils.locationName = null
                 Utils.preferenceDbHelper.getCurrentLocation(this)
             }
@@ -259,8 +273,6 @@ class MainActivity : AppCompatActivity() {
     // Disable the navigation drawer
     private fun disableNavigationDrawer() {
         binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-        supportActionBar?.setDisplayShowHomeEnabled(true)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         drawerToggle.isDrawerIndicatorEnabled = false
         drawerToggle.setHomeAsUpIndicator(R.drawable.ic_back_arrow)
         isDrawerLocked = true
@@ -269,12 +281,7 @@ class MainActivity : AppCompatActivity() {
     // Enable the navigation drawer
     private fun enableNavigationDrawer() {
         binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
-        if (!viewModel.startUp) {
-            supportActionBar?.setDisplayShowHomeEnabled(false)
-            supportActionBar?.setDisplayHomeAsUpEnabled(false)
-        } else { viewModel.startUp = false}
         drawerToggle.isDrawerIndicatorEnabled = true
-        drawerToggle.toolbarNavigationClickListener = null
         isDrawerLocked = false
     }
 

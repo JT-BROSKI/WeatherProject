@@ -3,7 +3,7 @@
 
     <!-- background -->
     <item
-        android:drawable="@color/dark_gray1"/>
+        android:drawable="@color/dark_gray"/>
 
     <!-- splash image -->
     <item>

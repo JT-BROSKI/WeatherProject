@@ -62,6 +62,7 @@ public class RecentLocationListAdapter extends CursorAdapter {
             closeCursor();
             String recentLocationName = ((TextView) v).getText().toString();
             Utils.locationName = recentLocationName;
+            viewModel.displayLoadingCircle();
             viewModel.callWeatherApi(Utils.preferenceDbHelper.getRecentLocation(recentLocationName));
             viewModel.updateDrawerCursors();
             viewModel.closeDrawer();

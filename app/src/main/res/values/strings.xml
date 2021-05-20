@@ -34,7 +34,6 @@
     <string name="precipitation_icon_description">Precipitation icon</string>
     <string name="today_daily_weather">TODAY</string>
     <string name="today_hourly_weather">TDY</string>
-    <string name="back_arrow_description">Back arrow</string>
     <string name="weather_project_splash_description">Weather Project Splash</string>
     <string name="api_used_title">APIs Used</string>
     <string name="open_weather">OpenWeather</string>

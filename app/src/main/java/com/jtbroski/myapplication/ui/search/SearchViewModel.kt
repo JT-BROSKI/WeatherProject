@@ -17,6 +17,10 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     val searchFilterAdapter: SearchFilterAdapter
         get() = _searchFilterAdapter
 
+    private var _showLoadingCircle = MutableLiveData(false)
+    val showLoadingCircle: LiveData<Boolean>
+        get() = _showLoadingCircle
+
     private lateinit var citiesFilteredCursor: Cursor
 
     val refreshHomeFragmentFromAdapter: LiveData<Boolean>
@@ -25,6 +29,12 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         _searchFilterAdapter =
             SearchFilterAdapter(getApplication<Application>().applicationContext, null, false)
         refreshHomeFragmentFromAdapter = _searchFilterAdapter.refreshHomeFragment
+    }
+
+    // Display the swipe refresh layout's loading circle in the home fragment
+    fun displayLoadingCircle() {
+        _showLoadingCircle.value = true
+        _showLoadingCircle.postValue(false)
     }
 
     fun updateFilterCursor(text: String) {
@@ -40,6 +50,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             searchFilterAdapter.closeCursor()
             _refreshHomeFragment.value = true
             _refreshHomeFragment.postValue(false)
+            displayLoadingCircle()
         } else {
             Toast.makeText(
                 getApplication<Application>().applicationContext,

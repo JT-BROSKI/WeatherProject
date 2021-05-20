@@ -43,6 +43,7 @@ class SearchFragment : Fragment() {
                 if (refreshHomeFragment) {
                     inputMethodManger.hideSoftInputFromWindow(view?.windowToken, 0)
                     navController.popBackStack()
+                    viewModel.displayLoadingCircle()
                 }
             })
 

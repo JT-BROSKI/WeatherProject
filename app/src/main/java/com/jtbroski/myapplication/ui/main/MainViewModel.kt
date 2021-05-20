@@ -20,6 +20,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val closeDrawer: LiveData<Boolean>
         get() = _closeDrawer
 
+    private var _showLoadingCircle = MutableLiveData(false)
+    val showLoadingCircle: LiveData<Boolean>
+        get() = _showLoadingCircle
+
     // Favorite Locations
     private lateinit var favoriteLocationListCursor: Cursor
     private var _favoriteLocationListAdapter: FavoriteLocationListAdapter
@@ -63,6 +67,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun closeDrawer() {
         _closeDrawer.value = true
+    }
+
+    // Display the swipe refresh layout's loading circle in the home fragment
+    fun displayLoadingCircle() {
+        _showLoadingCircle.value = true
+        _showLoadingCircle.postValue(false)
     }
 
     // Updates the list views within the navigation drawer by update their cursors

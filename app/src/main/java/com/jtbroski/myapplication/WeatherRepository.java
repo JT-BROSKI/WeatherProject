@@ -20,10 +20,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class WeatherRepository {
     private final String OPEN_WEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5/";
 
-    private OpenWeatherService openWeatherService;
-    private MutableLiveData<ApiInfoConditions> forecastedWeather;
-    private MutableLiveData<List<ApiInfoHourlyConditions>> historicalWeather;
-    private MutableLiveData<List<ApiInfoHourlyConditions>> historicalWeatherBackup;
+    private final OpenWeatherService openWeatherService;
+    private final MutableLiveData<ApiInfoConditions> forecastedWeather;
+    private final MutableLiveData<List<ApiInfoHourlyConditions>> historicalWeather;
+    private final MutableLiveData<List<ApiInfoHourlyConditions>> historicalWeatherBackup;
 
     public WeatherRepository() {
         forecastedWeather = new MutableLiveData<>();

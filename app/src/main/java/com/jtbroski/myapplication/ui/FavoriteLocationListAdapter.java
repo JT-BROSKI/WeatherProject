@@ -62,6 +62,7 @@ public class FavoriteLocationListAdapter extends CursorAdapter {
             closeCursor();
             String favoriteLocationName = ((TextView) v).getText().toString();
             Utils.locationName = favoriteLocationName;
+            viewModel.displayLoadingCircle();
             viewModel.callWeatherApi(Utils.preferenceDbHelper.getFavoriteLocation((favoriteLocationName)));
             viewModel.updateDrawerCursors();
             viewModel.closeDrawer();

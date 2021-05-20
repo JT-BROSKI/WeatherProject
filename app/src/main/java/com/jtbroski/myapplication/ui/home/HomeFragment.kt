@@ -150,6 +150,11 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         binding.homeViewModel?.currentConditionsIcon?.observe(viewLifecycleOwner, {
             loadCurrentConditionsIcon()
         })
+        binding.homeViewModel?.displayLoadingCircle?.observe(viewLifecycleOwner, { loading ->
+            if (loading) binding.pullDownRefresh.post {
+                binding.pullDownRefresh.isRefreshing = true
+            }
+        })
         binding.homeViewModel?.resetScrollView?.observe(viewLifecycleOwner, { refresh ->
             if (refresh) resetScrollView()
         })
@@ -157,8 +162,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             if (!showSplash) binding.splash.visibility = View.GONE
         })
         binding.homeViewModel?.stopSwipeLayoutRefresh?.observe(viewLifecycleOwner, { stopRefresh ->
-            if (stopRefresh && binding.pullDownRefresh.isRefreshing) binding.pullDownRefresh.isRefreshing =
-                false
+            if (stopRefresh && binding.pullDownRefresh.isRefreshing) binding.pullDownRefresh.isRefreshing = false
         })
     }
 
